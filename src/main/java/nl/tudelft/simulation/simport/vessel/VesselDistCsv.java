@@ -1,6 +1,5 @@
 package nl.tudelft.simulation.simport.vessel;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -14,7 +13,6 @@ import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.model.PortModel;
-import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.util.DistributionParser;
 
 /**
@@ -25,35 +23,15 @@ import nl.tudelft.simulation.simport.util.DistributionParser;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class VesselGeneratorDistCsv
+public class VesselDistCsv
 {
     /**
      * Create VesselGenerators based on data from a csv-file.
      * @param model the simulation model with access to, e.g., terminals
-     * @param terminalCsvPath path to the file with terminal parameters
      * @param vesselDistCsvPath path to the file with vessel distribution parameters
      */
-    public static void generateVesselsCsv(final PortModel model, final String terminalCsvPath, final String vesselDistCsvPath)
+    public static void readVesselDist(final PortModel model, final String vesselDistCsvPath)
     {
-        InputStream terminalCsvStream = URLResource.getResourceAsStream(terminalCsvPath);
-        try (CsvReader csvReader = CsvReader.builder().build(new InputStreamReader(terminalCsvStream)))
-        {
-            boolean first = true;
-            for (CsvRow row : csvReader)
-            {
-                if (first)
-                    first = false;
-                else
-                {
-                    new Terminal(row.getField(0), model);
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
         InputStream vesseLDistCsvStream = URLResource.getResourceAsStream(vesselDistCsvPath);
         try (CsvReader csvReader = CsvReader.builder().build(new InputStreamReader(vesseLDistCsvStream)))
         {

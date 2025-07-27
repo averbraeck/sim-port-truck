@@ -9,7 +9,8 @@ import nl.tudelft.simulation.simport.clocktime.ClockTime;
 import nl.tudelft.simulation.simport.dsol.ClockDevsSimulator;
 import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
 import nl.tudelft.simulation.simport.model.PortModel;
-import nl.tudelft.simulation.simport.vessel.VesselGeneratorDistCsv;
+import nl.tudelft.simulation.simport.terminal.TerminalCsv;
+import nl.tudelft.simulation.simport.vessel.VesselDistCsv;
 
 /**
  * TestModel.java.
@@ -35,7 +36,8 @@ public class TestCsvModel extends PortModel
     @Override
     public void constructModel() throws SimRuntimeException
     {
-        VesselGeneratorDistCsv.generateVesselsCsv(this, "/resources/test/terminals.csv", "/resources/test/vesselDist.csv");
+        TerminalCsv.readTerminals(this, "/resources/test/terminals.csv");
+        VesselDistCsv.readVesselDist(this, "/resources/test/vesselDist.csv");
     }
 
     public static void main(final String[] args)
