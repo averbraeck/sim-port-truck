@@ -1,4 +1,4 @@
-package nl.tudelft.simulation.simport;
+package nl.tudelft.simulation.simport.terminal;
 
 import org.djutils.base.Identifiable;
 
