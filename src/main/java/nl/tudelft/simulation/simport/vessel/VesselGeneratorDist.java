@@ -6,9 +6,9 @@ import org.djutils.exceptions.Throw;
 
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
-import nl.tudelft.simulation.simport.Terminal;
 import nl.tudelft.simulation.simport.clocktime.ClockTime;
 import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
  * ShipGeneratorDist creates ship visits based on a distribution for:

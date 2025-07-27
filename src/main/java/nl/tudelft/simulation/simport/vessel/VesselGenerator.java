@@ -2,9 +2,9 @@ package nl.tudelft.simulation.simport.vessel;
 
 import org.djutils.base.Identifiable;
 
-import nl.tudelft.simulation.simport.Terminal;
 import nl.tudelft.simulation.simport.clocktime.ClockTime;
 import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
  * VesselGenerator generates visits for Vessels in the Port. The class is abstract, so deriving classes can work based on visit

@@ -13,8 +13,8 @@ import nl.tudelft.simulation.jstats.distributions.DistContinuous;
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
-import nl.tudelft.simulation.simport.Terminal;
 import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.util.DistributionParser;
 
 /**

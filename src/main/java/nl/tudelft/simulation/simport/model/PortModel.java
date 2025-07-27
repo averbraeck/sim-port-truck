@@ -6,8 +6,8 @@ import java.util.Map;
 import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
-import nl.tudelft.simulation.simport.Terminal;
 import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
  * PortModel is an abstract 'parent' model with key objects such as the terminals and the road network.

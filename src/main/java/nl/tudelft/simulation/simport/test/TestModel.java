@@ -8,11 +8,11 @@ import nl.tudelft.simulation.dsol.experiment.SingleReplication;
 import nl.tudelft.simulation.jstats.distributions.DistDiscreteUniform;
 import nl.tudelft.simulation.jstats.distributions.DistTriangular;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
-import nl.tudelft.simulation.simport.Terminal;
 import nl.tudelft.simulation.simport.clocktime.ClockTime;
 import nl.tudelft.simulation.simport.dsol.ClockDevsSimulator;
 import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
 import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.vessel.VesselGeneratorDist;
 
 /**
