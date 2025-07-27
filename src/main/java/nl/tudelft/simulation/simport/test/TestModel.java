@@ -42,7 +42,7 @@ public class TestModel extends PortModel
         var terminal = new Terminal("APMT-2", this);
         var stream = getDefaultStream();
         // @formatter:off
-        var vesselGenerator = new VesselGeneratorDist("gen", this.simulator, terminal)
+        var vesselGenerator = new VesselGeneratorDist("gen", this, terminal)
                 .setShipIatWeekdays(new DistContinuousDuration(new DistTriangular(stream, 7.0, 11.0, 16.0), DurationUnit.HOUR))
                 .setShipIatWeekends(new DistContinuousDuration(new DistTriangular(stream, 12.0, 17.0, 22.0), DurationUnit.HOUR))
                 .setCallSizeDistLoading(new DistDiscreteUniform(stream, 500, 3000))

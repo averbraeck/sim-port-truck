@@ -7,6 +7,7 @@ import org.djutils.exceptions.Throw;
 import nl.tudelft.simulation.dsol.formalisms.eventscheduling.SimEventInterface;
 import nl.tudelft.simulation.simport.clocktime.ClockTime;
 import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
@@ -19,9 +20,6 @@ import nl.tudelft.simulation.simport.terminal.Terminal;
  */
 public class Vessel implements Identifiable
 {
-    /** the static id counter. */
-    private static int idCounter = 0;
-
     /** the id of the ship. */
     private final String id;
 
@@ -46,6 +44,9 @@ public class Vessel implements Identifiable
     /** Terminal. */
     private final Terminal terminal;
 
+    /** the simulation model. */
+    private final PortModel model;
+
     /** The simulator to schedule vessel arrival and departure. */
     private final ClockSimulatorInterface simulator;
 
@@ -58,18 +59,19 @@ public class Vessel implements Identifiable
     /**
      * Create a Vessel.
      * @param id the id of the ship
-     * @param simulator the simulator to schedule vessel arrival and departure
+     * @param model the port model
      * @param eta estimated time of arrival
      * @param etd estimated time of departure
      * @param vesselLoadInfoUnloading call size information for unloading at the terminal
      * @param vesselLoadInfoLoading call size information for loading at the terminal
      * @param terminal the terminal to visit
      */
-    public Vessel(final String id, final ClockSimulatorInterface simulator, final ClockTime eta, final ClockTime etd,
+    public Vessel(final String id, final PortModel model, final ClockTime eta, final ClockTime etd,
             final VesselLoadInfo vesselLoadInfoUnloading, final VesselLoadInfo vesselLoadInfoLoading, final Terminal terminal)
     {
-        this.id = "Vessel:" + (++idCounter);
-        this.simulator = simulator;
+        this.id = "Vessel:" + model.vesselCounter.incrementAndGet();
+        this.model = model;
+        this.simulator = model.getSimulator();
         this.eta = eta;
         setAta(eta);
         this.etd = etd;
@@ -185,6 +187,24 @@ public class Vessel implements Identifiable
     public VesselLoadInfo getVesselLoadInfoLoading()
     {
         return this.vesselLoadInfoLoading;
+    }
+
+    /**
+     * Return the model.
+     * @return the model
+     */
+    public PortModel getModel()
+    {
+        return this.model;
+    }
+
+    /**
+     * Return the simulator.
+     * @return the simulator
+     */
+    public ClockSimulatorInterface getSimulator()
+    {
+        return this.simulator;
     }
 
     /**

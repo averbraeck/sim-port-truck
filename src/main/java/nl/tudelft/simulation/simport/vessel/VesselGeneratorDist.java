@@ -7,11 +7,11 @@ import org.djutils.exceptions.Throw;
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
 import nl.tudelft.simulation.simport.clocktime.ClockTime;
-import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
- * ShipGeneratorDist creates ship visits based on a distribution for:
+ * VesselGeneratorDist creates vessel visits based on a distribution for:
  * <ul>
  * <li>ship interarrival times on weekdays</li>
  * <li>ship interarrival times on weekends</li>
@@ -63,14 +63,14 @@ public class VesselGeneratorDist extends VesselGenerator
     private double fractionReeferLoading = Double.NaN;
 
     /**
-     * Create a ShipGenerator based on distributions for one Terminal.
+     * Create a VesselGenerator based on distributions for one Terminal.
      * @param id the generator's id
-     * @param simulator the simulator
+     * @param model the model
      * @param terminal the terminal to generate ships for
      */
-    public VesselGeneratorDist(final String id, final ClockSimulatorInterface simulator, final Terminal terminal)
+    public VesselGeneratorDist(final String id, final PortModel model, final Terminal terminal)
     {
-        super(id, simulator, terminal);
+        super(id, model, terminal);
     }
 
     public void start()
@@ -112,7 +112,7 @@ public class VesselGeneratorDist extends VesselGenerator
     protected void generateVessel()
     {
         String id = "";
-        var eta = new ClockTime(getSimulator().getSimulatorClockTime()); //.plus(new Duration(1.0, DurationUnit.MINUTE)));
+        var eta = new ClockTime(getSimulator().getSimulatorClockTime()); // .plus(new Duration(1.0, DurationUnit.MINUTE)));
         var etd = new ClockTime(eta.plus(new Duration(1.0, DurationUnit.DAY)));
         var unloadInfo = new VesselLoadInfo((int) this.callSizeDistUnloading.draw(), this.fraction20ftUnloading,
                 this.fractionEmptyUnloading, this.fractionReeferUnloading);

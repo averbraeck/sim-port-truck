@@ -54,7 +54,7 @@ public class VesselDistCsv
                     double reeferFractionU = Double.parseDouble(row.getField(9));
                     double reeferFractionL = Double.parseDouble(row.getField(10));
                     // @formatter:off
-                    var vesselGenerator = new VesselGeneratorDist("gen_" + terminal, model.getSimulator(), terminal)
+                    var vesselGenerator = new VesselGeneratorDist("gen_" + terminal, model, terminal)
                             .setShipIatWeekdays(iatWd)
                             .setShipIatWeekends(iatWe)
                             .setCallSizeDistLoading(callSizeL)

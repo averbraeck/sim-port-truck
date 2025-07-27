@@ -4,6 +4,7 @@ import org.djutils.base.Identifiable;
 
 import nl.tudelft.simulation.simport.clocktime.ClockTime;
 import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
@@ -21,21 +22,21 @@ public abstract class VesselGenerator implements Identifiable
     private final String id;
 
     /** The simulator. */
-    private final ClockSimulatorInterface simulator;
+    private final PortModel model;
 
     /** The terminal to generate ships for. */
     private final Terminal terminal;
 
     /**
-     * Create a ShipGenerator for one Terminal.
+     * Create a VesselGenerator for one Terminal.
      * @param id the generator's id
-     * @param simulator the simulator
+     * @param model the model
      * @param terminal the terminal to generate ships for
      */
-    public VesselGenerator(final String id, final ClockSimulatorInterface simulator, final Terminal terminal)
+    public VesselGenerator(final String id, final PortModel model, final Terminal terminal)
     {
         this.id = id;
-        this.simulator = simulator;
+        this.model = model;
         this.terminal = terminal;
     }
 
@@ -50,7 +51,7 @@ public abstract class VesselGenerator implements Identifiable
     public void generateVessel(final String id, final ClockTime eta, final ClockTime etd, final VesselLoadInfo unloadInfo,
             final VesselLoadInfo loadInfo)
     {
-        new Vessel(id, this.simulator, eta, etd, unloadInfo, loadInfo, this.terminal);
+        new Vessel(id, this.model, eta, etd, unloadInfo, loadInfo, this.terminal);
     }
 
     @Override
@@ -65,7 +66,7 @@ public abstract class VesselGenerator implements Identifiable
      */
     public ClockSimulatorInterface getSimulator()
     {
-        return this.simulator;
+        return this.model.getSimulator();
     }
 
     /**

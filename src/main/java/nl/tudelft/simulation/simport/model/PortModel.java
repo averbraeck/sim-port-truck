@@ -2,6 +2,7 @@ package nl.tudelft.simulation.simport.model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.djunits.value.vdouble.scalar.Duration;
 
@@ -24,6 +25,9 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockSimulat
 
     /** The terminals. */
     private final Map<String, Terminal> terminalMap = new LinkedHashMap<>();
+
+    /** the vessel counter. */
+    public final AtomicInteger vesselCounter = new AtomicInteger(0);
 
     /**
      * Create a port model.
