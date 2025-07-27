@@ -49,15 +49,15 @@ public final class DistributionParser
      * @param distStr String; the textual representation of the distribution
      * @param stream StreamInterface; the random stream to use for the instantiated distribution
      * @return DistCOntinuous; the continuous distribution belonging to the string
-     * @throws PortPlanRuntimeException when the string could not be parsed
+     * @throws SimPortRuntimeException when the string could not be parsed
      */
     public static DistContinuous parseDistContinuous(final String distStr, final StreamInterface stream)
-            throws PortPlanRuntimeException
+            throws SimPortRuntimeException
     {
         if (distStr.indexOf('(') == -1 || distStr.indexOf(')') == -1)
-            throw new PortPlanRuntimeException("parsing distribution " + distStr + ": no '(' or ')' in the string");
+            throw new SimPortRuntimeException("parsing distribution " + distStr + ": no '(' or ')' in the string");
         if (!distStr.trim().endsWith(")"))
-            throw new PortPlanRuntimeException("parsing distribution " + distStr + ": does not end with ')'");
+            throw new SimPortRuntimeException("parsing distribution " + distStr + ": does not end with ')'");
         String distName = distStr.substring(0, distStr.indexOf('(')).trim().toLowerCase();
         String args = distStr.substring(distStr.indexOf('(') + 1, distStr.indexOf(')')).trim();
         String[] argArray = args.split(",");
@@ -169,7 +169,7 @@ public final class DistributionParser
             }
 
             default:
-                throw new PortPlanRuntimeException(
+                throw new SimPortRuntimeException(
                         "parsing distribution " + distStr + ": distribution " + distName + " unknown");
         }
     }
@@ -179,15 +179,15 @@ public final class DistributionParser
      * @param distStr String; the textual representation of the distribution
      * @param stream StreamInterface; the random stream to use for the instantiated distribution
      * @return DistDiscrete; the discrete distribution belonging to the string
-     * @throws PortPlanRuntimeException when the string could not be parsed
+     * @throws SimPortRuntimeException when the string could not be parsed
      */
     public static DistDiscrete parseDistDiscrete(final String distStr, final StreamInterface stream)
-            throws PortPlanRuntimeException
+            throws SimPortRuntimeException
     {
         if (distStr.indexOf('(') == -1 || distStr.indexOf(')') == -1)
-            throw new PortPlanRuntimeException("parsing distribution " + distStr + ": no '(' or ')' in the string");
+            throw new SimPortRuntimeException("parsing distribution " + distStr + ": no '(' or ')' in the string");
         if (!distStr.trim().endsWith(")"))
-            throw new PortPlanRuntimeException("parsing distribution " + distStr + ": does not end with ')'");
+            throw new SimPortRuntimeException("parsing distribution " + distStr + ": does not end with ')'");
         String distName = distStr.substring(0, distStr.indexOf('(')).trim().toLowerCase();
         String args = distStr.substring(distStr.indexOf('(') + 1, distStr.indexOf(')')).trim();
         String[] argArray = args.split(",");
@@ -249,20 +249,20 @@ public final class DistributionParser
             }
 
             default:
-                throw new PortPlanRuntimeException(
+                throw new SimPortRuntimeException(
                         "parsing distribution " + distStr + ": distribution " + distName + " unknown");
         }
     }
 
     private static void checkArgs(final String distStr, final String[] argArray, final int expectedNr)
-            throws PortPlanRuntimeException
+            throws SimPortRuntimeException
     {
-        Throw.when(argArray.length != expectedNr, PortPlanRuntimeException.class,
+        Throw.when(argArray.length != expectedNr, SimPortRuntimeException.class,
                 "parsing distribution " + distStr + ": distribution needs " + expectedNr + " argument(s)");
     }
 
     private static double argDouble(final String distStr, final String[] argArray, final int argNr)
-            throws PortPlanRuntimeException
+            throws SimPortRuntimeException
     {
         try
         {
@@ -270,12 +270,12 @@ public final class DistributionParser
         }
         catch (Exception exception)
         {
-            throw new PortPlanRuntimeException(
+            throw new SimPortRuntimeException(
                     "parsing distribution " + distStr + ": argument " + argNr + " is not a double value");
         }
     }
 
-    private static int argInt(final String distStr, final String[] argArray, final int argNr) throws PortPlanRuntimeException
+    private static int argInt(final String distStr, final String[] argArray, final int argNr) throws SimPortRuntimeException
     {
         try
         {
@@ -283,7 +283,7 @@ public final class DistributionParser
         }
         catch (Exception exception)
         {
-            throw new PortPlanRuntimeException(
+            throw new SimPortRuntimeException(
                     "parsing distribution " + distStr + ": argument " + argNr + " is not an int value");
         }
     }
