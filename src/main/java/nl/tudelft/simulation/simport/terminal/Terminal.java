@@ -19,6 +19,10 @@ public class Terminal implements Identifiable
 
     private final PortModel model;
 
+    private ModalSplit modalSplitIn;
+
+    private ModalSplit modalSplitOut;
+
     private double lat;
 
     private double lon;
@@ -33,6 +37,38 @@ public class Terminal implements Identifiable
         this.id = id;
         this.model = model;
         this.model.addTerminal(this);
+    }
+
+    /**
+     * @return modalSplitIn
+     */
+    public ModalSplit getModalSplitIn()
+    {
+        return this.modalSplitIn;
+    }
+
+    /**
+     * @param modalSplitIn set modalSplitIn
+     */
+    public void setModalSplitIn(final ModalSplit modalSplitIn)
+    {
+        this.modalSplitIn = modalSplitIn;
+    }
+
+    /**
+     * @return modalSplitOut
+     */
+    public ModalSplit getModalSplitOut()
+    {
+        return this.modalSplitOut;
+    }
+
+    /**
+     * @param modalSplitOut set modalSplitOut
+     */
+    public void setModalSplitOut(final ModalSplit modalSplitOut)
+    {
+        this.modalSplitOut = modalSplitOut;
     }
 
     @Override
