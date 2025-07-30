@@ -3,13 +3,11 @@ package nl.tudelft.simulation.simport.terminal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Map;
 
 import org.djutils.io.URLResource;
 
-import com.opencsv.CSVReaderHeaderAware;
-import com.opencsv.exceptions.CsvException;
-
+import de.siegmar.fastcsv.reader.NamedCsvReader;
+import de.siegmar.fastcsv.reader.NamedCsvRow;
 import nl.tudelft.simulation.simport.model.PortModel;
 
 /**
@@ -30,23 +28,22 @@ public class TerminalCsv
     public static void readTerminals(final PortModel model, final String terminalCsvPath)
     {
         InputStream terminalCsvStream = URLResource.getResourceAsStream(terminalCsvPath);
-        try (CSVReaderHeaderAware reader = new CSVReaderHeaderAware(new InputStreamReader(terminalCsvStream)))
+        try (NamedCsvReader csvReader = NamedCsvReader.builder().build(new InputStreamReader(terminalCsvStream)))
         {
-            Map<String, String> row;
-            while ((row = reader.readMap()) != null)
+            for (NamedCsvRow row : csvReader)
             {
-                var terminal = new Terminal(row.get("id"), model);
-                var bargeFraction = Double.parseDouble(row.get("bargeIn"));
-                var railFraction = Double.parseDouble(row.get("railIn"));
-                var truckFraction = Double.parseDouble(row.get("truckIn"));
+                var terminal = new Terminal(row.getField("id"), model);
+                var bargeFraction = Double.parseDouble(row.getField("bargeIn"));
+                var railFraction = Double.parseDouble(row.getField("railIn"));
+                var truckFraction = Double.parseDouble(row.getField("truckIn"));
                 terminal.setModalSplitIn(new ModalSplit(bargeFraction, railFraction, truckFraction));
-                bargeFraction = Double.parseDouble(row.get("bargeOut"));
-                railFraction = Double.parseDouble(row.get("railOut"));
-                truckFraction = Double.parseDouble(row.get("truckOut"));
+                bargeFraction = Double.parseDouble(row.getField("bargeOut"));
+                railFraction = Double.parseDouble(row.getField("railOut"));
+                truckFraction = Double.parseDouble(row.getField("truckOut"));
                 terminal.setModalSplitOut(new ModalSplit(bargeFraction, railFraction, truckFraction));
             }
         }
-        catch (IOException | CsvException e)
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }
