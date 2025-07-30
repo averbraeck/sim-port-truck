@@ -23,10 +23,6 @@ public class Terminal implements Identifiable
 
     private ModalSplit modalSplitOut;
 
-    private double lat;
-
-    private double lon;
-
     /**
      * Create a new terminal for the port model
      * @param id the id of the terminal
