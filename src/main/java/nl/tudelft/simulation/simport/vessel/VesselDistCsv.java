@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import org.djunits.unit.DurationUnit;
 import org.djutils.io.URLResource;
 
-import de.siegmar.fastcsv.reader.CsvReader;
-import de.siegmar.fastcsv.reader.CsvRow;
+import de.siegmar.fastcsv.reader.NamedCsvReader;
+import de.siegmar.fastcsv.reader.NamedCsvRow;
 import nl.tudelft.simulation.jstats.distributions.DistContinuous;
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
@@ -32,28 +32,27 @@ public class VesselDistCsv
      */
     public static void readVesselDist(final PortModel model, final String vesselDistCsvPath)
     {
-        InputStream vesseLDistCsvStream = URLResource.getResourceAsStream(vesselDistCsvPath);
-        try (CsvReader csvReader = CsvReader.builder().build(new InputStreamReader(vesseLDistCsvStream)))
+        InputStream vesselDistCsvStream = URLResource.getResourceAsStream(vesselDistCsvPath);
+        try (NamedCsvReader csvReader = NamedCsvReader.builder().build(new InputStreamReader(vesselDistCsvStream)))
         {
-            boolean first = true;
-            for (CsvRow row : csvReader)
+            for (NamedCsvRow row : csvReader)
             {
-                if (first)
-                    first = false;
-                else
-                {
-                    var terminal = model.getTerminal(row.getField(0));
-                    DistContinuousDuration iatWd = parseDcd(row.getField(1), DurationUnit.HOUR, model.getDefaultStream());
-                    DistContinuousDuration iatWe = parseDcd(row.getField(2), DurationUnit.HOUR, model.getDefaultStream());
-                    DistDiscrete callSizeU = DistributionParser.parseDistDiscrete(row.getField(3), model.getDefaultStream());
-                    DistDiscrete callSizeL = DistributionParser.parseDistDiscrete(row.getField(4), model.getDefaultStream());
-                    double ft20FractionU = Double.parseDouble(row.getField(5));
-                    double ft20FractionL = Double.parseDouble(row.getField(6));
-                    double emptyFractionU = Double.parseDouble(row.getField(7));
-                    double emptyFractionL = Double.parseDouble(row.getField(8));
-                    double reeferFractionU = Double.parseDouble(row.getField(9));
-                    double reeferFractionL = Double.parseDouble(row.getField(10));
-                    // @formatter:off
+                var terminal = model.getTerminal(row.getField("terminal"));
+                DistContinuousDuration iatWd =
+                        parseDcd(row.getField("iatDistWeekdays"), DurationUnit.HOUR, model.getDefaultStream());
+                DistContinuousDuration iatWe =
+                        parseDcd(row.getField("iatDistWeekends"), DurationUnit.HOUR, model.getDefaultStream());
+                DistDiscrete callSizeU =
+                        DistributionParser.parseDistDiscrete(row.getField("callSizeDistUnloading"), model.getDefaultStream());
+                DistDiscrete callSizeL =
+                        DistributionParser.parseDistDiscrete(row.getField("callSizeDistLoading"), model.getDefaultStream());
+                double ft20FractionU = Double.parseDouble(row.getField("20ftFractionUnloading"));
+                double ft20FractionL = Double.parseDouble(row.getField("20ftFractionLoading"));
+                double emptyFractionU = Double.parseDouble(row.getField("emptyFractionUnloading"));
+                double emptyFractionL = Double.parseDouble(row.getField("emptyFractionLoading"));
+                double reeferFractionU = Double.parseDouble(row.getField("reeferFractionUnloading"));
+                double reeferFractionL = Double.parseDouble(row.getField("reeferFractionLoading"));
+                // @formatter:off
                     var vesselGenerator = new VesselGeneratorDist("gen_" + terminal, model, terminal)
                             .setShipIatWeekdays(iatWd)
                             .setShipIatWeekends(iatWe)
@@ -66,8 +65,7 @@ public class VesselDistCsv
                             .setFractionReeferLoading(reeferFractionL)
                             .setFractionReeferUnloading(reeferFractionU);
                     // @formatter:on
-                    vesselGenerator.start();
-                }
+                vesselGenerator.start();
             }
         }
         catch (Exception e)
