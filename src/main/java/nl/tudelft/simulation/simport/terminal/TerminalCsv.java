@@ -3,11 +3,13 @@ package nl.tudelft.simulation.simport.terminal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Map;
 
 import org.djutils.io.URLResource;
 
-import de.siegmar.fastcsv.reader.CsvReader;
-import de.siegmar.fastcsv.reader.CsvRow;
+import com.opencsv.CSVReaderHeaderAware;
+import com.opencsv.exceptions.CsvException;
+
 import nl.tudelft.simulation.simport.model.PortModel;
 
 /**
@@ -28,20 +30,23 @@ public class TerminalCsv
     public static void readTerminals(final PortModel model, final String terminalCsvPath)
     {
         InputStream terminalCsvStream = URLResource.getResourceAsStream(terminalCsvPath);
-        try (CsvReader csvReader = CsvReader.builder().build(new InputStreamReader(terminalCsvStream)))
+        try (CSVReaderHeaderAware reader = new CSVReaderHeaderAware(new InputStreamReader(terminalCsvStream)))
         {
-            boolean first = true;
-            for (CsvRow row : csvReader)
+            Map<String, String> row;
+            while ((row = reader.readMap()) != null)
             {
-                if (first)
-                    first = false;
-                else
-                {
-                    new Terminal(row.getField(0), model);
-                }
+                var terminal = new Terminal(row.get("id"), model);
+                var bargeFraction = Double.parseDouble(row.get("bargeIn"));
+                var railFraction = Double.parseDouble(row.get("railIn"));
+                var truckFraction = Double.parseDouble(row.get("truckIn"));
+                terminal.setModalSplitIn(new ModalSplit(bargeFraction, railFraction, truckFraction));
+                bargeFraction = Double.parseDouble(row.get("bargeOut"));
+                railFraction = Double.parseDouble(row.get("railOut"));
+                truckFraction = Double.parseDouble(row.get("truckOut"));
+                terminal.setModalSplitOut(new ModalSplit(bargeFraction, railFraction, truckFraction));
             }
         }
-        catch (IOException e)
+        catch (IOException | CsvException e)
         {
             throw new RuntimeException(e);
         }
