@@ -144,6 +144,8 @@ public class Vessel implements Identifiable
         System.out.println("Vessel " + this.id + " arrived at    terminal " + this.terminal + " at t="
                 + this.simulator.getSimulatorClockTime().dayOfWeek().toString().substring(0, 3) + " "
                 + this.simulator.getSimulatorClockTime());
+        getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.25), () -> unloadContainers());
+        getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.75), () -> loadContainers());
     }
 
     protected void vesselDeparture()
@@ -151,6 +153,16 @@ public class Vessel implements Identifiable
         System.out.println("Vessel " + this.id + " departed from terminal " + this.terminal + " at t="
                 + this.simulator.getSimulatorClockTime().dayOfWeek().toString().substring(0, 3) + " "
                 + this.simulator.getSimulatorClockTime());
+    }
+
+    protected void unloadContainers()
+    {
+        this.terminal.addImportContainers(this.vesselLoadInfoUnloading);
+    }
+
+    protected void loadContainers()
+    {
+        this.terminal.removeExportContainers(this.vesselLoadInfoLoading);
     }
 
     /**

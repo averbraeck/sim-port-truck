@@ -1,9 +1,15 @@
 package nl.tudelft.simulation.simport.terminal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.djutils.base.Identifiable;
 
+import nl.tudelft.simulation.jstats.streams.StreamInterface;
+import nl.tudelft.simulation.simport.Container;
 import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
 import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.vessel.VesselLoadInfo;
 
 /**
  * Terminal.java.
@@ -19,52 +25,83 @@ public class Terminal implements Identifiable
 
     private final PortModel model;
 
-    private ModalSplit modalSplitIn;
+    private ModalSplit modalSplitImport;
 
-    private ModalSplit modalSplitOut;
+    private ModalSplit modalSplitExport;
+
+    private List<Container> truckContainersImport = new ArrayList<>();
+
+    private List<Container> truckContainersExport = new ArrayList<>();
+
+    private int teu = 0;
+
+    private StreamInterface stream;
 
     /**
      * Create a new terminal for the port model
      * @param id the id of the terminal
      * @param model the port model
+     * @param initialTEU initial number of TEU on terminal
      */
-    public Terminal(final String id, final PortModel model)
+    public Terminal(final String id, final PortModel model, final int initialTEU)
     {
         this.id = id;
         this.model = model;
         this.model.addTerminal(this);
+        this.teu = initialTEU;
+        this.stream = model.getDefaultStream();
+    }
+
+    public void addImportContainers(final VesselLoadInfo vesselLoadInfo)
+    {
+        this.teu += vesselLoadInfo.callSizeTEU();
+        var truckTEU = vesselLoadInfo.callSizeTEU() * this.modalSplitImport.getTruckFraction();
+        for (int i = 0; i < Math.round(truckTEU); i++)
+        {
+            var container = new Container(this.model.uniqueContainerNr(),
+                    this.stream.nextDouble() < vesselLoadInfo.fraction20ft() ? (byte) 20 : (byte) 40,
+                    this.stream.nextDouble() < vesselLoadInfo.fractionEmpty(),
+                    this.stream.nextDouble() < vesselLoadInfo.fractionReefer());
+            this.truckContainersImport.add(container);
+        }
+    }
+
+    public void removeExportContainers(final VesselLoadInfo vesselLoadInfo)
+    {
+        this.teu -= vesselLoadInfo.callSizeTEU();
+
     }
 
     /**
-     * @return modalSplitIn
+     * @return modalSplitImport
      */
-    public ModalSplit getModalSplitIn()
+    public ModalSplit getModalSplitImport()
     {
-        return this.modalSplitIn;
+        return this.modalSplitImport;
     }
 
     /**
-     * @param modalSplitIn set modalSplitIn
+     * @param modalSplitImport set modalSplitImport
      */
-    public void setModalSplitIn(final ModalSplit modalSplitIn)
+    public void setModalSplitIn(final ModalSplit modalSplitImport)
     {
-        this.modalSplitIn = modalSplitIn;
+        this.modalSplitImport = modalSplitImport;
     }
 
     /**
-     * @return modalSplitOut
+     * @return modalSplitExport
      */
-    public ModalSplit getModalSplitOut()
+    public ModalSplit getModalSplitExport()
     {
-        return this.modalSplitOut;
+        return this.modalSplitExport;
     }
 
     /**
-     * @param modalSplitOut set modalSplitOut
+     * @param modalSplitExport set modalSplitExport
      */
-    public void setModalSplitOut(final ModalSplit modalSplitOut)
+    public void setModalSplitOut(final ModalSplit modalSplitExport)
     {
-        this.modalSplitOut = modalSplitOut;
+        this.modalSplitExport = modalSplitExport;
     }
 
     @Override

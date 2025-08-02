@@ -29,6 +29,9 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockSimulat
     /** the vessel counter. */
     public final AtomicInteger vesselCounter = new AtomicInteger(0);
 
+    /** the container counter. */
+    private final AtomicInteger containerCounter = new AtomicInteger(1000000);
+
     /**
      * Create a port model.
      * @param simulator the simulator to use
@@ -57,4 +60,8 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockSimulat
         return this.terminalMap.get(id);
     }
 
+    public int uniqueContainerNr()
+    {
+        return this.containerCounter.incrementAndGet();
+    }
 }

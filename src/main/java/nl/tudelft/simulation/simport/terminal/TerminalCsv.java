@@ -32,7 +32,7 @@ public class TerminalCsv
         {
             for (NamedCsvRow row : csvReader)
             {
-                var terminal = new Terminal(row.getField("id"), model);
+                var terminal = new Terminal(row.getField("id"), model, 20_000);
                 var bargeFraction = Double.parseDouble(row.getField("bargeIn"));
                 var railFraction = Double.parseDouble(row.getField("railIn"));
                 var truckFraction = Double.parseDouble(row.getField("truckIn"));

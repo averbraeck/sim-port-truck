@@ -39,7 +39,7 @@ public class TestModel extends PortModel
     @Override
     public void constructModel() throws SimRuntimeException
     {
-        var terminal = new Terminal("APMT-2", this);
+        var terminal = new Terminal("APMT-2", this, 20_000);
         var stream = getDefaultStream();
         // @formatter:off
         var vesselGenerator = new VesselGeneratorDist("gen", this, terminal)

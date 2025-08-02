@@ -7,11 +7,11 @@ package nl.tudelft.simulation.simport.vessel;
  * BSD-style license.
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
- * @param callSize the call size distribution for (un)loading
+ * @param callSizeTEU the call size in TEU for (un)loading
  * @param fraction20ft the 20/40 ft ratio for (un)loading
  * @param fractionEmpty the fraction empty for (un)loading
  * @param fractionReefer the fraction reefers for (un)loading
  */
-public record VesselLoadInfo(int callSize, double fraction20ft, double fractionEmpty, double fractionReefer)
+public record VesselLoadInfo(int callSizeTEU, double fraction20ft, double fractionEmpty, double fractionReefer)
 {
 }
