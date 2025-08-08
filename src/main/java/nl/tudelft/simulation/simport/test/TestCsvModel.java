@@ -5,9 +5,9 @@ import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.experiment.SingleReplication;
-import nl.tudelft.simulation.simport.clocktime.ClockTime;
-import nl.tudelft.simulation.simport.dsol.ClockDevsSimulator;
-import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulator;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.TerminalCsv;
 import nl.tudelft.simulation.simport.vessel.VesselDistCsv;
@@ -28,7 +28,7 @@ public class TestCsvModel extends PortModel
     /**
      * @param simulator
      */
-    public TestCsvModel(final ClockSimulatorInterface simulator)
+    public TestCsvModel(final ClockDevsSimulatorInterface simulator)
     {
         super(simulator);
     }

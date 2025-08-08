@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
-import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
@@ -18,7 +18,7 @@ import nl.tudelft.simulation.simport.terminal.Terminal;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public abstract class PortModel extends AbstractDsolModel<Duration, ClockSimulatorInterface>
+public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSimulatorInterface>
 {
     /** */
     private static final long serialVersionUID = 1L;
@@ -36,7 +36,7 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockSimulat
      * Create a port model.
      * @param simulator the simulator to use
      */
-    public PortModel(final ClockSimulatorInterface simulator)
+    public PortModel(final ClockDevsSimulatorInterface simulator)
     {
         super(simulator);
     }

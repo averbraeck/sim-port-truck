@@ -2,8 +2,8 @@ package nl.tudelft.simulation.simport.vessel;
 
 import org.djutils.base.Identifiable;
 
-import nl.tudelft.simulation.simport.clocktime.ClockTime;
-import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
@@ -64,7 +64,7 @@ public abstract class VesselGenerator implements Identifiable
      * Return the simulator.
      * @return the simulator
      */
-    public ClockSimulatorInterface getSimulator()
+    public ClockDevsSimulatorInterface getSimulator()
     {
         return this.model.getSimulator();
     }

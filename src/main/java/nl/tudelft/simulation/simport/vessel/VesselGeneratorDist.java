@@ -4,9 +4,9 @@ import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.exceptions.Throw;
 
+import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
-import nl.tudelft.simulation.simport.clocktime.ClockTime;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 

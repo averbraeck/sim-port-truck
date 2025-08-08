@@ -1,6 +1,6 @@
 package nl.tudelft.simulation.simport.test;
 
-import nl.tudelft.simulation.simport.clocktime.ClockTime;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 
 /**
  * TestTime.java.

@@ -5,8 +5,8 @@ import org.djutils.base.Identifiable;
 import org.djutils.exceptions.Throw;
 
 import nl.tudelft.simulation.dsol.formalisms.eventscheduling.SimEventInterface;
-import nl.tudelft.simulation.simport.clocktime.ClockTime;
-import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
@@ -48,7 +48,7 @@ public class Vessel implements Identifiable
     private final PortModel model;
 
     /** The simulator to schedule vessel arrival and departure. */
-    private final ClockSimulatorInterface simulator;
+    private final ClockDevsSimulatorInterface simulator;
 
     /** Event for ATA. */
     private SimEventInterface<Duration> ataEvent;
@@ -214,7 +214,7 @@ public class Vessel implements Identifiable
      * Return the simulator.
      * @return the simulator
      */
-    public ClockSimulatorInterface getSimulator()
+    public ClockDevsSimulatorInterface getSimulator()
     {
         return this.simulator;
     }

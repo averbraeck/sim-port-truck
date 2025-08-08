@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.djutils.base.Identifiable;
 
+import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.Container;
-import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.vessel.VesselLoadInfo;
 
@@ -110,7 +110,7 @@ public class Terminal implements Identifiable
         return this.id;
     }
 
-    public ClockSimulatorInterface getSimulator()
+    public ClockDevsSimulatorInterface getSimulator()
     {
         return this.model.getSimulator();
     }

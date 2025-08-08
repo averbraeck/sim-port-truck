@@ -5,12 +5,12 @@ import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.experiment.SingleReplication;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulator;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.jstats.distributions.DistDiscreteUniform;
 import nl.tudelft.simulation.jstats.distributions.DistTriangular;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
-import nl.tudelft.simulation.simport.clocktime.ClockTime;
-import nl.tudelft.simulation.simport.dsol.ClockDevsSimulator;
-import nl.tudelft.simulation.simport.dsol.ClockSimulatorInterface;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.vessel.VesselGeneratorDist;
@@ -31,7 +31,7 @@ public class TestModel extends PortModel
     /**
      * @param simulator
      */
-    public TestModel(final ClockSimulatorInterface simulator)
+    public TestModel(final ClockDevsSimulatorInterface simulator)
     {
         super(simulator);
     }
