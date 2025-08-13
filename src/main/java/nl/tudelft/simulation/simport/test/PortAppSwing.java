@@ -1,6 +1,8 @@
 package nl.tudelft.simulation.simport.test;
 
+import java.awt.Dimension;
 import java.rmi.RemoteException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.djunits.unit.DurationUnit;
@@ -9,9 +11,7 @@ import org.djutils.draw.bounds.Bounds2d;
 import org.pmw.tinylog.Level;
 
 import nl.tudelft.simulation.dsol.experiment.SingleReplication;
-import nl.tudelft.simulation.dsol.model.DsolModel;
 import nl.tudelft.simulation.dsol.simulators.DevsRealTimeAnimator;
-import nl.tudelft.simulation.dsol.simulators.DevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsRealTimeAnimator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.dsol.swing.gui.ConsoleLogger;
@@ -22,7 +22,6 @@ import nl.tudelft.simulation.dsol.swing.gui.animation.DsolAnimationTab;
 import nl.tudelft.simulation.dsol.swing.gui.control.ClockPanel;
 import nl.tudelft.simulation.dsol.swing.gui.control.RealTimeControlPanel;
 import nl.tudelft.simulation.dsol.swing.gui.control.RunSpeedSliderPanel;
-import nl.tudelft.simulation.dsol.swing.gui.control.RunUntilPanel;
 import nl.tudelft.simulation.dsol.swing.gui.control.SpeedPanel;
 import nl.tudelft.simulation.language.DsolException;
 
@@ -69,38 +68,14 @@ public class PortAppSwing extends DsolAnimationApplication
                 List.of(1.0, 10.0, 60.0, 600.0, 3600.0, 6 * 3600.0, 24 * 3600.0, 5 * 24 * 3600.0, 30 * 24 * 3600.0, 1.0E9);
         List<String> labels = List.of("1s", "10s", "1m", "10m", "1h", "6h", "1d", "5d", "30d", "oo");
         var runSpeedSliderPanel = new RunSpeedSliderPanel(speeds, labels, simulator, 3600.0);
-        ClockControlPanel controlPanel = new ClockControlPanel(model, simulator, runSpeedSliderPanel);
+        var controlPanel = new RealTimeControlPanel<Duration, DevsRealTimeAnimator<Duration>>(model, simulator, runSpeedSliderPanel);
+        controlPanel.setClockPanel(new ClockPanel.ClockTime(simulator, () -> simulator.getSimulatorClockTime().localDateTime()
+                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))));
+        controlPanel.getClockPanel().setPanelSize(new Dimension(160, 35));
+        controlPanel.setSpeedPanel(new SpeedPanel.ClockTime(simulator));
         DsolPanel panel = new DsolPanel(controlPanel);
         panel.addTab("logger", new ConsoleLogger(Level.INFO));
         panel.addTab("console", new ConsoleOutput());
         new PortAppSwing("PortModel", panel);
-    }
-
-    public static class ClockControlPanel extends RealTimeControlPanel<Duration, DevsRealTimeAnimator<Duration>>
-    {
-        /**
-         * @param model
-         * @param simulator
-         * @param runSpeedSliderPanel
-         * @throws RemoteException
-         */
-        public ClockControlPanel(final DsolModel<Duration, ? extends DevsSimulatorInterface<Duration>> model,
-                final ClockDevsRealTimeAnimator simulator, final RunSpeedSliderPanel runSpeedSliderPanel) throws RemoteException
-        {
-            super(model, simulator, runSpeedSliderPanel);
-            setClockPanel(new ClockPanel.TimeDoubleUnit(getSimulator())
-            {
-                private static final long serialVersionUID = 1L;
-
-                @Override
-                protected String formatSimulationTime(final Duration simulationTime)
-                {
-                    return simulator.getSimulatorClockTime().ymd() + " " + simulator.getSimulatorClockTime().hm();
-                }
-            });
-            setSpeedPanel(new SpeedPanel.TimeDoubleUnit(getSimulator()));
-            setRunUntilPanel(new RunUntilPanel.TimeDoubleUnit(getSimulator()));
-        }
-
     }
 }
