@@ -36,6 +36,8 @@ public class TestCsvModel extends PortModel
     @Override
     public void constructModel() throws SimRuntimeException
     {
+        super.constructModel(); // load the map
+
         TerminalCsv.readTerminals(this, "/resources/test/terminals.csv");
         VesselDistCsv.readVesselDist(this, "/resources/test/vesselDist.csv");
     }

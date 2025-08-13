@@ -1,11 +1,18 @@
 package nl.tudelft.simulation.simport.model;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.djunits.value.vdouble.scalar.Duration;
+import org.djutils.io.URLResource;
 
+import nl.tudelft.simulation.dsol.SimRuntimeException;
+import nl.tudelft.simulation.dsol.animation.gis.GisRenderable2d;
+import nl.tudelft.simulation.dsol.animation.gis.osm.OsmFileCsvParser;
+import nl.tudelft.simulation.dsol.animation.gis.osm.OsmRenderable2d;
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.simport.terminal.Terminal;
@@ -32,6 +39,9 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
     /** the container counter. */
     private final AtomicInteger containerCounter = new AtomicInteger(1000000);
 
+    /** the GIS map. */
+    private OsmRenderable2d gisMap;
+
     /**
      * Create a port model.
      * @param simulator the simulator to use
@@ -39,6 +49,32 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
     public PortModel(final ClockDevsSimulatorInterface simulator)
     {
         super(simulator);
+    }
+
+    @Override
+    public void constructModel() throws SimRuntimeException
+    {
+        URL csvUrl = URLResource.getResource("/resources/maps/por.csv");
+        System.out.println("GIS definitions file: " + csvUrl.toString());
+        URL osmUrl = URLResource.getResource("/resources/maps/por.osm.pbf");
+        System.out.println("GIS data file: " + osmUrl.toString());
+        try
+        {
+            this.gisMap = new OsmRenderable2d(getSimulator().getReplication(),
+                    OsmFileCsvParser.parseMapFile(csvUrl, osmUrl, "Port of Rotterdam"));
+        }
+        catch (IOException exception)
+        {
+            throw new SimRuntimeException(exception);
+        }
+    }
+
+    /**
+     * @return gisMap
+     */
+    public GisRenderable2d getOsmMap()
+    {
+        return this.gisMap;
     }
 
     /**

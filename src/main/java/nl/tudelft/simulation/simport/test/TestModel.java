@@ -39,6 +39,8 @@ public class TestModel extends PortModel
     @Override
     public void constructModel() throws SimRuntimeException
     {
+        super.constructModel(); // load the map
+
         var terminal = new Terminal("APMT-2", this, 20_000);
         var stream = getDefaultStream();
         // @formatter:off
