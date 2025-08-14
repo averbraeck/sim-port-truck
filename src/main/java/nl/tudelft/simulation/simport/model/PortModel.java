@@ -14,7 +14,9 @@ import nl.tudelft.simulation.dsol.animation.gis.GisRenderable2d;
 import nl.tudelft.simulation.dsol.animation.gis.osm.OsmFileCsvParser;
 import nl.tudelft.simulation.dsol.animation.gis.osm.OsmRenderable2d;
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
+import nl.tudelft.simulation.dsol.simulators.AnimatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.dsol.statistics.SimCounter;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
@@ -34,13 +36,19 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
     private final Map<String, Terminal> terminalMap = new LinkedHashMap<>();
 
     /** the vessel counter. */
-    public final AtomicInteger vesselCounter = new AtomicInteger(0);
+    private final AtomicInteger uniqueVesselCounter = new AtomicInteger(0);
 
     /** the container counter. */
-    private final AtomicInteger containerCounter = new AtomicInteger(1000000);
+    private final AtomicInteger uniqueContainerCounter = new AtomicInteger(1000000);
 
     /** the GIS map. */
     private OsmRenderable2d gisMap;
+
+    /** Statistic for the number of containers in the model. */
+    private SimCounter<Duration> containerCounter;
+
+    /** Statistic for the number of vessels in the model. */
+    private SimCounter<Duration> vesselCounter;
 
     /**
      * Create a port model.
@@ -54,19 +62,26 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
     @Override
     public void constructModel() throws SimRuntimeException
     {
-        URL csvUrl = URLResource.getResource("/resources/maps/por.csv");
-        System.out.println("GIS definitions file: " + csvUrl.toString());
-        URL osmUrl = URLResource.getResource("/resources/maps/por.osm.pbf");
-        System.out.println("GIS data file: " + osmUrl.toString());
-        try
+        if (getSimulator() instanceof AnimatorInterface)
         {
-            this.gisMap = new OsmRenderable2d(getSimulator().getReplication(),
-                    OsmFileCsvParser.parseMapFile(csvUrl, osmUrl, "Port of Rotterdam"));
+            URL csvUrl = URLResource.getResource("/resources/maps/por.csv");
+            System.out.println("GIS definitions file: " + csvUrl.toString());
+            URL osmUrl = URLResource.getResource("/resources/maps/por.osm.pbf");
+            System.out.println("GIS data file: " + osmUrl.toString());
+            try
+            {
+                this.gisMap = new OsmRenderable2d(getSimulator().getReplication(),
+                        OsmFileCsvParser.parseMapFile(csvUrl, osmUrl, "Port of Rotterdam"));
+            }
+            catch (IOException exception)
+            {
+                throw new SimRuntimeException(exception);
+            }
         }
-        catch (IOException exception)
-        {
-            throw new SimRuntimeException(exception);
-        }
+        this.containerCounter = new SimCounter<>("Generated containers", "Generated containers", this);
+        this.containerCounter.initialize();
+        this.vesselCounter = new SimCounter<>("Generated vessels", "Generated vessels", this);
+        this.vesselCounter.initialize();
     }
 
     /**
@@ -98,6 +113,30 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
 
     public int uniqueContainerNr()
     {
-        return this.containerCounter.incrementAndGet();
+        this.containerCounter.register(1);
+        return this.uniqueContainerCounter.incrementAndGet();
     }
+
+    public int uniqueVesselNr()
+    {
+        this.vesselCounter.register(1);
+        return this.uniqueVesselCounter.incrementAndGet();
+    }
+
+    /**
+     * @return containerCounter
+     */
+    public SimCounter<Duration> getContainerCounter()
+    {
+        return this.containerCounter;
+    }
+
+    /**
+     * @return vesselCounter
+     */
+    public SimCounter<Duration> getVesselCounter()
+    {
+        return this.vesselCounter;
+    }
+
 }
