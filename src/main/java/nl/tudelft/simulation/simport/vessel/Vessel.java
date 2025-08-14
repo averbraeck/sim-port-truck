@@ -69,7 +69,7 @@ public class Vessel implements Identifiable
     public Vessel(final String id, final PortModel model, final ClockTime eta, final ClockTime etd,
             final VesselLoadInfo vesselLoadInfoUnloading, final VesselLoadInfo vesselLoadInfoLoading, final Terminal terminal)
     {
-        this.id = "Vessel:" + model.vesselCounter.incrementAndGet();
+        this.id = "Vessel:" + model.uniqueVesselNr();
         this.model = model;
         this.simulator = model.getSimulator();
         this.eta = eta;
