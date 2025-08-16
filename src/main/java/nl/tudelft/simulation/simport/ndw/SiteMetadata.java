@@ -16,10 +16,11 @@ import java.util.Map;
  * @param lon longitude
  * @param numberOfLanes number of lanes at the measurement point
  * @param locationName name of the location
+ * @param hm hectometers on the road
  * @param indexToBand index number used in the metadata, mapped to vehicle length band
  */
-public record SiteMetadata(String siteId, String roadName, String direction, double lat, double lon, int numberOfLanes, String locationName,
-        Map<Integer, VehicleLengthBand> indexToBand)
+public record SiteMetadata(String siteId, String roadName, String direction, double lat, double lon, int numberOfLanes,
+        String locationName, Double hm, Map<Integer, VehicleLengthBand> indexToBand)
 {
     /**
      * SiteMetadata.VehicleLengthBand for vehicle lengths.
