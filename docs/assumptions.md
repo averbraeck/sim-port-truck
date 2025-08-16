@@ -66,9 +66,9 @@ First, let's separate Short-Sea / Feeder activities outside of Maasvlakte:
 
 ```
 Short Sea RST    1.30 M TEU  Factual 2023/2024
-Short Sea Other  0.50 M TEU  Estimate (ClDN, Broekman, MATRANS)
-Short Sea Total  1.80 M TEU 
-Maasvlakte      12.00 M TEU  Deep sea plus short sea / feeder
+Short Sea Other  0.70 M TEU  Estimate (ClDN, Broekman, MATRANS)
+Short Sea Total  2.00 M TEU 
+Maasvlakte      11.80 M TEU  Deep sea plus short sea / feeder
 ```
 
 Based on the websites and annual reports of the container terminals, their capacities are roughly as follows:
@@ -78,72 +78,81 @@ Euromax    2.30 M TEU  Annual report
 APMT-II    2.70 M TEU  PortNews
 RWG        2.35 M TEU  Website RWG
 HPD-II     1.50 M TEU  Rough estiate (not published)
-ECT Delta  3.15 M TEU  Rest of the volume (not published)
+ECT Delta  2.95 M TEU  Rest of the volume (not published)
 ```
 
 Part short sea:
 
 ```
 Short sea volume     4.44 M TEU Port dashboard    
-Volume outside MV    1.80 M TEU See above   
-Volume SS terminals  2.64 M TEU out of 12 M TEU = 22.0%
+Volume outside MV    2.00 M TEU See above   
+Volume SS terminals  2.44 M TEU out of 12 M TEU = 20.7%
             
           Total  Short sea Deep sea    
-Euromax    2.30    0.51    1.79   M TEU 
-APMT-II    2.70    0.59    2.11   M TEU 
-RWG        2.35    0.52    1.83   M TEU 
-HPD-II     1.50    0.33    1.17   M TEU 
-ECT Delta  3.15    0.69    2.46   M TEU 
+Euromax    2.30    0.48    1.82   M TEU
+APMT-II    2.70    0.56    2.14   M TEU
+RWG        2.35    0.49    1.86   M TEU
+HPD-II     1.50    0.31    1.19   M TEU
+ECT Delta  2.95    0.61    2.34   M TEU
 ```
 
 ### Modal split
 
 ```
 32% of the volume is sea-sea transhipment (average for large container ports in Europe)
-Volume Maasvlakte    12.0 M TEU     
-sea-sea tranship     3.84 M TEU this number is counted twice in the port numbers    
-gate in/out          8.16 M TEU (truck / rail / barge)
+Volume Maasvlakte    11.8 M TEU     
+sea-sea tranship     3.78 M TEU this number is counted twice in the port numbers    
+gate in/out          8.02 M TEU (truck / rail / barge)
 ```
 
-Gate traffic as percentage of 8.16 M TEU gate in/out:
+Gate traffic as percentage of 8.02 M TEU gate in/out:
 
 ```
-truck 58%  4.73 M TEU
-barge 34%  2.77 M TEU
-rail  8%   0.65 M TEU
+truck 58%  4.65 M TEU
+barge 34%  2.73 M TEU
+rail  8%   0.64 M TEU
+
 ```
 
 Other calculation: 
 
 ```
 Rotterdam has ~ 10,000 container truck trips per day with a load factor of 1.6.
-Subtract 19% outside MV (1.8 M TEU) + Kramer (0.9 M TEU): 2.7/13.8 = 19%
-Truck transport inside MV = 0.81 * 365 * 10000 * 1.6 = 4.73 M TEU
-truck 58%  4.73
-barge 34%  2.77
-rail  8%   0.65           
-           8.16           
+Subtract 20.7% outside MV (2.0 M TEU) + Kramer (0.9 M TEU): 2.9/13.8 = 20.7%
+Truck transport inside MV = (1 - 20.7) * 365 * 10000 * 1.6 = 4.61 M TEU
+truck 58%  4.81
+barge 34%  2.70
+rail  8%   0.64           
+           7.95           
 ```
 
 Correction for Barge/Rail: Rail is ONLY coming from the DS terminals; barge is serving FF/SS/Depots a lot, also in Waalhaven. Rail has to come 100% from DS terminals. Therefore, rail = 0.08 * 13.8 M = 1.1 M TEU. Subtract that number from barge.
 
 ```
-truck 58%  4.73
-barge 34%  2.32
+truck 58%  4.65
+barge 34%  2.24
 rail  8%   1.10
 ```
 
 Now we can calculate the allocation percentages:
 
 ```
-truck      4.73   39%
-barge      2.32   19% 
-rail       1.10   9%  
-shortsea   3.84   32% 
-Total     11.99   Correct - we has 12 M TEU earlier, with ~ 1.8 M TEU handled outside MV
+truck      4.65   40%
+barge      2.24   19%
+rail       1.10    9%
+shortsea   3.78   32%
+Total     11.77   Correct - we has 11.8 M TEU earlier, with ~ 2.0 M TEU handled outside MV
 ```
 
-These are the percentages to use for the distribution of an incoming or outgoing container on deepsea terminals
+These are the percentages to use for the distribution of an incoming or outgoing container on deepsea terminals. Distribute over incoming and outgoing:     
+
+```
+          Total   Import  Export
+truck     4.65    2.42    2.23 
+barge     2.24    1.16    1.08 
+rail      1.10    0.57    0.53 
+shortsea  3.78    1.96    1.81 
+```
 
 
 **References:**
