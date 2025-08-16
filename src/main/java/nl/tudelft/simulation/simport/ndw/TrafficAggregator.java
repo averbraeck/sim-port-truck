@@ -1,8 +1,6 @@
 package nl.tudelft.simulation.simport.ndw;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * TrafficAggregator.java.
@@ -14,46 +12,101 @@ import java.util.Map;
  */
 public class TrafficAggregator
 {
-    private final Map<String, AggregatedBucket> buckets = new HashMap<>();
+    private final java.util.concurrent.ConcurrentHashMap<String, AggregatedBucket> buckets =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     private final long bucketSizeMillis;
 
-    public TrafficAggregator(final long bucketSizeMillis)
+    private final boolean flowWeightedSpeed;
+
+    public TrafficAggregator(final long bucketSizeMillis, final boolean flowWeightedSpeed)
     {
         this.bucketSizeMillis = bucketSizeMillis;
+        this.flowWeightedSpeed = flowWeightedSpeed;
     }
 
-    public void addMeasurement(final String siteId, final long timestamp, final double flow, final double speed)
+    private String key(final String siteId, final String classLabel, final long bucketId)
+    {
+        return siteId + "#" + classLabel + "#" + bucketId;
+    }
+
+    public void addFlow(final String siteId, final String classLabel, final long timestamp, final double flow)
     {
         long bucketId = (timestamp / this.bucketSizeMillis) * this.bucketSizeMillis;
-        String key = siteId + "#" + bucketId;
-        AggregatedBucket b = this.buckets.computeIfAbsent(key, k -> new AggregatedBucket());
-        b.add(flow, speed);
+        this.buckets.compute(key(siteId, classLabel, bucketId), (
+                k, b
+        ) ->
+        {
+            if (b == null)
+                b = new AggregatedBucket(siteId, classLabel, bucketId);
+            b.totalFlow += flow;
+            b.countSamplesFlow++;
+            return b;
+        });
     }
 
-    public Collection<AggregatedBucket> getResults()
+    public void addSpeed(final String siteId, final String classLabel, final long timestamp, final double speed, final Double weightFlow)
+    {
+        long bucketId = (timestamp / this.bucketSizeMillis) * this.bucketSizeMillis;
+        this.buckets.compute(key(siteId, classLabel, bucketId), (
+                k, b
+        ) ->
+        {
+            if (b == null)
+                b = new AggregatedBucket(siteId, classLabel, bucketId);
+            if (this.flowWeightedSpeed && weightFlow != null && !Double.isNaN(speed))
+            {
+                b.speedWeightedSum += speed * weightFlow;
+                b.speedWeight += weightFlow;
+            }
+            else if (!Double.isNaN(speed))
+            {
+                b.speedSimpleSum += speed;
+                b.countSamplesSpeed++;
+            }
+            return b;
+        });
+    }
+
+    public Collection<AggregatedBucket> results()
     {
         return this.buckets.values();
     }
 
     public static class AggregatedBucket
     {
+        public final String siteId;
+
+        public final String classLabel;
+
+        public final long bucketId;
+
         public double totalFlow = 0;
 
-        public double totalSpeed = 0;
+        public long countSamplesFlow = 0;
 
-        public int count = 0;
+        public double speedWeightedSum = 0;
 
-        public void add(final double flow, final double speed)
+        public double speedWeight = 0;
+
+        public double speedSimpleSum = 0;
+
+        public long countSamplesSpeed = 0;
+
+        public AggregatedBucket(final String siteId, final String classLabel, final long bucketId)
         {
-            this.totalFlow += flow;
-            this.totalSpeed += speed;
-            this.count++;
+            this.siteId = siteId;
+            this.classLabel = classLabel;
+            this.bucketId = bucketId;
         }
 
         public double avgSpeed()
         {
-            return (this.count == 0 ? 0 : this.totalSpeed / this.count);
+            if (this.speedWeight > 0)
+                return this.speedWeightedSum / this.speedWeight;
+            if (this.countSamplesSpeed > 0)
+                return this.speedSimpleSum / this.countSamplesSpeed;
+            return Double.NaN;
         }
     }
 }

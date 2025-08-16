@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.ndw;
 
+import java.util.Map;
+
 /**
  * SiteMetadata contains the metadata for a measurement site, including classification of the vehicle length.
  * <p>
@@ -12,10 +14,26 @@ package nl.tudelft.simulation.simport.ndw;
  * @param direction direction (N, S, W, E, etc.)
  * @param lat latitude
  * @param lon longitude
- * @param minLength minimum length of the vehicle
- * @param maxLength maximum length of the vehicle
+ * @param numberOfLanes number of lanes at the measurement point
+ * @param locationName name of the location
+ * @param indexToBand index number used in the metadata, mapped to vehicle length band
  */
-public record SiteMetadata(String siteId, String roadName, String direction, double lat, double lon, double minLength,
-        double maxLength)
+public record SiteMetadata(String siteId, String roadName, String direction, double lat, double lon, int numberOfLanes, String locationName,
+        Map<Integer, VehicleLengthBand> indexToBand)
 {
+    /**
+     * SiteMetadata.VehicleLengthBand for vehicle lengths.
+     * @param min minimum length in meters
+     * @param max maximum length in meters
+     * @param valueType trafficFlow or trafficSpeed
+     */
+    public static record VehicleLengthBand(Double min, Double max, String valueType)
+    {
+        public String label()
+        {
+            String lo = (this.min == null ? "-inf" : String.valueOf(this.min));
+            String hi = (this.max == null ? "+inf" : String.valueOf(this.max));
+            return "len[" + lo + "," + hi + "]";
+        }
+    }
 }
