@@ -1,7 +1,5 @@
 package nl.tudelft.simulation.simport.ndw;
 
-import java.util.Collection;
-
 /**
  * TrafficAggregator.java.
  * <p>
@@ -12,17 +10,22 @@ import java.util.Collection;
  */
 public class TrafficAggregator
 {
-    private final java.util.concurrent.ConcurrentHashMap<String, AggregatedBucket> buckets =
-            new java.util.concurrent.ConcurrentHashMap<>();
-
     private final long bucketSizeMillis;
 
     private final boolean flowWeightedSpeed;
+
+    private final java.util.concurrent.ConcurrentHashMap<String, AggregatedBucket> active =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     public TrafficAggregator(final long bucketSizeMillis, final boolean flowWeightedSpeed)
     {
         this.bucketSizeMillis = bucketSizeMillis;
         this.flowWeightedSpeed = flowWeightedSpeed;
+    }
+
+    public long bucketOf(final long ts)
+    {
+        return (ts / this.bucketSizeMillis) * this.bucketSizeMillis;
     }
 
     private String key(final String siteId, final String classLabel, final long bucketId)
@@ -32,10 +35,8 @@ public class TrafficAggregator
 
     public void addFlow(final String siteId, final String classLabel, final long timestamp, final double flow)
     {
-        long bucketId = (timestamp / this.bucketSizeMillis) * this.bucketSizeMillis;
-        this.buckets.compute(key(siteId, classLabel, bucketId), (
-                k, b
-        ) ->
+        long bucketId = bucketOf(timestamp);
+        this.active.compute(key(siteId, classLabel, bucketId), (k, b) ->
         {
             if (b == null)
                 b = new AggregatedBucket(siteId, classLabel, bucketId);
@@ -45,12 +46,11 @@ public class TrafficAggregator
         });
     }
 
-    public void addSpeed(final String siteId, final String classLabel, final long timestamp, final double speed, final Double weightFlow)
+    public void addSpeed(final String siteId, final String classLabel, final long timestamp, final double speed,
+            final Double weightFlow)
     {
-        long bucketId = (timestamp / this.bucketSizeMillis) * this.bucketSizeMillis;
-        this.buckets.compute(key(siteId, classLabel, bucketId), (
-                k, b
-        ) ->
+        long bucketId = bucketOf(timestamp);
+        this.active.compute(key(siteId, classLabel, bucketId), (k, b) ->
         {
             if (b == null)
                 b = new AggregatedBucket(siteId, classLabel, bucketId);
@@ -68,9 +68,43 @@ public class TrafficAggregator
         });
     }
 
-    public Collection<AggregatedBucket> results()
+    /** Drain and remove exactly the given bucketId. */
+    public java.util.List<AggregatedBucket> drainBucket(final long bucketId)
     {
-        return this.buckets.values();
+        java.util.List<AggregatedBucket> out = new java.util.ArrayList<>();
+        java.util.Iterator<java.util.Map.Entry<String, AggregatedBucket>> it = this.active.entrySet().iterator();
+        while (it.hasNext())
+        {
+            var e = it.next();
+            if (e.getValue().bucketId == bucketId)
+            {
+                out.add(e.getValue());
+                it.remove();
+            }
+        }
+        return out;
+    }
+
+    /** Drain and remove all buckets with bucketId < cutoffExclusive. */
+    public java.util.List<AggregatedBucket> drainUpToExclusive(final long cutoffExclusive)
+    {
+        java.util.List<AggregatedBucket> out = new java.util.ArrayList<>();
+        java.util.Iterator<java.util.Map.Entry<String, AggregatedBucket>> it = this.active.entrySet().iterator();
+        while (it.hasNext())
+        {
+            var e = it.next();
+            if (e.getValue().bucketId < cutoffExclusive)
+            {
+                out.add(e.getValue());
+                it.remove();
+            }
+        }
+        return out;
+    }
+
+    public java.util.Collection<AggregatedBucket> results()
+    {
+        return this.active.values();
     }
 
     public static class AggregatedBucket

@@ -1,6 +1,8 @@
 package nl.tudelft.simulation.simport.ndw;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 
 /**
  * TestReadNdwData.java.
@@ -26,8 +28,8 @@ public class TestReadNdwData
      */
     public static void main(final String[] args) throws Exception
     {
-        File config = new File("E:/NDW/expert-avg-export-test-week1-ma-zo-config.zip");
-        File data = new File("E:/NDW/expert-avg-export-test-week1-ma-zo-data.zip");
+        File config = new File("E:/NDW/NDW-2024-01-08-config.zip");
+        File data = new File("E:/NDW/NDW-2024-01-08-data.zip");
 
         var metadataMap = MeasurementSiteTableParser.parse(config);
 
@@ -35,19 +37,23 @@ public class TestReadNdwData
         // 51.997346972229955, 3.964056685829537
         // 51.8647871885184, 4.337355551237825
 
-        // var bbox = new DailyDataProcessor.BoundingBox(51.8647871885184, 3.964056685829537, 51.997346972229955,
-        // 4.337355551237825);
-        var proc = new DailyDataProcessor(metadataMap, java.time.Duration.ofMinutes(15).toMillis(), true, 51.8647871885184,
-                3.964056685829537, 51.997346972229955, 4.337355551237825);
+        var bbox =
+                new DailyDataProcessor.BoundingBox(51.8647871885184, 3.964056685829537, 51.997346972229955, 4.337355551237825);
+        var proc = new DailyDataProcessor(metadataMap, java.time.Duration.ofMinutes(15).toMillis(), bbox, true);
 
-        // Parallel is recommended
-        proc.processZipParallel(data, Runtime.getRuntime().availableProcessors());
-
-        // FastCSV write
-        try (var out = new java.io.BufferedWriter(new java.io.FileWriter("E:/NDW/ndw_week01_15min.csv"), 1 << 20))
+        // 1) Sequential (baseline)
+        try (var out = new BufferedWriter(new FileWriter("E:/NDW/seq.csv"), 1 << 20))
         {
-            proc.writeCsvFastCsv(out);
+            proc.processZipSequential(data, out);
         }
+
+        // 2) Ordered parallel (barrier per bucket)
+//        try (var out = new BufferedWriter(new FileWriter("E:/NDW/par.csv"), 1 << 20))
+//        {
+            // true argument for fastcsv
+            // proc.processZipParallelOrderedAndStreamCsv(data, Runtime.getRuntime().availableProcessors(), out, true);
+//            proc.processZipParallel(data, Runtime.getRuntime().availableProcessors(), out);
+//        }
     }
 
 }
