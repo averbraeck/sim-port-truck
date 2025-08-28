@@ -5,8 +5,8 @@ The global timeline of events for one ship calling at a terminal is as follows:
 | Time                     | Event       |
 | ------------------------ | ----------- |
 | DS<sub>ETA</sub>-14 days | Generate ship with its ETA 2 weeks in advance. |
-| DS<sub>ETA</sub>-14 days | Generate loading list and unloading list for the ship. |
-| DS<sub>ETA</sub>-14 days | Decide on modal shift for the unloaded and loaded containers. |
+| DS<sub>ETA</sub>-14 days | Generate loading list and unloading list for the ship (empty/full, 20/40/45). |
+| DS<sub>ETA</sub>-14 days | Decide on modal shift for the unloaded and loaded containers (empty/full, 20/40/45). |
 | DS<sub>ETA</sub>-14 days | Start planning full export container truck visits (hinterland &rarr; terminal). |
 | DS<sub>ETA</sub>-7 days  | Start planning empty export container truck visits (hinterland &rarr; terminal). |
 | DS<sub>ETA</sub>-5 days  | Start planning empty export container truck visits (depot &rarr; terminal). |
@@ -33,5 +33,9 @@ Events that are planned continuously are:
 | Plan full import container truck visits between FD/SS and DS (FD/SS terminal &rarr; DS terminal) |
 | Plan full import container truck visits between DS and DS (DS terminal &rarr; DS terminal) |
 
-**Note:** DS=Deepsea, FD=Feeder, SS=ShortSea, TR=Truck,<br>
-ETA/ATA=Estimated/Actual Time of Arrival, ETD/ATD=Estimated/Actual Time of Departure.
+> [!NOTE]
+> DS=Deepsea, FD=Feeder, SS=ShortSea, TR=Truck, 
+> ETA/ATA=Estimated/Actual Time of Arrival, ETD/ATD=Estimated/Actual Time of Departure.
+
+> [!NOTE]
+> autonomous pickup and dropoffs from/to depots should be planned in such a way that the volumes stay between a lower bound and an upper bound that depends on the capacity of a depot.
