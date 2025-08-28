@@ -20,7 +20,7 @@ The global timeline of events for one ship calling at a terminal is as follows:
 | TR<sub>ETD</sub>         | Drive to Terminal. |
 | TR<sub>ETA</sub> &plusmn; &Delta;t | Arrive at terminal with a deviation depending on congestion &rarr; TR<sub>ATA</sub>. Handle missed slot. |
 | TR<sub>ATA</sub>         | Queue at terminal gate |
-| TR<sub>ATA</sub>+t<sub>handling</sub> | Handling time at the terminal &rarr; TR<sub>ATD</sub>; |
+| TR<sub>ATA</sub>+t<sub>handling</sub> | Handling time at the terminal &rarr; TR<sub>ATD</sub> |
 | TR<sub>ATD</sub>         | Drive to next terminal if planned (after dropoff) or drive to destination. |
 | ...                      | Repeat process for multiple visits; handle missed slots.
 
@@ -33,4 +33,5 @@ Events that are planned continuously are:
 | Plan full import container truck visits between FD/SS and DS (FD/SS terminal &rarr; DS terminal) |
 | Plan full import container truck visits between DS and DS (DS terminal &rarr; DS terminal) |
 
-**Note:** DS=Deepsea, FD=Feeder, SS=ShortSea, ETA/ATA=Estimated/Actual Time of Arrival, ETD/ATD=Estimated/Actual Time of Departure.
+**Note:** DS=Deepsea, FD=Feeder, SS=ShortSea, TR=Truck,<br>
+ETA/ATA=Estimated/Actual Time of Arrival, ETD/ATD=Estimated/Actual Time of Departure.
