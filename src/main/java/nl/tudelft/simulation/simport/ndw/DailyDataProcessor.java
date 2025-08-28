@@ -3,7 +3,6 @@ package nl.tudelft.simulation.simport.ndw;
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -23,11 +22,12 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamReader;
+
+import org.djutils.exceptions.Throw;
 
 import de.siegmar.fastcsv.writer.CsvWriter;
 
@@ -41,8 +41,26 @@ import de.siegmar.fastcsv.writer.CsvWriter;
  */
 public class DailyDataProcessor
 {
-    public static record BoundingBox(double minLat, double minLon, double maxLat, double maxLon)
+    public static class BoundingBox
     {
+        private final double minLat;
+
+        private final double minLon;
+
+        private final double maxLat;
+
+        private final double maxLon;
+
+        public BoundingBox(final double minLat, final double minLon, final double maxLat, final double maxLon)
+        {
+            Throw.when(minLat > maxLat, IllegalArgumentException.class, "minLat > maxLat");
+            Throw.when(minLon > maxLon, IllegalArgumentException.class, "minLon > maxLon");
+            this.minLat = minLat;
+            this.minLon = minLon;
+            this.maxLat = maxLat;
+            this.maxLon = maxLon;
+        }
+
         public boolean contains(final double lat, final double lon)
         {
             return lat >= this.minLat && lat <= this.maxLat && lon >= this.minLon && lon <= this.maxLon;
@@ -53,7 +71,7 @@ public class DailyDataProcessor
 
     private final TrafficAggregator aggregator;
 
-    private final BoundingBox bbox; // optional
+    private final BoundingBox bbox;
 
     private final long bucketSizeMillis;
 
@@ -327,8 +345,8 @@ public class DailyDataProcessor
                         String flowTxt = reader.getElementText();
                         if (!dataErrorFlag)
                         {
-                            double flow = safeDouble(flowTxt);
-                            String classLabel = classLabel(currentSiteId, currentIndex);
+                            double flow = safeParseDouble(flowTxt);
+                            String classLabel = vehicleClassLabel(currentSiteId, currentIndex);
                             if (classLabel != null && !Double.isNaN(flow))
                             {
                                 this.aggregator.addFlow(currentSiteId, classLabel, currentTs, flow);
@@ -340,10 +358,10 @@ public class DailyDataProcessor
                         String spTxt = reader.getElementText();
                         if (!dataErrorFlag)
                         {
-                            double sp = safeDouble(spTxt);
+                            double sp = safeParseDouble(spTxt);
                             if (sp >= 0)
                             {
-                                String classLabel2 = classLabel(currentSiteId, currentIndex);
+                                String classLabel2 = vehicleClassLabel(currentSiteId, currentIndex);
                                 if (classLabel2 != null && !Double.isNaN(sp))
                                 {
                                     this.aggregator.addSpeed(currentSiteId, classLabel2, currentTs, sp, pendingFlowForWeight);
@@ -425,7 +443,7 @@ public class DailyDataProcessor
                 hm, b.classLabel, b.totalFlow, b.avgSpeed());
     }
 
-    private static double safeDouble(final String s)
+    private static double safeParseDouble(final String s)
     {
         try
         {
@@ -437,7 +455,7 @@ public class DailyDataProcessor
         }
     }
 
-    private String classLabel(final String siteId, final Integer index)
+    private String vehicleClassLabel(final String siteId, final Integer index)
     {
         if (siteId == null || index == null)
             return "unknown";
