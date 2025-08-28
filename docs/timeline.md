@@ -2,8 +2,8 @@
 
 The global timeline of events for one ship calling at a terminal is as follows:
 
-| Time           | Event       |
-| -------------- | ----------- |
+| Time                     | Event       |
+| ------------------------ | ----------- |
 | DS<sub>ETA</sub>-14 days | Generate ship with its ETA 2 weeks in advance. |
 | DS<sub>ETA</sub>-14 days | Generate loading list and unloading list for the ship. |
 | DS<sub>ETA</sub>-14 days | Decide on modal shift for the unloaded and loaded containers. |
@@ -22,7 +22,7 @@ The global timeline of events for one ship calling at a terminal is as follows:
 | TR<sub>ATA</sub>         | Queue at terminal gate |
 | TR<sub>ATA</sub>+t<sub>handling</sub> | Handling time at the terminal &rarr; TR<sub>ATD</sub>; |
 | TR<sub>ATD</sub>         | Drive to next terminal if planned (after dropoff) or drive to destination. |
-| ...            | Repeat process for multiple visits; handle missed slots.
+| ...                      | Repeat process for multiple visits; handle missed slots.
 
 Events that are planned continuously are:
 
@@ -32,3 +32,5 @@ Events that are planned continuously are:
 | Plan dropoff of empty container to a depot (hinterland &rarr; depot). |
 | Plan full import container truck visits between FD/SS and DS (FD/SS terminal &rarr; DS terminal) |
 | Plan full import container truck visits between DS and DS (DS terminal &rarr; DS terminal) |
+
+**Note:** DS=Deepsea, FD=Feeder, SS=ShortSea, ETA/ATA=Estimated/Actual Time of Arrival, ETD/ATD=Estimated/Actual Time of Departure.
