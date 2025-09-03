@@ -82,7 +82,17 @@ public class PortAppSwing extends DsolAnimationApplication
         animationTab.getAnimationPanel().setRenderableScale(
                 new RenderableScale(Math.cos(Math.toRadians(mapBounds.midPoint().getY())), 1.0 / 111319.24));
         animationTab.getAnimationPanel().setShowGrid(false);
-        animationTab.addAllToggleGISButtonText("MAP LAYERS", model.getOsmMap(), "hide or show this GIS layer");
+        // animationTab.addAllToggleGISButtonText("MAP LAYERS", model.getGisMap(), "hide or show map layers");
+
+        for (var gisRenderable : model.getGisMap().getInternalRenderableList())
+        {
+            animationTab.addToggleText(" ");
+            animationTab.addToggleText(gisRenderable.getMap().getName());
+            for (String layerName : gisRenderable.getMap().getLayerMap().keySet())
+            {
+                animationTab.addToggleGISButtonText(layerName, layerName, gisRenderable, "hide or show map layers");
+            }
+        }
 
         panel.addTab("logger", new ConsoleLogger(Level.INFO));
         panel.addTab("console", new ConsoleOutput());
