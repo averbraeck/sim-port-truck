@@ -253,7 +253,7 @@ public class MultiGisRenderable2d implements GisRenderable2d
     }
 
     @Override
-    public long getId()
+    public int getId()
     {
         return -1; // drawn before the rest in case all z-values are the same
     }
