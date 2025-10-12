@@ -11,7 +11,6 @@ import org.djutils.io.URLResource;
 
 import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.animation.gis.GisMapInterface;
-import nl.tudelft.simulation.dsol.animation.gis.GisRenderable2d;
 import nl.tudelft.simulation.dsol.animation.gis.esri.EsriFileCsvParser;
 import nl.tudelft.simulation.dsol.animation.gis.osm.OsmFileCsvParser;
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
@@ -19,7 +18,9 @@ import nl.tudelft.simulation.dsol.simulators.AnimatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.statistics.SimCounter;
 import nl.tudelft.simulation.simport.gis.CoordinateTransformRdNewToWgs84;
+import nl.tudelft.simulation.simport.gis.GisHelper;
 import nl.tudelft.simulation.simport.gis.MultiGisRenderable2d;
+import nl.tudelft.simulation.simport.road.GraphFromGISObjects;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
@@ -39,7 +40,7 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
     private final Map<String, Terminal> terminalMap = new LinkedHashMap<>();
 
     /** the vessel counter. */
-    private final AtomicInteger uniqueVesselCounter = new AtomicInteger(0);
+    private final AtomicInteger uniqueVesselCounter = new AtomicInteger(1000);
 
     /** the container counter. */
     private final AtomicInteger uniqueContainerCounter = new AtomicInteger(1000000);
@@ -70,11 +71,12 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
             URL csvUrl = URLResource.getResource("/resources/maps/por.csv");
             System.out.println("GIS definitions file: " + csvUrl.toString());
             URL osmUrl = URLResource.getResource("/resources/maps/por.osm.pbf");
+            GisMapInterface osmMap = null;
             System.out.println("GIS data file: " + osmUrl.toString());
             try
             {
                 this.gisMap = new MultiGisRenderable2d(getSimulator().getReplication());
-                GisMapInterface osmMap = OsmFileCsvParser.parseMapFile(csvUrl, osmUrl, "Port of Rotterdam");
+                osmMap = OsmFileCsvParser.parseMapFile(csvUrl, osmUrl, "Port of Rotterdam");
                 this.gisMap.add(osmMap);
             }
             catch (IOException exception)
@@ -82,11 +84,12 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
                 throw new SimRuntimeException(exception);
             }
 
-            URL csvCentroidUrl = URLResource.getResource("/resources/hvm50/centroids.csv");
+            URL csvCentroidUrl = URLResource.getResource("/resources/hvm50/centroids2.csv");
+            GisMapInterface esriMap;
             System.out.println("ESRI-map file: " + csvCentroidUrl.toString());
             try
             {
-                GisMapInterface esriMap =
+                esriMap =
                         EsriFileCsvParser.parseMapFile(csvCentroidUrl, "centroids", new CoordinateTransformRdNewToWgs84(0, 0));
                 this.gisMap.add(esriMap);
             }
@@ -94,6 +97,9 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
             {
                 throw new SimRuntimeException(e);
             }
+
+            GisHelper.drawMarkers(esriMap, this, csvCentroidUrl);
+            new GraphFromGISObjects(esriMap, this, csvCentroidUrl);
         }
 
         this.containerCounter = new SimCounter<>("Generated containers", "Generated containers", this);
