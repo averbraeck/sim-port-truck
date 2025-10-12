@@ -10,27 +10,41 @@ package nl.tudelft.simulation.simport.terminal;
  */
 public class ModalSplit
 {
+    /** fraction truck. */
+    private final double truckFraction;
+
     /** fraction barge. */
     private final double bargeFraction;
 
     /** fraction rail. */
     private final double railFraction;
 
-    /** fraction truck. */
-    private final double truckFraction;
+    /** fraction rail. */
+    private final double shortSeaFraction;
 
     /**
      * Create a modal split. The fractions will be normalized, so they can be given in TEU, as a percentage, or as a fraction.
+     * @param truckFraction fraction truck
      * @param bargeFraction fraction barge
      * @param railFraction fraction rail
-     * @param truckFraction fraction truck
+     * @param shortSeaFraction fraction short sea / feeder
      */
-    public ModalSplit(final double bargeFraction, final double railFraction, final double truckFraction)
+    public ModalSplit(final double truckFraction, final double bargeFraction, final double railFraction,
+            final double shortSeaFraction)
     {
-        var sum = bargeFraction + railFraction + truckFraction;
+        var sum = bargeFraction + railFraction + truckFraction + shortSeaFraction;
         this.bargeFraction = bargeFraction / sum;
         this.railFraction = railFraction / sum;
         this.truckFraction = truckFraction / sum;
+        this.shortSeaFraction = shortSeaFraction / sum;
+    }
+
+    /**
+     * @return truckFraction
+     */
+    public double getTruckFraction()
+    {
+        return this.truckFraction;
     }
 
     /**
@@ -50,11 +64,43 @@ public class ModalSplit
     }
 
     /**
-     * @return truckFraction
+     * @return shortSeaFraction
      */
-    public double getTruckFraction()
+    public double getShortSeaFraction()
+    {
+        return this.shortSeaFraction;
+    }
+
+    /**
+     * @return cumulative truckFraction
+     */
+    public double cumulativeTruckFraction()
     {
         return this.truckFraction;
+    }
+
+    /**
+     * @return cumulative bargeFraction
+     */
+    public double cumulativeBargeFraction()
+    {
+        return Math.max(1.0, this.truckFraction + this.bargeFraction);
+    }
+
+    /**
+     * @return cumulative railFraction
+     */
+    public double cumulativeRailFraction()
+    {
+        return Math.max(1.0, this.truckFraction + this.bargeFraction + this.railFraction);
+    }
+
+    /**
+     * @return cumulative shortSeaFraction
+     */
+    public double cumulativeShortSeaFraction()
+    {
+        return 1.0;
     }
 
 }
