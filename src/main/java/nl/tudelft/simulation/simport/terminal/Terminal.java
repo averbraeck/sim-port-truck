@@ -1,15 +1,20 @@
 package nl.tudelft.simulation.simport.terminal;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.djutils.base.Identifiable;
+import org.djutils.draw.bounds.Bounds2d;
+import org.djutils.draw.point.Point3d;
 
+import nl.tudelft.simulation.dsol.animation.Locatable;
+import nl.tudelft.simulation.dsol.simulators.AnimatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.Container;
+import nl.tudelft.simulation.simport.TransportMode;
 import nl.tudelft.simulation.simport.model.PortModel;
-import nl.tudelft.simulation.simport.vessel.VesselLoadInfo;
 
 /**
  * Terminal.java.
@@ -19,7 +24,7 @@ import nl.tudelft.simulation.simport.vessel.VesselLoadInfo;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Terminal implements Identifiable
+public class Terminal implements Identifiable, Locatable
 {
     private final String id;
 
@@ -29,11 +34,17 @@ public class Terminal implements Identifiable
 
     private ModalSplit modalSplitExport;
 
+    private List<Container> containersImport = new ArrayList<>();
+
+    private List<Container> containersExport = new ArrayList<>();
+
     private List<Container> truckContainersImport = new ArrayList<>();
 
     private List<Container> truckContainersExport = new ArrayList<>();
 
     private int teu = 0;
+
+    private final double x, y;
 
     private StreamInterface stream;
 
@@ -43,33 +54,49 @@ public class Terminal implements Identifiable
      * @param model the port model
      * @param initialTEU initial number of TEU on terminal
      */
-    public Terminal(final String id, final PortModel model, final int initialTEU)
+    public Terminal(final String id, final PortModel model, final double x, final double y, final int initialTEU)
     {
         this.id = id;
         this.model = model;
         this.model.addTerminal(this);
         this.teu = initialTEU;
         this.stream = model.getDefaultStream();
-    }
-
-    public void addImportContainers(final VesselLoadInfo vesselLoadInfo)
-    {
-        this.teu += vesselLoadInfo.callSizeTEU();
-        var truckTEU = vesselLoadInfo.callSizeTEU() * this.modalSplitImport.getTruckFraction();
-        for (int i = 0; i < Math.round(truckTEU); i++)
+        this.x = x;
+        this.y = y;
+        if (model.getSimulator() instanceof AnimatorInterface)
         {
-            var container = new Container(this.model.uniqueContainerNr(),
-                    this.stream.nextDouble() < vesselLoadInfo.fraction20ft() ? (byte) 20 : (byte) 40,
-                    this.stream.nextDouble() < vesselLoadInfo.fractionEmpty(),
-                    this.stream.nextDouble() < vesselLoadInfo.fractionReefer());
-            this.truckContainersImport.add(container);
+            new TerminalAnimation(this, model.getSimulator());
         }
     }
 
-    public void removeExportContainers(final VesselLoadInfo vesselLoadInfo)
+    public void addImportContainers(final List<Container> containerList)
     {
-        this.teu -= vesselLoadInfo.callSizeTEU();
+        StreamInterface rng = this.model.getDefaultStream();
+        for (var container : containerList)
+        {
+            this.containersImport.add(container);
+            var r = rng.nextDouble();
+            if (r < this.modalSplitImport.cumulativeTruckFraction())
+            {
+                container.setMode(TransportMode.TRUCK);
+                this.truckContainersImport.add(container);
+            }
+            else if (r < this.modalSplitImport.cumulativeBargeFraction())
+                container.setMode(TransportMode.BARGE);
+            else if (r < this.modalSplitImport.cumulativeRailFraction())
+                container.setMode(TransportMode.RAIL);
+            else
+                container.setMode(TransportMode.SHORTSEA);
+            this.teu += (container.getSize() > 20) ? 2 : 1;
+        }
+    }
 
+    public void removeExportContainers(final List<Container> containerList)
+    {
+        for (var container : containerList)
+        {
+            this.teu -= (container.getSize() > 20) ? 2 : 1;
+        }
     }
 
     /**
@@ -113,6 +140,66 @@ public class Terminal implements Identifiable
     public ClockDevsSimulatorInterface getSimulator()
     {
         return this.model.getSimulator();
+    }
+
+    @Override
+    public Point3d getLocation() throws RemoteException
+    {
+        return new Point3d(this.x, this.y, 1.0);
+    }
+
+    @Override
+    public Bounds2d getRelativeBounds() throws RemoteException
+    {
+        return new Bounds2d(0.0015, 0.0009);
+    }
+
+    /**
+     * @return containersImport
+     */
+    public List<Container> getContainersImport()
+    {
+        return this.containersImport;
+    }
+
+    /**
+     * @param containersImport set containersImport
+     */
+    public void setContainersImport(final List<Container> containersImport)
+    {
+        this.containersImport = containersImport;
+    }
+
+    /**
+     * @return containersExport
+     */
+    public List<Container> getContainersExport()
+    {
+        return this.containersExport;
+    }
+
+    /**
+     * @return truckContainersImport
+     */
+    public List<Container> getTruckContainersImport()
+    {
+        return this.truckContainersImport;
+    }
+
+    /**
+     * @return truckContainersExport
+     */
+    public List<Container> getTruckContainersExport()
+    {
+        return this.truckContainersExport;
+    }
+
+    /**
+     * @return teu
+     */
+    public int getTeu()
+    {
+        return this.teu;
     }
 
     @Override

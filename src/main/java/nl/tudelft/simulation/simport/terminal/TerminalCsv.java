@@ -32,15 +32,18 @@ public class TerminalCsv
         {
             for (NamedCsvRow row : csvReader)
             {
-                var terminal = new Terminal(row.getField("id"), model, 20_000);
+                var terminal = new Terminal(row.getField("id"), model, Double.parseDouble(row.getField("lon")),
+                        Double.parseDouble(row.getField("lat")), 20_000);
+                var truckFraction = Double.parseDouble(row.getField("truckIn"));
                 var bargeFraction = Double.parseDouble(row.getField("bargeIn"));
                 var railFraction = Double.parseDouble(row.getField("railIn"));
-                var truckFraction = Double.parseDouble(row.getField("truckIn"));
-                terminal.setModalSplitIn(new ModalSplit(bargeFraction, railFraction, truckFraction));
+                var shortSeaFraction = Double.parseDouble(row.getField("shortSeaIn"));
+                terminal.setModalSplitIn(new ModalSplit(truckFraction, bargeFraction, railFraction, shortSeaFraction));
+                truckFraction = Double.parseDouble(row.getField("truckOut"));
                 bargeFraction = Double.parseDouble(row.getField("bargeOut"));
                 railFraction = Double.parseDouble(row.getField("railOut"));
-                truckFraction = Double.parseDouble(row.getField("truckOut"));
-                terminal.setModalSplitOut(new ModalSplit(bargeFraction, railFraction, truckFraction));
+                shortSeaFraction = Double.parseDouble(row.getField("shortSeaOut"));
+                terminal.setModalSplitOut(new ModalSplit(truckFraction, bargeFraction, railFraction, shortSeaFraction));
             }
         }
         catch (IOException e)
