@@ -112,9 +112,9 @@ public class DailyDataProcessor
         return factory;
     }
 
-    // -------------------------
+    // ---------------------------
     // Simple sequential streaming
-    // -------------------------
+    // ---------------------------
     public void processZipSequential(final File zipFile, final Writer out) throws Exception
     {
         System.out.println("\nReading data (sequential)");
@@ -142,10 +142,10 @@ public class DailyDataProcessor
         out.flush();
     }
 
-    // -------------------------
+    // ---------------------------------------------------
     // Parallel (unordered) streaming
     // Workers only parse; we flush after all tasks finish
-    // -------------------------
+    // ---------------------------------------------------
     public void processZipParallel(final File zipFile, final int threads, final Writer out) throws Exception
     {
         System.out.println("\nReading data (parallel)");
@@ -198,9 +198,9 @@ public class DailyDataProcessor
         out.flush();
     }
 
-    // -------------------------
-    // Parallel ordered streaming with per-bucket barriers (your requested method)
-    // -------------------------
+    // ---------------------------------------------------
+    // Parallel ordered streaming with per-bucket barriers
+    // ---------------------------------------------------
     public void processZipParallelOrderedAndStreamCsv(final File zipFile, final int threads, final Writer out,
             final boolean useFastCsv) throws Exception
     {
@@ -303,9 +303,9 @@ public class DailyDataProcessor
         out.flush();
     }
 
-    // -------------------------
+    // --------------------------------------------------
     // Core XML parse for one .gz entry (no writing here)
-    // -------------------------
+    // --------------------------------------------------
     private void parseOne(final XMLInputFactory factory, final InputStream in) throws Exception
     {
         XMLStreamReader reader = factory.createXMLStreamReader(in);
