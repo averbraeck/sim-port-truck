@@ -16,6 +16,9 @@ public class Container
     /** Size in ft (20/40/45). */
     private final byte size;
 
+    /** Transport Mode. 0 = none, 1 = truck, 2 = barge, 3 = rail, 4 - short sea / feeder. */
+    private byte mode = 0;
+
     /** Empty or full. */
     private final boolean empty;
 
@@ -78,6 +81,30 @@ public class Container
     public boolean isReefer()
     {
         return this.reefer;
+    }
+
+    /**
+     * Return transport mode for this container.
+     * @return the transport mode for this container
+     */
+    public TransportMode getMode()
+    {
+        return TransportMode.fromByte(this.mode);
+    }
+
+    /**
+     * Set the transport mode for this container.
+     * @param mode the new transport mode
+     */
+    public void setMode(final TransportMode transportMode)
+    {
+        this.mode = transportMode.asByte();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Container [nr=" + this.nr + ", size=" + this.size + "]";
     }
 
 }
