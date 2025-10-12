@@ -1,5 +1,8 @@
 package nl.tudelft.simulation.simport.vessel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.base.Identifiable;
 import org.djutils.exceptions.Throw;
@@ -7,6 +10,8 @@ import org.djutils.exceptions.Throw;
 import nl.tudelft.simulation.dsol.formalisms.eventscheduling.SimEventInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
+import nl.tudelft.simulation.jstats.streams.StreamInterface;
+import nl.tudelft.simulation.simport.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
@@ -36,10 +41,16 @@ public class Vessel implements Identifiable
     private ClockTime atd;
 
     /** The call size information for unloading at the terminal. */
-    private final VesselLoadInfo vesselLoadInfoUnloading;
+    private final VesselLoadInfo vesselUnloadInfo;
 
     /** The call size information for loading at the terminal. */
-    private final VesselLoadInfo vesselLoadInfoLoading;
+    private final VesselLoadInfo vesselLoadInfo;
+
+    /** load container list. */
+    private List<Container> loadList = new ArrayList<>();
+
+    /** unloadload container list. */
+    private List<Container> unloadList = new ArrayList<>();
 
     /** Terminal. */
     private final Terminal terminal;
@@ -62,12 +73,12 @@ public class Vessel implements Identifiable
      * @param model the port model
      * @param eta estimated time of arrival
      * @param etd estimated time of departure
-     * @param vesselLoadInfoUnloading call size information for unloading at the terminal
-     * @param vesselLoadInfoLoading call size information for loading at the terminal
+     * @param vesselUnloadInfo call size information for unloading at the terminal
+     * @param vesselLoadInfo call size information for loading at the terminal
      * @param terminal the terminal to visit
      */
     public Vessel(final String id, final PortModel model, final ClockTime eta, final ClockTime etd,
-            final VesselLoadInfo vesselLoadInfoUnloading, final VesselLoadInfo vesselLoadInfoLoading, final Terminal terminal)
+            final VesselLoadInfo vesselUnloadInfo, final VesselLoadInfo vesselLoadInfo, final Terminal terminal)
     {
         this.id = "Vessel:" + model.uniqueVesselNr();
         this.model = model;
@@ -76,8 +87,10 @@ public class Vessel implements Identifiable
         setAta(eta);
         this.etd = etd;
         setAtd(etd);
-        this.vesselLoadInfoUnloading = vesselLoadInfoUnloading;
-        this.vesselLoadInfoLoading = vesselLoadInfoLoading;
+        this.vesselLoadInfo = vesselLoadInfo;
+        this.vesselUnloadInfo = vesselUnloadInfo;
+        makeList(this.vesselLoadInfo, this.loadList);
+        makeList(this.vesselUnloadInfo, this.unloadList);
         this.terminal = terminal;
     }
 
@@ -155,14 +168,28 @@ public class Vessel implements Identifiable
                 + this.simulator.getSimulatorClockTime());
     }
 
+    protected void makeList(final VesselLoadInfo vli, final List<Container> ll)
+    {
+        // #cont = #teu / (2.0 - frac20), because c.f + 2.c.(1-f) = t => c = t / (2 - f)
+        int nrContainers = (int) (vli.callSizeTEU() / (2.0 - vli.fraction20ft()));
+        StreamInterface rng = getModel().getDefaultStream();
+        for (int i = 0; i < nrContainers; i++)
+        {
+            byte size = rng.nextDouble() < vli.fraction20ft() ? (byte) 20 : (byte) 40;
+            boolean empty = rng.nextDouble() < vli.fractionEmpty();
+            boolean reefer = rng.nextDouble() < vli.fractionReefer();
+            ll.add(new Container(this.model.uniqueContainerNr(), size, empty, reefer));
+        }
+    }
+
     protected void unloadContainers()
     {
-        this.terminal.addImportContainers(this.vesselLoadInfoUnloading);
+        this.terminal.addImportContainers(this.unloadList);
     }
 
     protected void loadContainers()
     {
-        this.terminal.removeExportContainers(this.vesselLoadInfoLoading);
+        this.terminal.removeExportContainers(this.loadList);
     }
 
     /**
@@ -189,7 +216,7 @@ public class Vessel implements Identifiable
      */
     public VesselLoadInfo getVesselLoadInfoUnloading()
     {
-        return this.vesselLoadInfoUnloading;
+        return this.vesselUnloadInfo;
     }
 
     /**
@@ -198,7 +225,7 @@ public class Vessel implements Identifiable
      */
     public VesselLoadInfo getVesselLoadInfoLoading()
     {
-        return this.vesselLoadInfoLoading;
+        return this.vesselLoadInfo;
     }
 
     /**
