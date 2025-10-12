@@ -8,16 +8,15 @@ import java.util.List;
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.draw.bounds.Bounds2d;
-import org.pmw.tinylog.Level;
 
 import nl.tudelft.simulation.dsol.animation.d2.RenderableScale;
 import nl.tudelft.simulation.dsol.experiment.SingleReplication;
 import nl.tudelft.simulation.dsol.simulators.DevsRealTimeAnimator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsRealTimeAnimator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
-import nl.tudelft.simulation.dsol.swing.gui.ConsoleLogger;
 import nl.tudelft.simulation.dsol.swing.gui.ConsoleOutput;
 import nl.tudelft.simulation.dsol.swing.gui.DsolPanel;
+import nl.tudelft.simulation.dsol.swing.gui.LoggerConsole;
 import nl.tudelft.simulation.dsol.swing.gui.animation.DsolAnimationApplication;
 import nl.tudelft.simulation.dsol.swing.gui.animation.DsolAnimationGisTab;
 import nl.tudelft.simulation.dsol.swing.gui.control.ClockPanel;
@@ -94,7 +93,7 @@ public class PortAppSwing extends DsolAnimationApplication
             }
         }
 
-        panel.addTab("logger", new ConsoleLogger(Level.INFO));
+        panel.addTab("logger", new LoggerConsole());
         panel.addTab("console", new ConsoleOutput());
         new PortAppSwing("PortModel", panel, animationTab);
     }
