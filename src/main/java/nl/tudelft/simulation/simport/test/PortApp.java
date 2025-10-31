@@ -11,7 +11,6 @@ import nl.tudelft.simulation.dsol.experiment.SingleReplication;
 import nl.tudelft.simulation.dsol.simulators.DevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
-import nl.tudelft.simulation.dsol.statistics.SimCounter;
 import nl.tudelft.simulation.simport.model.PortModel;
 
 /**
@@ -81,10 +80,10 @@ public class PortApp implements EventListener
         // this.model.getPersistentQueueLength().endObservations(this.model.getSimulator().getReplication().getRunLength());
 
         System.out.println("\nStatistics of replication : " + this.model.getSimulator().getReplication().getId());
-        System.out.println(SimCounter.reportHeader());
-        System.out.println(this.model.getContainerCounter().reportLine());
-        System.out.println(this.model.getVesselCounter().reportLine());
-        System.out.println(SimCounter.reportFooter());
+        // System.out.println(SimCounter.reportHeader());
+        // System.out.println(this.model.getContainerCounter().reportLine());
+        // System.out.println(this.model.getVesselCounter().reportLine());
+        // System.out.println(SimCounter.reportFooter());
 
         // System.out.println(SimTally.reportHeader());
         // System.out.println(this.model.getTallyTimeInQueue().reportLine());

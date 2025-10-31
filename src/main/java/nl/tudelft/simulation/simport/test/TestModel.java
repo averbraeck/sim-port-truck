@@ -11,7 +11,7 @@ import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.jstats.distributions.DistDiscreteUniform;
 import nl.tudelft.simulation.jstats.distributions.DistTriangular;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
-import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.model.AbstractPortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.vessel.VesselGeneratorDist;
 
@@ -23,11 +23,8 @@ import nl.tudelft.simulation.simport.vessel.VesselGeneratorDist;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class TestModel extends PortModel
+public class TestModel extends AbstractPortModel
 {
-    /** */
-    private static final long serialVersionUID = 1L;
-
     /**
      * @param simulator
      */

@@ -8,7 +8,7 @@ import nl.tudelft.simulation.dsol.experiment.SingleReplication;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
-import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.model.AbstractPortModel;
 import nl.tudelft.simulation.simport.terminal.TerminalCsv;
 import nl.tudelft.simulation.simport.vessel.VesselDistCsv;
 
@@ -20,11 +20,8 @@ import nl.tudelft.simulation.simport.vessel.VesselDistCsv;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class TestCsvModel extends PortModel
+public class TestCsvModel extends AbstractPortModel
 {
-    /** */
-    private static final long serialVersionUID = 1L;
-
     /**
      * @param simulator
      */
