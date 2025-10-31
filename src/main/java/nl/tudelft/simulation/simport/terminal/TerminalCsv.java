@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.djutils.io.URLResource;
+import org.djutils.io.ResourceResolver;
 
 import de.siegmar.fastcsv.reader.NamedCsvReader;
 import de.siegmar.fastcsv.reader.NamedCsvRow;
@@ -27,8 +27,8 @@ public class TerminalCsv
      */
     public static void readTerminals(final PortModel model, final String terminalCsvPath)
     {
-        InputStream terminalCsvStream = URLResource.getResourceAsStream(terminalCsvPath);
-        try (NamedCsvReader csvReader = NamedCsvReader.builder().build(new InputStreamReader(terminalCsvStream)))
+        try (NamedCsvReader csvReader =
+                NamedCsvReader.builder().build(new InputStreamReader(ResourceResolver.resolve(terminalCsvPath).openStream())))
         {
             for (NamedCsvRow row : csvReader)
             {

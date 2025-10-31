@@ -1,10 +1,10 @@
 package nl.tudelft.simulation.simport.vessel;
 
-import java.io.InputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import org.djunits.unit.DurationUnit;
-import org.djutils.io.URLResource;
+import org.djutils.io.ResourceResolver;
 
 import de.siegmar.fastcsv.reader.NamedCsvReader;
 import de.siegmar.fastcsv.reader.NamedCsvRow;
@@ -32,8 +32,8 @@ public class VesselDistCsv
      */
     public static void readVesselDist(final PortModel model, final String vesselDistCsvPath)
     {
-        InputStream vesselDistCsvStream = URLResource.getResourceAsStream(vesselDistCsvPath);
-        try (NamedCsvReader csvReader = NamedCsvReader.builder().build(new InputStreamReader(vesselDistCsvStream)))
+        try (NamedCsvReader csvReader =
+                NamedCsvReader.builder().build(new InputStreamReader(ResourceResolver.resolve(vesselDistCsvPath).openStream())))
         {
             for (NamedCsvRow row : csvReader)
             {
@@ -53,22 +53,22 @@ public class VesselDistCsv
                 double reeferFractionU = Double.parseDouble(row.getField("reeferFractionUnloading"));
                 double reeferFractionL = Double.parseDouble(row.getField("reeferFractionLoading"));
                 // @formatter:off
-                    var vesselGenerator = new VesselGeneratorDist("gen_" + terminal, model, terminal)
-                            .setShipIatWeekdays(iatWd)
-                            .setShipIatWeekends(iatWe)
-                            .setCallSizeDistLoading(callSizeL)
-                            .setCallSizeDistUnloading(callSizeU)
-                            .setFraction20ftLoading(ft20FractionL)
-                            .setFraction20ftUnloading(ft20FractionU)
-                            .setFractionEmptyLoading(emptyFractionL)
-                            .setFractionEmptyUnloading(emptyFractionU)
-                            .setFractionReeferLoading(reeferFractionL)
-                            .setFractionReeferUnloading(reeferFractionU);
-                    // @formatter:on
+                var vesselGenerator = new VesselGeneratorDist("gen_" + terminal, model, terminal)
+                        .setShipIatWeekdays(iatWd)
+                        .setShipIatWeekends(iatWe)
+                        .setCallSizeDistLoading(callSizeL)
+                        .setCallSizeDistUnloading(callSizeU)
+                        .setFraction20ftLoading(ft20FractionL)
+                        .setFraction20ftUnloading(ft20FractionU)
+                        .setFractionEmptyLoading(emptyFractionL)
+                        .setFractionEmptyUnloading(emptyFractionU)
+                        .setFractionReeferLoading(reeferFractionL)
+                        .setFractionReeferUnloading(reeferFractionU);
+                // @formatter:on
                 vesselGenerator.start();
             }
         }
-        catch (Exception e)
+        catch (IOException e)
         {
             throw new RuntimeException(e);
         }

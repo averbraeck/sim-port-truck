@@ -16,7 +16,7 @@ import org.djutils.draw.bounds.Bounds;
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point;
 import org.djutils.draw.point.Point2d;
-import org.djutils.io.URLResource;
+import org.djutils.io.ResourceResolver;
 
 import de.siegmar.fastcsv.reader.NamedCsvReader;
 import nl.tudelft.simulation.dsol.animation.Locatable;
@@ -43,7 +43,7 @@ public class GisHelper
         {
             NamedCsvReader csvCentroid = NamedCsvReader.builder().build(Paths.get(csvCentroidUrl.toURI()));
             csvCentroid.forEach((row) -> shapeFileMap.put(row.getField("layer"), row.getField("shapeFile")));
-            URL centroidUrl = URLResource.getResource(shapeFileMap.get("centroids").replace(".shp", ".dbf"));
+            URL centroidUrl = ResourceResolver.resolve(shapeFileMap.get("centroids").replace(".shp", ".dbf")).asUrl();
             DbfReader dbfReader = new DbfReader(centroidUrl);
             String[] colNames = dbfReader.getColumnNames();
             String[][] data = dbfReader.getRows();
@@ -60,7 +60,7 @@ public class GisHelper
                 }
             }
 
-            URL nodesUrl = URLResource.getResource(shapeFileMap.get("nodes").replace(".shp", ".dbf"));
+            URL nodesUrl = ResourceResolver.resolve(shapeFileMap.get("nodes").replace(".shp", ".dbf")).asUrl();
             DbfReader dbfReaderNodes = new DbfReader(nodesUrl);
             String[] colNamesNodes = dbfReaderNodes.getColumnNames();
             String[][] dataNodes = dbfReaderNodes.getRows();
@@ -123,9 +123,6 @@ public class GisHelper
 
     public static class MarkerAnimation extends SimRenderable2d<Marker>
     {
-        /** */
-        private static final long serialVersionUID = 1L;
-
         /**
          * @param source
          * @param contextProvider
@@ -196,9 +193,6 @@ public class GisHelper
 
     public static class NodeAnimation extends SimRenderable2d<Node>
     {
-        /** */
-        private static final long serialVersionUID = 1L;
-
         /**
          * @param source
          * @param contextProvider
