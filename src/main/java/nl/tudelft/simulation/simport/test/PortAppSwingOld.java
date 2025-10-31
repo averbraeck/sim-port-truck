@@ -34,7 +34,7 @@ import nl.tudelft.simulation.language.DsolException;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class PortAppSwing extends DsolAnimationApplication
+public class PortAppSwingOld extends DsolAnimationApplication
 {
     /** */
     private static final long serialVersionUID = 1L;
@@ -47,7 +47,7 @@ public class PortAppSwing extends DsolAnimationApplication
      * @throws IllegalArgumentException for illegal bounds
      * @throws RemoteException on network error
      */
-    public PortAppSwing(final String title, final DsolPanel panel, final DsolAnimationGisTab animationTab)
+    public PortAppSwingOld(final String title, final DsolPanel panel, final DsolAnimationGisTab animationTab)
             throws DsolException, RemoteException, IllegalArgumentException
     {
         super(panel, title, animationTab);
@@ -104,7 +104,7 @@ public class PortAppSwing extends DsolAnimationApplication
 
                 panel.addTab("logger", new LoggerConsole());
                 panel.addTab("console", new ConsoleOutput());
-                new PortAppSwing("PortModel", panel, animationTab);
+                new PortAppSwingOld("PortModel", panel, animationTab);
             }
             else
             {
