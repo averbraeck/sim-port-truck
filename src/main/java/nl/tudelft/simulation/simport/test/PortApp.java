@@ -1,13 +1,10 @@
 package nl.tudelft.simulation.simport.test;
 
-import java.rmi.RemoteException;
-
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.event.Event;
 import org.djutils.event.EventListener;
 
-import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.experiment.Experiment;
 import nl.tudelft.simulation.dsol.experiment.Replication;
 import nl.tudelft.simulation.dsol.experiment.SingleReplication;
@@ -59,18 +56,11 @@ public class PortApp implements EventListener
     {
         this.simulator = simulator;
         this.model = model;
-        try
-        {
-            simulator.addListener(this, Replication.END_REPLICATION_EVENT);
-        }
-        catch (RemoteException re)
-        {
-            throw new SimRuntimeException(re);
-        }
+        simulator.addListener(this, Replication.END_REPLICATION_EVENT);
     }
 
     @Override
-    public void notify(final Event event) throws RemoteException
+    public void notify(final Event event)
     {
         if (event.getType().equals(Replication.END_REPLICATION_EVENT))
         {
