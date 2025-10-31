@@ -8,7 +8,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,13 +100,13 @@ public class GisHelper
         }
 
         @Override
-        public Point<?> getLocation() throws RemoteException
+        public Point<?> getLocation()
         {
             return this.point;
         }
 
         @Override
-        public Bounds<?, ?> getRelativeBounds() throws RemoteException
+        public Bounds<?, ?> getRelativeBounds()
         {
             return new Bounds2d(0.007, 0.0004);
         }
@@ -155,7 +154,6 @@ public class GisHelper
         }
     }
 
-
     public static class Node implements Locatable
     {
         private final Point2d point;
@@ -166,7 +164,8 @@ public class GisHelper
          * @param point
          * @param key
          */
-        public Node(final Point2D point, final String[] colNamesNodes, final String[] dataNodes, final SimulatorInterface<?> simulator)
+        public Node(final Point2D point, final String[] colNamesNodes, final String[] dataNodes,
+                final SimulatorInterface<?> simulator)
         {
             this.point = new Point2d(point.getX(), point.getY());
             this.dataNodes = dataNodes;
@@ -174,13 +173,13 @@ public class GisHelper
         }
 
         @Override
-        public Point<?> getLocation() throws RemoteException
+        public Point<?> getLocation()
         {
             return this.point;
         }
 
         @Override
-        public Bounds<?, ?> getRelativeBounds() throws RemoteException
+        public Bounds<?, ?> getRelativeBounds()
         {
             return new Bounds2d(0.0035, 0.0002);
         }

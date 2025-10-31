@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,7 +112,7 @@ public class MultiGisRenderable2d implements GisRenderable2d
             ContextUtil.lookupOrCreateSubContext(contextProvider.getContext(), "animation/2D")
                     .bindObject(Integer.toString(System.identityHashCode(this)), this);
         }
-        catch (NamingException | RemoteException exception)
+        catch (NamingException exception)
         {
             CategoryLogger.always().warn(exception, "<init>");
         }
@@ -280,13 +279,13 @@ public class MultiGisRenderable2d implements GisRenderable2d
         }
 
         @Override
-        public Point<?> getLocation() throws RemoteException
+        public Point<?> getLocation()
         {
             return this.parent.getLocation();
         }
 
         @Override
-        public Bounds<?, ?> getRelativeBounds() throws RemoteException
+        public Bounds<?, ?> getRelativeBounds()
         {
             return this.parent.getRelativeBounds();
         }

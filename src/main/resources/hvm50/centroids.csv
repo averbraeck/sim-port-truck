@@ -1,4 +1,4 @@
 layer,shapeFile,outlineColor,fillColor,zIndex,scale,display,transform
-centroids,e:/por/HVM50/centroids/centroids_area.shp,#c0c0c0,"rgba(255,200,200,127)",60,1000,true,true
-road2022,e:/por/HVM50/network2022/section.shp,#808080,null,70,1000,true,true
-turn2022,e:/por/HVM50/network2022/turning.shp,#808080,null,70,1000,true,true
+centroid_area,file:///D:/SurfDrive/Research/Running/2025 PoR Dynamische havenplanning/Data/HVM50_New_Export/centroids_area.shp,#c0c0c0,"rgba(255,200,200,127)",60,1000,true,true
+section,file:///e:/por/HVM50/network2022/section.shp,#808080,null,70,1000,true,true
+turning,file:///e:/por/HVM50/network2022/turning.shp,#808080,null,70,1000,true,true
