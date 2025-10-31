@@ -31,7 +31,7 @@ import nl.tudelft.simulation.simport.terminal.Terminal;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class PortModel extends AbstractDsolModel<Duration, ClockDevsSimulatorInterface>
+public abstract class AbstractPortModel extends AbstractDsolModel<Duration, ClockDevsSimulatorInterface> implements PortModel
 {
     /** interactive run? */
     protected boolean interactive = true;
@@ -58,7 +58,7 @@ public class PortModel extends AbstractDsolModel<Duration, ClockDevsSimulatorInt
      * Create a port model.
      * @param simulator the simulator to use
      */
-    public PortModel(final ClockDevsSimulatorInterface simulator)
+    public AbstractPortModel(final ClockDevsSimulatorInterface simulator)
     {
         super(simulator);
     }
@@ -116,31 +116,25 @@ public class PortModel extends AbstractDsolModel<Duration, ClockDevsSimulatorInt
         return this.gisMap;
     }
 
-    /**
-     * Add a terminal to the model.
-     * @param terminal the terminal to add
-     */
+    @Override
     public void addTerminal(final Terminal terminal)
     {
         this.terminalMap.put(terminal.getId(), terminal);
     }
 
-    /**
-     * Get a terminal based on its id.
-     * @param id the terminal id to search for
-     * @return the terminal or null if it could not be found
-     */
     public Terminal getTerminal(final String id)
     {
         return this.terminalMap.get(id);
     }
 
+    @Override
     public int uniqueContainerNr()
     {
         this.containerCounter.register(1);
         return this.uniqueContainerCounter.incrementAndGet();
     }
 
+    @Override
     public int uniqueVesselNr()
     {
         this.vesselCounter.register(1);
@@ -163,11 +157,13 @@ public class PortModel extends AbstractDsolModel<Duration, ClockDevsSimulatorInt
         return this.vesselCounter;
     }
 
+    @Override
     public void setInteractive(final boolean interactive)
     {
         this.interactive = interactive;
     }
 
+    @Override
     public boolean isInteractive()
     {
         return this.interactive;
