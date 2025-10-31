@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.djunits.value.vdouble.scalar.Duration;
-import org.djutils.io.URLResource;
+import org.djutils.io.ResourceResolver;
 
 import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.animation.gis.GisMapInterface;
@@ -31,10 +31,10 @@ import nl.tudelft.simulation.simport.terminal.Terminal;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSimulatorInterface>
+public class PortModel extends AbstractDsolModel<Duration, ClockDevsSimulatorInterface>
 {
-    /** */
-    private static final long serialVersionUID = 1L;
+    /** interactive run? */
+    protected boolean interactive = true;
 
     /** The terminals. */
     private final Map<String, Terminal> terminalMap = new LinkedHashMap<>();
@@ -68,9 +68,9 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
     {
         if (getSimulator() instanceof AnimatorInterface)
         {
-            URL csvUrl = URLResource.getResource("/resources/maps/por.csv");
+            URL csvUrl = ResourceResolver.resolve("/resources/maps/por.csv").asUrl();
             System.out.println("GIS definitions file: " + csvUrl.toString());
-            URL osmUrl = URLResource.getResource("/resources/maps/por.osm.pbf");
+            URL osmUrl = ResourceResolver.resolve("/resources/maps/por.osm.pbf").asUrl();
             GisMapInterface osmMap = null;
             System.out.println("GIS data file: " + osmUrl.toString());
             try
@@ -84,7 +84,7 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
                 throw new SimRuntimeException(exception);
             }
 
-            URL csvCentroidUrl = URLResource.getResource("/resources/hvm50/centroids2.csv");
+            URL csvCentroidUrl = ResourceResolver.resolve("/resources/hvm50/centroids2.csv").asUrl();
             GisMapInterface esriMap;
             System.out.println("ESRI-map file: " + csvCentroidUrl.toString());
             try
@@ -161,6 +161,16 @@ public abstract class PortModel extends AbstractDsolModel<Duration, ClockDevsSim
     public SimCounter<Duration> getVesselCounter()
     {
         return this.vesselCounter;
+    }
+
+    public void setInteractive(final boolean interactive)
+    {
+        this.interactive = interactive;
+    }
+
+    public boolean isInteractive()
+    {
+        return this.interactive;
     }
 
 }

@@ -1,4 +1,4 @@
-package nl.tudelft.simulation.simport.test;
+package nl.tudelft.simulation.simport.model;
 
 import java.awt.Dimension;
 import java.rmi.RemoteException;
@@ -23,6 +23,7 @@ import nl.tudelft.simulation.dsol.swing.gui.control.ClockPanel;
 import nl.tudelft.simulation.dsol.swing.gui.control.RealTimeControlPanel;
 import nl.tudelft.simulation.dsol.swing.gui.control.RunSpeedSliderPanel;
 import nl.tudelft.simulation.dsol.swing.gui.control.SpeedPanel;
+import nl.tudelft.simulation.dsol.swing.gui.inputparameters.TabbedParameterDialog;
 import nl.tudelft.simulation.language.DsolException;
 
 /**
@@ -59,42 +60,67 @@ public class PortAppSwing extends DsolAnimationApplication
      */
     public static void main(final String[] args) throws Exception
     {
-        var simulator = new ClockDevsRealTimeAnimator("sim", ClockTime.ofIso("2024-07-01T00:00:00"));
-        var model = new TestCsvModel(simulator);
-        var replication = new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO, new Duration(26.0, DurationUnit.WEEK));
-        // new TabbedParameterDialog(model.getInputParameterMap());
-        simulator.initialize(model, replication);
-        List<Double> speeds =
-                List.of(1.0, 10.0, 60.0, 600.0, 3600.0, 6 * 3600.0, 24 * 3600.0, 5 * 24 * 3600.0, 30 * 24 * 3600.0, 1.0E9);
-        List<String> labels = List.of("1s", "10s", "1m", "10m", "1h", "6h", "1d", "5d", "30d", "oo");
-        var runSpeedSliderPanel = new RunSpeedSliderPanel(speeds, labels, simulator, 3600.0);
-        var controlPanel =
-                new RealTimeControlPanel<Duration, DevsRealTimeAnimator<Duration>>(model, simulator, runSpeedSliderPanel);
-        controlPanel.setClockPanel(new ClockPanel.ClockTime(simulator, () -> simulator.getSimulatorClockTime().localDateTime()
-                .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))));
-        controlPanel.getClockPanel().setPanelSize(new Dimension(160, 35));
-        controlPanel.setSpeedPanel(new SpeedPanel.ClockTime(simulator));
-        DsolPanel panel = new DsolPanel(controlPanel);
-
-        Bounds2d mapBounds = new Bounds2d(3.98, 4.21, 51.92, 51.99);
-        DsolAnimationGisTab animationTab = new DsolAnimationGisTab(mapBounds, simulator);
-        animationTab.getAnimationPanel().setRenderableScale(
-                new RenderableScale(Math.cos(Math.toRadians(mapBounds.midPoint().getY())), 1.0 / 111319.24));
-        animationTab.getAnimationPanel().setShowGrid(false);
-        // animationTab.addAllToggleGISButtonText("MAP LAYERS", model.getGisMap(), "hide or show map layers");
-
-        for (var gisRenderable : model.getGisMap().getInternalRenderableList())
+        String propertyFilename = (args.length > 0) ? args[0] : "/default.properties";
+        boolean interactive = (args.length < 2) || !args[1].toLowerCase().equals("batch");
+        long seed = (args.length < 3) ? -1 : Long.valueOf(args[2]);
+        if (interactive)
         {
-            animationTab.addToggleText(" ");
-            animationTab.addToggleText(gisRenderable.getMap().getName());
-            for (String layerName : gisRenderable.getMap().getLayerMap().keySet())
+            var simulator = new ClockDevsRealTimeAnimator("sim", ClockTime.ofIso("2024-07-01T00:00:00"));
+            var model = new PortModel(simulator);
+            model.setInteractive(true);
+            var replication =
+                    new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO, new Duration(26.0, DurationUnit.WEEK));
+            if (TabbedParameterDialog.process(model.getInputParameterMap()))
             {
-                animationTab.addToggleGISButtonText(layerName, layerName, gisRenderable, "hide or show map layers");
+                simulator.initialize(model, replication);
+                List<Double> speeds = List.of(1.0, 10.0, 60.0, 600.0, 3600.0, 6 * 3600.0, 24 * 3600.0, 5 * 24 * 3600.0,
+                        30 * 24 * 3600.0, 1.0E9);
+                List<String> labels = List.of("1s", "10s", "1m", "10m", "1h", "6h", "1d", "5d", "30d", "oo");
+                var runSpeedSliderPanel = new RunSpeedSliderPanel(speeds, labels, simulator, 3600.0);
+                var controlPanel = new RealTimeControlPanel<Duration, DevsRealTimeAnimator<Duration>>(model, simulator,
+                        runSpeedSliderPanel);
+                controlPanel.setClockPanel(new ClockPanel.ClockTime(simulator, () -> simulator.getSimulatorClockTime()
+                        .localDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))));
+                controlPanel.getClockPanel().setPanelSize(new Dimension(160, 35));
+                controlPanel.setSpeedPanel(new SpeedPanel.ClockTime(simulator));
+                DsolPanel panel = new DsolPanel(controlPanel);
+
+                Bounds2d mapBounds = new Bounds2d(3.98, 4.21, 51.92, 51.99);
+                DsolAnimationGisTab animationTab = new DsolAnimationGisTab(mapBounds, simulator);
+                animationTab.getAnimationPanel().setRenderableScale(
+                        new RenderableScale(Math.cos(Math.toRadians(mapBounds.midPoint().getY())), 1.0 / 111319.24));
+                animationTab.getAnimationPanel().setShowGrid(false);
+                // animationTab.addAllToggleGISButtonText("MAP LAYERS", model.getGisMap(), "hide or show map layers");
+
+                for (var gisRenderable : model.getGisMap().getInternalRenderableList())
+                {
+                    animationTab.addToggleText(" ");
+                    animationTab.addToggleText(gisRenderable.getMap().getName());
+                    for (String layerName : gisRenderable.getMap().getLayerMap().keySet())
+                    {
+                        animationTab.addToggleGISButtonText(layerName, layerName, gisRenderable, "hide or show map layers");
+                    }
+                }
+
+                panel.addTab("logger", new LoggerConsole());
+                panel.addTab("console", new ConsoleOutput());
+                new PortAppSwing("PortModel", panel, animationTab);
+            }
+            else
+            {
+                System.exit(0);
             }
         }
 
-        panel.addTab("logger", new LoggerConsole());
-        panel.addTab("console", new ConsoleOutput());
-        new PortAppSwing("PortModel", panel, animationTab);
+        else
+
+        {
+            var simulator = new ClockDevsRealTimeAnimator("sim", ClockTime.ofIso("2024-07-01T00:00:00"));
+            var model = new PortModel(simulator);
+            model.setInteractive(false);
+            var replication =
+                    new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO, new Duration(26.0, DurationUnit.WEEK));
+
+        }
     }
 }
