@@ -16,10 +16,11 @@ public class PortModelTruck extends AbstractPortModel
     /**
      * Create a port model instance for trucking.
      * @param simulator the simulator to use
+     * @param interactive indicate whether the model is interactive and should load animation
      */
-    public PortModelTruck(final ClockDevsSimulatorInterface simulator)
+    public PortModelTruck(final ClockDevsSimulatorInterface simulator, final boolean interactive)
     {
-        super(simulator);
+        super(simulator, interactive);
     }
 
 }

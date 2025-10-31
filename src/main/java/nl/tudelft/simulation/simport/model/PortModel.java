@@ -29,12 +29,6 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
     int uniqueVesselNr();
 
     /**
-     * Indicate whether the simulation is interactive or not.
-     * @param interactive to indicate whether the simulation is interactive or not
-     */
-    void setInteractive(boolean interactive);
-
-    /**
      * Return whether the simulation is interactive or not.
      * @return whether the simulation is interactive or not
      */

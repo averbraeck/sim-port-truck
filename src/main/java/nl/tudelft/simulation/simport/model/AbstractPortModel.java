@@ -34,7 +34,7 @@ import nl.tudelft.simulation.simport.terminal.Terminal;
 public abstract class AbstractPortModel extends AbstractDsolModel<Duration, ClockDevsSimulatorInterface> implements PortModel
 {
     /** interactive run? */
-    protected boolean interactive = true;
+    private final boolean interactive;
 
     /** The terminals. */
     private final Map<String, Terminal> terminalMap = new LinkedHashMap<>();
@@ -57,10 +57,12 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     /**
      * Create a port model.
      * @param simulator the simulator to use
+     * @param interactive indicate whether the model is interactive and should load animation
      */
-    public AbstractPortModel(final ClockDevsSimulatorInterface simulator)
+    public AbstractPortModel(final ClockDevsSimulatorInterface simulator, final boolean interactive)
     {
         super(simulator);
+        this.interactive = interactive;
     }
 
     @Override
@@ -122,6 +124,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         this.terminalMap.put(terminal.getId(), terminal);
     }
 
+    @Override
     public Terminal getTerminal(final String id)
     {
         return this.terminalMap.get(id);
@@ -155,12 +158,6 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     public SimCounter<Duration> getVesselCounter()
     {
         return this.vesselCounter;
-    }
-
-    @Override
-    public void setInteractive(final boolean interactive)
-    {
-        this.interactive = interactive;
     }
 
     @Override

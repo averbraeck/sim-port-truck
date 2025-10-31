@@ -27,7 +27,7 @@ public class TestCsvModel extends AbstractPortModel
      */
     public TestCsvModel(final ClockDevsSimulatorInterface simulator)
     {
-        super(simulator);
+        super(simulator, true);
     }
 
     @Override

@@ -66,8 +66,7 @@ public class PortAppSwing extends DsolAnimationApplication
         if (interactive)
         {
             var simulator = new ClockDevsRealTimeAnimator("sim", ClockTime.ofIso("2024-07-01T00:00:00"));
-            var model = new PortModelTruck(simulator);
-            model.setInteractive(true);
+            var model = new PortModelTruck(simulator, true);
             var replication =
                     new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO, new Duration(26.0, DurationUnit.WEEK));
             if (TabbedParameterDialog.process(model.getInputParameterMap()))
@@ -116,8 +115,7 @@ public class PortAppSwing extends DsolAnimationApplication
 
         {
             var simulator = new ClockDevsRealTimeAnimator("sim", ClockTime.ofIso("2024-07-01T00:00:00"));
-            var model = new PortModelTruck(simulator);
-            model.setInteractive(false);
+            var model = new PortModelTruck(simulator, false);
             var replication =
                     new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO, new Duration(26.0, DurationUnit.WEEK));
 

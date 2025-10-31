@@ -30,7 +30,7 @@ public class TestModel extends AbstractPortModel
      */
     public TestModel(final ClockDevsSimulatorInterface simulator)
     {
-        super(simulator);
+        super(simulator, true);
     }
 
     @Override
