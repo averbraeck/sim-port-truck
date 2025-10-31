@@ -1,6 +1,5 @@
 package nl.tudelft.simulation.simport.terminal;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -143,13 +142,13 @@ public class Terminal implements Identifiable, Locatable
     }
 
     @Override
-    public Point3d getLocation() throws RemoteException
+    public Point3d getLocation()
     {
         return new Point3d(this.x, this.y, 1.0);
     }
 
     @Override
-    public Bounds2d getRelativeBounds() throws RemoteException
+    public Bounds2d getRelativeBounds()
     {
         return new Bounds2d(0.0015, 0.0009);
     }
