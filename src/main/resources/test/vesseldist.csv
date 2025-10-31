@@ -1,6 +1,6 @@
 terminal,iatDistWeekdays,iatDistWeekends,callSizeDistUnloading,callSizeDistLoading,20ftFractionUnloading,20ftFractionLoading,emptyFractionUnloading,emptyFractionLoading,reeferFractionUnloading,reeferFractionLoading
 HPD-II,"TRIA(10,12,14)","TRIA(15,20,25)","UNIF(500,3000)","UNIF(500,3000)",0.2,0.2,0.2,0.8,0.05,0.05
 ECT Delta,"TRIA(10,12,14)","TRIA(15,20,25)","UNIF(500,3000)","UNIF(500,3000)",0.2,0.2,0.2,0.8,0.05,0.05
-ECT Euromax,"TRIA(10,12,14)","TRIA(15,20,25)","UNIF(500,3000)","UNIF(500,3000)",0.2,0.2,0.2,0.8,0.05,0.05
+Euromax,"TRIA(10,12,14)","TRIA(15,20,25)","UNIF(500,3000)","UNIF(500,3000)",0.2,0.2,0.2,0.8,0.05,0.05
 APMT-II,"TRIA(10,12,14)","TRIA(15,20,25)","UNIF(500,3000)","UNIF(500,3000)",0.2,0.2,0.2,0.8,0.05,0.05
 RWG,"TRIA(10,12,14)","TRIA(15,20,25)","UNIF(500,3000)","UNIF(500,3000)",0.2,0.2,0.2,0.8,0.05,0.05
