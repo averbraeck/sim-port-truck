@@ -5,6 +5,7 @@ import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.experiment.SingleReplication;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterException;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
@@ -46,6 +47,11 @@ public class TestCsvModel extends AbstractPortModel
         var model = new TestCsvModel(simulator);
         simulator.initialize(model, replication);
         simulator.start();
+    }
+
+    @Override
+    protected void extendInputParameterMap() throws InputParameterException
+    {
     }
 
 }
