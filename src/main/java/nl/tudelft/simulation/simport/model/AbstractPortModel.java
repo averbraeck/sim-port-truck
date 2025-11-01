@@ -14,9 +14,7 @@ import nl.tudelft.simulation.dsol.animation.gis.GisMapInterface;
 import nl.tudelft.simulation.dsol.animation.gis.esri.EsriFileCsvParser;
 import nl.tudelft.simulation.dsol.animation.gis.osm.OsmFileCsvParser;
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
-import nl.tudelft.simulation.dsol.simulators.AnimatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
-import nl.tudelft.simulation.dsol.statistics.SimCounter;
 import nl.tudelft.simulation.simport.gis.CoordinateTransformRdNewToWgs84;
 import nl.tudelft.simulation.simport.gis.GisHelper;
 import nl.tudelft.simulation.simport.gis.MultiGisRenderable2d;
@@ -40,19 +38,13 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     private final Map<String, Terminal> terminalMap = new LinkedHashMap<>();
 
     /** the vessel counter. */
-    private final AtomicInteger uniqueVesselCounter = new AtomicInteger(1000);
+    private final AtomicInteger uniqueVesselNumber = new AtomicInteger(1000);
 
     /** the container counter. */
-    private final AtomicInteger uniqueContainerCounter = new AtomicInteger(1000000);
+    private final AtomicInteger uniqueContainerNumber = new AtomicInteger(1000000);
 
     /** the GIS map. */
     private MultiGisRenderable2d gisMap;
-
-    /** Statistic for the number of containers in the model. */
-    private SimCounter<Duration> containerCounter;
-
-    /** Statistic for the number of vessels in the model. */
-    private SimCounter<Duration> vesselCounter;
 
     /**
      * Create a port model.
@@ -68,7 +60,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     @Override
     public void constructModel() throws SimRuntimeException
     {
-        if (getSimulator() instanceof AnimatorInterface)
+        if (isInteractive())
         {
             URL csvUrl = ResourceResolver.resolve("/resources/maps/por.csv").asUrl();
             System.out.println("GIS definitions file: " + csvUrl.toString());
@@ -103,11 +95,6 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
             GisHelper.drawMarkers(esriMap, this, csvCentroidUrl);
             new GraphFromGISObjects(esriMap, this, csvCentroidUrl);
         }
-
-        this.containerCounter = new SimCounter<>("Generated containers", "Generated containers", this);
-        this.containerCounter.initialize();
-        this.vesselCounter = new SimCounter<>("Generated vessels", "Generated vessels", this);
-        this.vesselCounter.initialize();
     }
 
     /**
@@ -133,31 +120,13 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     @Override
     public int uniqueContainerNr()
     {
-        this.containerCounter.register(1);
-        return this.uniqueContainerCounter.incrementAndGet();
+        return this.uniqueContainerNumber.incrementAndGet();
     }
 
     @Override
     public int uniqueVesselNr()
     {
-        this.vesselCounter.register(1);
-        return this.uniqueVesselCounter.incrementAndGet();
-    }
-
-    /**
-     * @return containerCounter
-     */
-    public SimCounter<Duration> getContainerCounter()
-    {
-        return this.containerCounter;
-    }
-
-    /**
-     * @return vesselCounter
-     */
-    public SimCounter<Duration> getVesselCounter()
-    {
-        return this.vesselCounter;
+        return this.uniqueVesselNumber.incrementAndGet();
     }
 
     @Override
