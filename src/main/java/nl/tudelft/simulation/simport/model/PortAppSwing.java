@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.rmi.RemoteException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
@@ -11,8 +12,13 @@ import org.djutils.draw.bounds.Bounds2d;
 
 import nl.tudelft.simulation.dsol.animation.d2.RenderableScale;
 import nl.tudelft.simulation.dsol.experiment.SingleReplication;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameter;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterException;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterMap;
+import nl.tudelft.simulation.dsol.model.inputparameters.reader.ReadInputParameters;
 import nl.tudelft.simulation.dsol.simulators.DevsRealTimeAnimator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsRealTimeAnimator;
+import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.dsol.swing.gui.ConsoleOutput;
 import nl.tudelft.simulation.dsol.swing.gui.DsolPanel;
@@ -60,13 +66,16 @@ public class PortAppSwing extends DsolAnimationApplication
      */
     public static void main(final String[] args) throws Exception
     {
-        String propertyFilename = (args.length > 0) ? args[0] : "/default.properties";
+        String propertyFilename = (args.length > 0) ? args[0] : "/scenario-2022.properties";
         boolean interactive = (args.length < 2) || !args[1].toLowerCase().equals("batch");
         long seed = (args.length < 3) ? -1 : Long.valueOf(args[2]);
         if (interactive)
         {
             var simulator = new ClockDevsRealTimeAnimator("sim", ClockTime.ofIso("2024-07-01T00:00:00"));
             var model = new PortModelTruck(simulator, true);
+            ReadInputParameters.loadfromProperties(propertyFilename, model.getInputParameterMap());
+            ReadInputParameters.loadFromArgs(args, true, model.getInputParameterMap());
+            setInputParametersDefaults(model.getInputParameterMap());
             var replication =
                     new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO, new Duration(26.0, DurationUnit.WEEK));
             if (TabbedParameterDialog.process(model.getInputParameterMap()))
@@ -114,11 +123,43 @@ public class PortAppSwing extends DsolAnimationApplication
         else
 
         {
-            var simulator = new ClockDevsRealTimeAnimator("sim", ClockTime.ofIso("2024-07-01T00:00:00"));
+            var simulator = new ClockDevsSimulator("sim", ClockTime.ofIso("2024-07-01T00:00:00"));
             var model = new PortModelTruck(simulator, false);
+            ReadInputParameters.loadfromProperties(propertyFilename, model.getInputParameterMap());
+            ReadInputParameters.loadFromArgs(args, true, model.getInputParameterMap());
+            setInputParametersDefaults(model.getInputParameterMap());
             var replication =
                     new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO, new Duration(26.0, DurationUnit.WEEK));
 
+        }
+    }
+
+    /**
+     * Update the defaults for the parameters to be displayed to the loaded values from the properties file and the command
+     * line. This ensures that the editing takes place on the basis of the provided information in the properties file and the
+     * command line.
+     * @param map InputParameterMap; the input parameters
+     */
+    @SuppressWarnings("unchecked")
+    private static void setInputParametersDefaults(final InputParameterMap map)
+    {
+        for (Map.Entry<String, InputParameter<?, ?>> entry : map.getValue().entrySet())
+        {
+            @SuppressWarnings("rawtypes")
+            InputParameter parameter = entry.getValue();
+            if (parameter instanceof InputParameterMap)
+            {
+                setInputParametersDefaults((InputParameterMap) parameter);
+            }
+            try
+            {
+                parameter.setDefaultValue(parameter.getCalculatedValue());
+            }
+            catch (InputParameterException e)
+            {
+                e.printStackTrace();
+                System.exit(0);
+            }
         }
     }
 }

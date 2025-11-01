@@ -1,5 +1,6 @@
 package nl.tudelft.simulation.simport.model;
 
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterException;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 
 /**
@@ -21,6 +22,12 @@ public class PortModelTruck extends AbstractPortModel
     public PortModelTruck(final ClockDevsSimulatorInterface simulator, final boolean interactive)
     {
         super(simulator, interactive);
+    }
+
+    @Override
+    protected void extendInputParameterMap() throws InputParameterException
+    {
+        // no additions at the moment
     }
 
 }

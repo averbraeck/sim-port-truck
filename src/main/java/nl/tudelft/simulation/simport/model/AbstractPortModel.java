@@ -14,6 +14,13 @@ import nl.tudelft.simulation.dsol.animation.gis.GisMapInterface;
 import nl.tudelft.simulation.dsol.animation.gis.esri.EsriFileCsvParser;
 import nl.tudelft.simulation.dsol.animation.gis.osm.OsmFileCsvParser;
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterBoolean;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterDouble;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterException;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterInteger;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterLong;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterMap;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterString;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.simport.gis.CoordinateTransformRdNewToWgs84;
 import nl.tudelft.simulation.simport.gis.GisHelper;
@@ -55,6 +62,73 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     {
         super(simulator);
         this.interactive = interactive;
+        makeInputParameterMap();
+    }
+
+    /**
+     * Make the initial input parameter map with the parameters that are used by the generic PortModel such as the name for the
+     * experiment, the output path for the results (or write no results at all), and the need for animation. The method
+     * extendInputParameterMap() is called at the end, enabling extensions of this abstract model to easily add parameters.
+     */
+    protected void makeInputParameterMap()
+    {
+        try
+        {
+            InputParameterMap root = this.inputParameterMap;
+            InputParameterMap genericMap = new InputParameterMap("generic", "Generic", "Generic parameters", 1.0);
+            root.add(genericMap);
+            String inputPath = "/";
+            genericMap.add(new InputParameterString("Name", "Model name", "Model name", "", 1.0));
+            genericMap.add(new InputParameterString("Description", "Model description", "Model description", "", 2.0));
+            genericMap.add(new InputParameterString("StartDate", "Model start date", "yyyy-MM-ddThh:mm:ss",
+                    "2022-01-01T00:00:00", 3.0));
+            genericMap.add(new InputParameterString("InputPath", "Input path", "Input path", inputPath, 4.0));
+            genericMap.add(new InputParameterBoolean("WriteOutput", "Write output?", "Output writing on or off", true, 5.0));
+            String outputPath = getExecutionPath();
+            genericMap.add(new InputParameterString("OutputPath", "Output path", "Output path", outputPath, 6.0));
+            genericMap.add(new InputParameterInteger("RunLengthDays", "Run length in days", "Run length in days", 365, 1, 3650,
+                    "%d", 7.0));
+            genericMap.add(new InputParameterLong("Seed", "Seed for the RNG", "Seed for the Random Number Generator", 111L, 1,
+                    Long.MAX_VALUE, "%d", 8.0));
+
+            InputParameterMap volumeMap = new InputParameterMap("volume", "Volume", "Volume parameters", 2.0);
+            root.add(volumeMap);
+            volumeMap.add(new InputParameterInteger("TEU", "Number of TEU per year", "Only for deepsea terminals", 10_000_000,
+                    1, 100_000_000, "%d", 1.0));
+            volumeMap.add(new InputParameterDouble("TEUFactor", "TEU-factor", "Average TEU-length of container", 1.7, 1.0, 2.0,
+                    true, true, "%d", 2.0));
+            volumeMap.add(new InputParameterDouble("ImportFraction", "Fraction import containers", "[0,1]", 0.5, 0.0, 1.0, true,
+                    true, "%d", 3.0));
+            volumeMap.add(new InputParameterDouble("EmptyFraction", "Fraction empty containers", "[0,1]", 0.2, 0.0, 1.0, true,
+                    true, "%d", 4.0));
+            volumeMap.add(new InputParameterDouble("DeepseaFraction", "Fraction deepsea containers", "[0,1]", 0.5, 0.0, 1.0,
+                    true, true, "%d", 5.0));
+            volumeMap.add(new InputParameterDouble("ShortseaTransshipFraction", "Fraction shortsea transshipment", "[0,1]", 0.9,
+                    0.0, 1.0, true, true, "%d", 6.0));
+
+            extendInputParameterMap();
+        }
+        catch (InputParameterException exception)
+        {
+            exception.printStackTrace();
+        }
+    }
+
+    /**
+     * Extend the input parameters with extra tabs and parameters. The base parameters are already there.
+     * @throws InputParameterException on not being able to find a key or submap
+     */
+    protected abstract void extendInputParameterMap() throws InputParameterException;
+
+    /**
+     * @return Execution Path
+     */
+    private String getExecutionPath()
+    {
+        String absolutePath = this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        absolutePath = absolutePath.substring(0, absolutePath.lastIndexOf("/"));
+        absolutePath = absolutePath.replaceAll("%20", " ");
+        return absolutePath;
     }
 
     @Override
