@@ -4,6 +4,8 @@ import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.model.DsolModel;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.jstats.distributions.DistUniform;
+import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
@@ -16,6 +18,18 @@ import nl.tudelft.simulation.simport.terminal.Terminal;
  */
 public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterface>
 {
+    /**
+     * Return the standard random stream of the model.
+     * @return the standard random stream of the model
+     */
+    StreamInterface getRandomStream();
+
+    /**
+     * Return the standard uniform distribution based on the standard random stream of the model.
+     * @return the standard uniform distribution based on the standard random stream of the model
+     */
+    DistUniform getU01();
+
     /**
      * Get a unique container number.
      * @return a unique container number

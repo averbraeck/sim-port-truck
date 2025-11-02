@@ -4,7 +4,6 @@ import java.awt.Dimension;
 import java.rmi.RemoteException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
@@ -13,9 +12,9 @@ import org.djutils.draw.bounds.Bounds2d;
 import nl.tudelft.simulation.dsol.animation.d2.RenderableScale;
 import nl.tudelft.simulation.dsol.experiment.SingleReplication;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameter;
-import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterException;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterLong;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterMap;
-import nl.tudelft.simulation.dsol.model.inputparameters.reader.ReadInputParameters;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterString;
 import nl.tudelft.simulation.dsol.simulators.DevsRealTimeAnimator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsRealTimeAnimator;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulator;
@@ -75,12 +74,26 @@ public class PortAppSwing extends DsolAnimationApplication
             var model = new PortModelTruck(simulator, true);
             ReadInputParameters.loadfromProperties(propertyFilename, model.getInputParameterMap());
             ReadInputParameters.loadFromArgs(args, true, model.getInputParameterMap());
-            setInputParametersDefaults(model.getInputParameterMap());
-            var replication =
-                    new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO, new Duration(26.0, DurationUnit.WEEK));
+            ReadInputParameters.setInputParametersDefaults(model.getInputParameterMap());
             if (TabbedParameterDialog.process(model.getInputParameterMap()))
             {
+                simulator.setStartClockTime(
+                        ClockTime.ofLocalDateTime(model.getInputParameterLocalDateTime("generic.StartDate")));
+                double runLengthDays = model.getInputParameterDouble("generic.RunLengthDays");
+                if (seed == -1)
+                    seed = model.getInputParameterLong("generic.Seed");
+                else
+                {
+                    InputParameterMap generic = (InputParameterMap) model.getInputParameterMap().get("generic");
+                    InputParameter<?, ?> sp = generic.get("Seed");
+                    generic.remove("Seed");
+                    generic.add(new InputParameterLong("Seed", sp.getShortName(), sp.getDescription(), seed,
+                            sp.getDisplayPriority()));
+                }
+                var replication = new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO,
+                        new Duration(runLengthDays, DurationUnit.DAY));
                 simulator.initialize(model, replication);
+
                 List<Double> speeds = List.of(1.0, 10.0, 60.0, 600.0, 3600.0, 6 * 3600.0, 24 * 3600.0, 5 * 24 * 3600.0,
                         30 * 24 * 3600.0, 1.0E9);
                 List<String> labels = List.of("1s", "10s", "1m", "10m", "1h", "6h", "1d", "5d", "30d", "oo");
@@ -127,39 +140,28 @@ public class PortAppSwing extends DsolAnimationApplication
             var model = new PortModelTruck(simulator, false);
             ReadInputParameters.loadfromProperties(propertyFilename, model.getInputParameterMap());
             ReadInputParameters.loadFromArgs(args, true, model.getInputParameterMap());
-            setInputParametersDefaults(model.getInputParameterMap());
-            var replication =
-                    new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO, new Duration(26.0, DurationUnit.WEEK));
-
+            ReadInputParameters.setInputParametersDefaults(model.getInputParameterMap());
+            simulator.setStartClockTime(ClockTime.ofLocalDateTime(model.getInputParameterLocalDateTime("generic.StartDate")));
+            double runLengthDays = model.getInputParameterDouble("generic.RunLengthDays");
+            if (seed == -1)
+                seed = model.getInputParameterLong("generic.Seed");
+            else
+            {
+                InputParameterMap generic = (InputParameterMap) model.getInputParameterMap().get("generic");
+                InputParameter<?, ?> ip = generic.get("OutputPath");
+                generic.remove("OutputPath");
+                generic.add(new InputParameterString("OutputPath", ip.getShortName(), ip.getDescription(),
+                        ip.getValue().toString() + "-seed-" + seed, ip.getDisplayPriority()));
+                InputParameter<?, ?> sp = generic.get("Seed");
+                generic.remove("Seed");
+                generic.add(
+                        new InputParameterLong("Seed", sp.getShortName(), sp.getDescription(), seed, sp.getDisplayPriority()));
+            }
+            var replication = new SingleReplication<>("rep1", Duration.ZERO, Duration.ZERO,
+                    new Duration(runLengthDays, DurationUnit.DAY));
+            simulator.initialize(model, replication);
+            model.getSimulator().start();
         }
     }
 
-    /**
-     * Update the defaults for the parameters to be displayed to the loaded values from the properties file and the command
-     * line. This ensures that the editing takes place on the basis of the provided information in the properties file and the
-     * command line.
-     * @param map InputParameterMap; the input parameters
-     */
-    @SuppressWarnings("unchecked")
-    private static void setInputParametersDefaults(final InputParameterMap map)
-    {
-        for (Map.Entry<String, InputParameter<?, ?>> entry : map.getValue().entrySet())
-        {
-            @SuppressWarnings("rawtypes")
-            InputParameter parameter = entry.getValue();
-            if (parameter instanceof InputParameterMap)
-            {
-                setInputParametersDefaults((InputParameterMap) parameter);
-            }
-            try
-            {
-                parameter.setDefaultValue(parameter.getCalculatedValue());
-            }
-            catch (InputParameterException e)
-            {
-                e.printStackTrace();
-                System.exit(0);
-            }
-        }
-    }
 }

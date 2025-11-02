@@ -2,6 +2,7 @@ package nl.tudelft.simulation.simport.model;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,10 +19,14 @@ import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterBoolean;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterDouble;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterException;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterInteger;
+import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterLocalDateTime;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterLong;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterMap;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterString;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.jstats.distributions.DistUniform;
+import nl.tudelft.simulation.jstats.streams.MersenneTwister;
+import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.gis.CoordinateTransformRdNewToWgs84;
 import nl.tudelft.simulation.simport.gis.GisHelper;
 import nl.tudelft.simulation.simport.gis.MultiGisRenderable2d;
@@ -40,6 +45,12 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
 {
     /** interactive run? */
     private final boolean interactive;
+
+    /** the standard random stream of the model. */
+    protected StreamInterface randomStream;
+
+    /** the standard uniform distribution based on the standard random stream of the model. */
+    protected DistUniform u01;
 
     /** The terminals. */
     private final Map<String, Terminal> terminalMap = new LinkedHashMap<>();
@@ -80,8 +91,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
             String inputPath = "/";
             genericMap.add(new InputParameterString("Name", "Model name", "Model name", "", 1.0));
             genericMap.add(new InputParameterString("Description", "Model description", "Model description", "", 2.0));
-            genericMap.add(new InputParameterString("StartDate", "Model start date", "yyyy-MM-ddThh:mm:ss",
-                    "2022-01-01T00:00:00", 3.0));
+            genericMap.add(new InputParameterLocalDateTime("StartDate", "Model start date", "yyyy-MM-ddThh:mm:ss",
+                    LocalDateTime.parse("2024-07-01T00:00:00"), 3.0));
             genericMap.add(new InputParameterString("InputPath", "Input path", "Input path", inputPath, 4.0));
             genericMap.add(new InputParameterBoolean("WriteOutput", "Write output?", "Output writing on or off", true, 5.0));
             String outputPath = getExecutionPath();
@@ -134,6 +145,11 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     @Override
     public void constructModel() throws SimRuntimeException
     {
+        System.out.println("Used seed in the PortModel: " + getInputParameterLong("generic.Seed"));
+        this.randomStream = new MersenneTwister(getInputParameterLong("generic.Seed") + 1L);
+        this.streamInformation.addStream("default", new MersenneTwister(getInputParameterLong("generic.Seed")));
+        this.u01 = new DistUniform(this.randomStream, 0.0, 1.0);
+
         if (isInteractive())
         {
             URL csvUrl = ResourceResolver.resolve("/resources/maps/por.csv").asUrl();
@@ -171,8 +187,25 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         }
     }
 
+    /* ***************************************************************************************************************** */
+    /* ********************************************** GETTERS AND SETTERS ********************************************** */
+    /* ***************************************************************************************************************** */
+
+    @Override
+    public StreamInterface getRandomStream()
+    {
+        return this.randomStream;
+    }
+
+    @Override
+    public DistUniform getU01()
+    {
+        return this.u01;
+    }
+
     /**
-     * @return gisMap
+     * Return the GIS map for an interactive simulation.
+     * @return the GIS map for an interactive simulation
      */
     public MultiGisRenderable2d getGisMap()
     {
