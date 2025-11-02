@@ -6,8 +6,10 @@ import java.util.List;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.base.Identifiable;
 import org.djutils.exceptions.Throw;
+import org.djutils.logger.CategoryLogger;
 
 import nl.tudelft.simulation.dsol.formalisms.eventscheduling.SimEventInterface;
+import nl.tudelft.simulation.dsol.logger.Cat;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
@@ -154,18 +156,14 @@ public class Vessel implements Identifiable
 
     protected void vesselArrival()
     {
-        System.out.println("Vessel " + this.id + " arrived at    terminal " + this.terminal + " at t="
-                + this.simulator.getSimulatorClockTime().dayOfWeek().toString().substring(0, 3) + " "
-                + this.simulator.getSimulatorClockTime());
+        CategoryLogger.with(Cat.DSOL).debug("Vessel {} arrived at    terminal {}", this.id, this.terminal);
         getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.25), () -> unloadContainers());
         getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.75), () -> loadContainers());
     }
 
     protected void vesselDeparture()
     {
-        System.out.println("Vessel " + this.id + " departed from terminal " + this.terminal + " at t="
-                + this.simulator.getSimulatorClockTime().dayOfWeek().toString().substring(0, 3) + " "
-                + this.simulator.getSimulatorClockTime());
+        CategoryLogger.with(Cat.DSOL).debug("Vessel {} departed from terminal {}", this.id, this.terminal);
     }
 
     protected void makeList(final VesselLoadInfo vli, final List<Container> ll)
