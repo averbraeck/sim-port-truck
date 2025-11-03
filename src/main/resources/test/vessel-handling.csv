@@ -1,6 +1,0 @@
-imo,profit_center_name,berth_description,type_of_liner_service,stevedore_name,ata_berth_at,atd_berth_at,container_class,container_class_description,activity_description,total_containers,total_teu,full_teu,full_containers,empty_teu,empty_containers
-9773222,ECT DELTA,AMAZONEH ECT DELTA DDE,DEEPSEA,ECT Delta Terminal B.V.,2024-07-03 11:06:00,2024-07-08 11:11:00,<=29,20-29 ft,Discharging,332,332.0,332.0,332,0.0,0
-9773222,ECT DELTA,AMAZONEH ECT DELTA DDE,DEEPSEA,ECT Delta Terminal B.V.,2024-07-03 11:06:00,2024-07-08 11:11:00,<=44,40 - 44 ft,Discharging,447,894.0,894.0,447,0.0,0
-9773222,ECT DELTA,AMAZONEH ECT DELTA DDE,DEEPSEA,ECT Delta Terminal B.V.,2024-07-03 11:06:00,2024-07-08 11:11:00,>=45,45 ft en groter,Loading,10,23.0,0.0,0,23.0,10
-9773222,ECT DELTA,AMAZONEH ECT DELTA DDE,DEEPSEA,ECT Delta Terminal B.V.,2024-07-03 11:06:00,2024-07-08 11:11:00,<=44,40 - 44 ft,Loading,5146,10292.0,3326.0,1663,6966.0,3483
-9773222,ECT DELTA,AMAZONEH ECT DELTA DDE,DEEPSEA,ECT Delta Terminal B.V.,2024-07-03 11:06:00,2024-07-08 11:11:00,<=29,20-29 ft,Loading,1722,1722.0,705.0,705,1017.0,1017
