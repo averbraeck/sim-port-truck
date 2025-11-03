@@ -35,7 +35,6 @@ import nl.tudelft.simulation.simport.gis.GisHelper;
 import nl.tudelft.simulation.simport.gis.MultiGisRenderable2d;
 import nl.tudelft.simulation.simport.road.GraphFromGISObjects;
 import nl.tudelft.simulation.simport.terminal.Terminal;
-import nl.tudelft.simulation.simport.terminal.TerminalAnimation;
 
 /**
  * PortModel is an abstract 'parent' model with key objects such as the terminals and the road network.
@@ -144,13 +143,12 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     "If day pattern file, define below", false, 5.0));
             terminalMap.add(new InputParameterString("DayPatternPath", "File path terminal day pattern",
                     "File path terminal-daypattern.csv", "", 6.0));
-            terminalMap.add(new InputParameterBoolean("ContainerTypeOverride",
-                    "Use terminal override for DS/SS, I/E, 20/40, G/R, E/F?",
-                    "If container type file, define below", false, 7.0));
+            terminalMap.add(
+                    new InputParameterBoolean("ContainerTypeOverride", "Use terminal override for DS/SS, I/E, 20/40, G/R, E/F?",
+                            "If container type file, define below", false, 7.0));
             terminalMap.add(new InputParameterString("ContainerTypeOverridePath",
                     "File path for override container types per terminal", "File path terminal-containertype.csv", "", 8.0));
-            terminalMap.add(new InputParameterBoolean("TransshipmentOverride",
-                    "Use a transshipment percentage per terminal?",
+            terminalMap.add(new InputParameterBoolean("TransshipmentOverride", "Use a transshipment percentage per terminal?",
                     "If transshipment override file, define below", false, 9.0));
             terminalMap.add(new InputParameterString("TransshipmentOverridePath",
                     "File path transshipment percentages per terminal", "File path terminal-transshipment.csv", "", 10.0));
@@ -174,9 +172,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     "(volume, percentage, fraction)", 58.0, 2.0));
             modalSplitMap.add(new InputParameterDouble("Rail", "Global weight for rail modal split",
                     "(volume, percentage, fraction)", 8.0, 3.0));
-            modalSplitMap.add(
-                    new InputParameterBoolean("TerminalOverride", "Modal split defined per deepsea terminal?",
-                            "If terminal modal split override file, define below", false, 4.0));
+            modalSplitMap.add(new InputParameterBoolean("TerminalOverride", "Modal split defined per deepsea terminal?",
+                    "If terminal modal split override file, define below", false, 4.0));
             modalSplitMap.add(new InputParameterString("TerminalOverridePath", "File path modal split per terminal",
                     "File path to terminal-modalsplit.csv file", "", 5.0));
             root.add(modalSplitMap);
@@ -231,7 +228,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
             disruptionMap.add(new InputParameterString("FilePathTerminalDisruption", "File with terminal disruptions",
                     "(terminal, start time, fraction throughput, duration)", "", 2.0));
             disruptionMap.add(new InputParameterString("FilePathDepotDisruption", "File with depot disruptions",
-                    "(epot, start time, fraction throughput, duration)", "", 3.0));
+                    "(depot, start time, fraction throughput, duration)", "", 3.0));
             root.add(disruptionMap);
 
             extendInputParameterMap();
