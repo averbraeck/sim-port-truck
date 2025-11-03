@@ -1,7 +1,6 @@
 package nl.tudelft.simulation.simport.model;
 
 import java.awt.Dimension;
-import java.rmi.RemoteException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -32,7 +31,12 @@ import nl.tudelft.simulation.dsol.swing.gui.inputparameters.TabbedParameterDialo
 import nl.tudelft.simulation.language.DsolException;
 
 /**
- * PortAppSwing.java.
+ * PortAppSwing is the main class to execute an experiment. Call with:
+ *
+ * <pre>
+ * java -jar portapp.jar [file.properties] [interactive|batch] [seed]
+ * java nl.tudelft.simulation.simport.model.PortAppSwing [file.properties] [interactive|batch] [seed]
+ * </pre>
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license.
@@ -42,26 +46,27 @@ import nl.tudelft.simulation.language.DsolException;
 public class PortAppSwing extends DsolAnimationApplication
 {
     /** */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 20251010L;
 
     /**
-     * @param title the title
-     * @param panel the panel
-     * @param animationTab the (custom) animation tab
+     * Make a Swing application for the Port Truck simulation model.
+     * @param title the title of the panel to show
+     * @param panel the panel with the control buttons
+     * @param animationTab the (custom) animation tab; other tabs can be added
      * @throws DsolException when simulator is not an animator
      * @throws IllegalArgumentException for illegal bounds
-     * @throws RemoteException on network error
      */
     public PortAppSwing(final String title, final DsolPanel panel, final DsolAnimationGisTab animationTab)
-            throws DsolException, RemoteException, IllegalArgumentException
+            throws DsolException, IllegalArgumentException
     {
         super(panel, title, animationTab);
         panel.enableSimulationControlButtons();
     }
 
     /**
-     * @param args
-     * @throws Exception
+     * Main program, call with arguments: <code>[file.properties] [interactive|batch] [seed]</code>.
+     * @param args zero to three arguments: <code>[file.properties] [interactive|batch] [seed]</code>
+     * @throws Exception mainly on file load problems
      */
     public static void main(final String[] args) throws Exception
     {
