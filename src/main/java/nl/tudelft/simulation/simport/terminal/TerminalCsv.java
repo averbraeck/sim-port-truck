@@ -33,7 +33,7 @@ public class TerminalCsv
             for (NamedCsvRow row : csvReader)
             {
                 var terminal = new Terminal(row.getField("id"), model, Double.parseDouble(row.getField("lon")),
-                        Double.parseDouble(row.getField("lat")), 20_000);
+                        Double.parseDouble(row.getField("lat")));
                 var truckFraction = Double.parseDouble(row.getField("truckIn"));
                 var bargeFraction = Double.parseDouble(row.getField("bargeIn"));
                 var railFraction = Double.parseDouble(row.getField("railIn"));

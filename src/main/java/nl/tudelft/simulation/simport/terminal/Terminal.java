@@ -1,12 +1,17 @@
 package nl.tudelft.simulation.simport.terminal;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.djutils.base.Identifiable;
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point3d;
+import org.djutils.io.ResourceResolver;
 
+import de.siegmar.fastcsv.reader.NamedCsvReader;
+import de.siegmar.fastcsv.reader.NamedCsvRow;
 import nl.tudelft.simulation.dsol.animation.Locatable;
 import nl.tudelft.simulation.dsol.simulators.AnimatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
@@ -45,27 +50,20 @@ public class Terminal implements Identifiable, Locatable
 
     private final double x, y;
 
-    private StreamInterface stream;
-
     /**
      * Create a new terminal for the port model
      * @param id the id of the terminal
      * @param model the port model
-     * @param initialTEU initial number of TEU on terminal
      */
-    public Terminal(final String id, final PortModel model, final double x, final double y, final int initialTEU)
+    public Terminal(final String id, final PortModel model, final double x, final double y)
     {
         this.id = id;
         this.model = model;
         this.model.addTerminal(this);
-        this.teu = initialTEU;
-        this.stream = model.getDefaultStream();
         this.x = x;
         this.y = y;
-        if (model.getSimulator() instanceof AnimatorInterface)
-        {
+        if (model.isInteractive())
             new TerminalAnimation(this, model.getSimulator());
-        }
     }
 
     public void addImportContainers(final List<Container> containerList)
