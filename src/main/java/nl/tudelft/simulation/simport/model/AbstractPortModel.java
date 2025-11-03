@@ -1,6 +1,7 @@
 package nl.tudelft.simulation.simport.model;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -10,6 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.io.ResourceResolver;
 
+import de.siegmar.fastcsv.reader.NamedCsvReader;
+import de.siegmar.fastcsv.reader.NamedCsvRow;
 import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.animation.gis.GisMapInterface;
 import nl.tudelft.simulation.dsol.animation.gis.esri.EsriFileCsvParser;
@@ -32,6 +35,7 @@ import nl.tudelft.simulation.simport.gis.GisHelper;
 import nl.tudelft.simulation.simport.gis.MultiGisRenderable2d;
 import nl.tudelft.simulation.simport.road.GraphFromGISObjects;
 import nl.tudelft.simulation.simport.terminal.Terminal;
+import nl.tudelft.simulation.simport.terminal.TerminalAnimation;
 
 /**
  * PortModel is an abstract 'parent' model with key objects such as the terminals and the road network.
@@ -116,6 +120,119 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     true, true, "%d", 5.0));
             volumeMap.add(new InputParameterDouble("ShortseaTransshipFraction", "Fraction shortsea transshipment", "[0,1]", 0.9,
                     0.0, 1.0, true, true, "%d", 6.0));
+            volumeMap.add(new InputParameterBoolean("WeekPattern", "Use week/month pattern file?",
+                    "If week/month pattern file, define below", false, 7.0));
+            volumeMap.add(new InputParameterString("WeekPatternPath", "File path week/month pattern",
+                    "File path weekpattern.csv", "", 8.0));
+            volumeMap.add(new InputParameterBoolean("DayPattern", "Use day pattern file?", "If day pattern file, define below",
+                    false, 9.0));
+            volumeMap.add(new InputParameterString("DayPatternPath", "File path weekday pattern", "File path daypattern.csv",
+                    "", 10.0));
+
+            InputParameterMap terminalMap = new InputParameterMap("terminal", "Terminals", "Terminal parameters", 3.0);
+            terminalMap.add(new InputParameterString("TerminalDefinitionPath", "File path terminal definitions",
+                    "File path terminals.csv", "", 1.0));
+            terminalMap.add(new InputParameterString("VolumePath", "File path terminal volumes",
+                    "Volumes and call size csv file", "", 2.0));
+            terminalMap.add(new InputParameterString("DepotDefinitionPath", "File path empty depot definitions",
+                    "File path depots.csv", "", 2.5));
+            terminalMap.add(new InputParameterBoolean("WeekPattern", "Use terminal week/month pattern file?",
+                    "If week/month pattern file, define below", false, 3.0));
+            terminalMap.add(new InputParameterString("WeekPatternPath", "File path terminal week/month pattern",
+                    "File path terminal-weekpattern.csv", "", 4.0));
+            terminalMap.add(new InputParameterBoolean("DayPattern", "Use terminal day pattern file?",
+                    "If day pattern file, define below", false, 5.0));
+            terminalMap.add(new InputParameterString("DayPatternPath", "File path terminal day pattern",
+                    "File path terminal-daypattern.csv", "", 6.0));
+            terminalMap.add(new InputParameterBoolean("ContainerTypeOverride",
+                    "Use terminal override for DS/SS, I/E, 20/40, G/R, E/F?",
+                    "If container type file, define below", false, 7.0));
+            terminalMap.add(new InputParameterString("ContainerTypeOverridePath",
+                    "File path for override container types per terminal", "File path terminal-containertype.csv", "", 8.0));
+            terminalMap.add(new InputParameterBoolean("TransshipmentOverride",
+                    "Use a transshipment percentage per terminal?",
+                    "If transshipment override file, define below", false, 9.0));
+            terminalMap.add(new InputParameterString("TransshipmentOverridePath",
+                    "File path transshipment percentages per terminal", "File path terminal-transshipment.csv", "", 10.0));
+            root.add(terminalMap);
+
+            InputParameterMap vesselMap = new InputParameterMap("vessel", "Vessels", "Vessel parameters", 4.0);
+            vesselMap.add(new InputParameterDouble("CallSizeFraction", "Fraction to apply on call size", "1.0 is no change",
+                    1.0, 0.1, 10.0, true, true, "%d", 1.0));
+            vesselMap.add(new InputParameterInteger("CallSizeOverrideDS", "Replacement average callsize for deepsea vessels",
+                    "-1 is no override", -1, 2.0));
+            vesselMap.add(new InputParameterInteger("CallSizeOverrideSS", "Replacement average callsize for shortsea vessels",
+                    "-1 is no override", -1, 3.0));
+            vesselMap.add(new InputParameterString("DeviationATA", "Deviation distribution ATA in days",
+                    "CONST(0.0) is no change", "TRIA(-2.0, 0.0, 2.0)", 4.0));
+            root.add(vesselMap);
+
+            InputParameterMap modalSplitMap = new InputParameterMap("modalsplit", "Modal split", "Modal split parameters", 5.0);
+            modalSplitMap.add(new InputParameterDouble("Barge", "Global weight for barge modal split",
+                    "(volume, percentage, fraction)", 34.0, 1.0));
+            modalSplitMap.add(new InputParameterDouble("Truck", "Global weight for truck modal split",
+                    "(volume, percentage, fraction)", 58.0, 2.0));
+            modalSplitMap.add(new InputParameterDouble("Rail", "Global weight for rail modal split",
+                    "(volume, percentage, fraction)", 8.0, 3.0));
+            modalSplitMap.add(
+                    new InputParameterBoolean("TerminalOverride", "Modal split defined per deepsea terminal?",
+                            "If terminal modal split override file, define below", false, 4.0));
+            modalSplitMap.add(new InputParameterString("TerminalOverridePath", "File path modal split per terminal",
+                    "File path to terminal-modalsplit.csv file", "", 5.0));
+            root.add(modalSplitMap);
+
+            InputParameterMap dwellTimeMap = new InputParameterMap("dwelltime", "Dwell time", "Dwell time parameters", 6.0);
+            dwellTimeMap.add(new InputParameterString("fig", "Dwell time distribution full import general container",
+                    "Distribution function (days)", "UNIF(1,7)", 1.0));
+            dwellTimeMap.add(new InputParameterString("fir", "Dwell time distribution full import reefer container",
+                    "Distribution function (days)", "UNIF(1,7)", 2.0));
+            dwellTimeMap.add(new InputParameterString("feg", "Dwell time distribution full export general container",
+                    "Distribution function (days)", "UNIF(1,7)", 3.0));
+            dwellTimeMap.add(new InputParameterString("fer", "Dwell time distribution full export reefer container",
+                    "Distribution function (days)", "UNIF(1,7)", 4.0));
+            dwellTimeMap.add(new InputParameterString("ei", "Dwell time distribution empty import container",
+                    "Distribution function (days)", "UNIF(1,2)", 5.0));
+            dwellTimeMap.add(new InputParameterString("ee", "Dwell time distribution empty export container",
+                    "Distribution function (days)", "UNIF(1,2)", 6.0));
+            root.add(dwellTimeMap);
+
+            InputParameterMap odMap = new InputParameterMap("od", "O/D", "O/D parameters", 6.0);
+            odMap.add(new InputParameterString("FilePathHVM", "Origins and destinations file from HVM",
+                    "(typically a centroids.dbf file)", "", 1.0));
+            odMap.add(new InputParameterString("NetworkFolder", "Network folder with nodes, sections and turning shape files",
+                    "(typically contains nodes, section, turning ESRI files)", "", 2.0));
+            odMap.add(new InputParameterString("CongestionFolderHVM", "Folder with congestion data from HVM",
+                    "(csv files per vehicle type and part of day)", "", 3.0));
+            odMap.add(new InputParameterString("CongestionFolderNDW", "Folder with congestion data from NDW",
+                    "(use either this file or the HVM file, not both)", "", 4.0));
+            odMap.add(new InputParameterString("DetectorLoopFile", "File with detector loop locations (NDW and Port)",
+                    "(can be blank - no loop detection)", "", 5.0));
+            root.add(odMap);
+
+            InputParameterMap truckMap = new InputParameterMap("truck", "Truck", "Truck parameters", 7.0);
+            truckMap.add(new InputParameterString("SlotBookingDist", "Distribution of slot booking", "(hours before truck ETA)",
+                    "CONST(24.0)", 1.0));
+            truckMap.add(new InputParameterDouble("FractionCombi", "Fraction planned combi trips", "[0,1]", 0.4, 0.0, 1.0, true,
+                    true, "%d", 2.0));
+            truckMap.add(new InputParameterDouble("CombiSafetyMarginHours", "Safety margin between two trips when combi trip",
+                    "[0,24]", 2.0, 0.0, 24.0, true, true, "%d", 3.0));
+            root.add(truckMap);
+
+            InputParameterMap planningMap = new InputParameterMap("planning", "Planning", "Planning parameters", 8.0);
+            planningMap.add(new InputParameterString("FilePathTerminalSlots", "File with slot management regime per terminal",
+                    "(on/off, window size, quick rebooking on/off)", "", 1.0));
+            planningMap.add(new InputParameterDouble("PortAlertFraction", "Fraction of trucks with Port Alert", "[0,1]", 0.2,
+                    0.0, 1.0, true, true, "%d", 2.0));
+            root.add(planningMap);
+
+            InputParameterMap disruptionMap = new InputParameterMap("disruption", "Disruption", "Disruption parameters", 9.0);
+            disruptionMap.add(new InputParameterString("FilePathRoadDisruption", "File with road disruptions",
+                    "(road location, direction, start time, duration)", "", 1.0));
+            disruptionMap.add(new InputParameterString("FilePathTerminalDisruption", "File with terminal disruptions",
+                    "(terminal, start time, fraction throughput, duration)", "", 2.0));
+            disruptionMap.add(new InputParameterString("FilePathDepotDisruption", "File with depot disruptions",
+                    "(epot, start time, fraction throughput, duration)", "", 3.0));
+            root.add(disruptionMap);
 
             extendInputParameterMap();
         }
@@ -149,6 +266,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         this.randomStream = new MersenneTwister(getInputParameterLong("generic.Seed") + 1L);
         this.streamInformation.addStream("default", new MersenneTwister(getInputParameterLong("generic.Seed")));
         this.u01 = new DistUniform(this.randomStream, 0.0, 1.0);
+        readTerminalsFromCsv(getInputParameterString("terminal.TerminalDefinitionPath"));
 
         if (isInteractive())
         {
@@ -184,6 +302,28 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
 
             GisHelper.drawMarkers(esriMap, this, csvCentroidUrl);
             new GraphFromGISObjects(esriMap, this, csvCentroidUrl);
+        }
+    }
+
+    /**
+     * Read the terminals from a CSV file.
+     * @param terminalCsvPath path to the file with terminal parameters
+     */
+    public void readTerminalsFromCsv(final String terminalCsvPath)
+    {
+        try (NamedCsvReader csvReader =
+                NamedCsvReader.builder().build(new InputStreamReader(ResourceResolver.resolve(terminalCsvPath).openStream())))
+        {
+            for (NamedCsvRow row : csvReader)
+            {
+                var terminal = new Terminal(row.getField("id"), this, Double.parseDouble(row.getField("lon")),
+                        Double.parseDouble(row.getField("lat")));
+                addTerminal(terminal);
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 
