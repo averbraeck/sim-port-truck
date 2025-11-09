@@ -142,7 +142,7 @@ public final class DistributionParser
                 return new DistLogNormal(stream, mean, stdev);
             }
 
-            case "pearsoo5":
+            case "pearson5":
             {
                 checkArgs(distStr, argArray, 2);
                 double alpha = argDouble(distStr, argArray, 0);
