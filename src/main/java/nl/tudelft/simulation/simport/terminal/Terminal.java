@@ -22,7 +22,7 @@ import nl.tudelft.simulation.simport.model.PortModel;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class DeepseaTerminal implements PortFacility
+public class Terminal implements ContainerFacility
 {
     /** Terminal id. */
     private final String id;
@@ -48,6 +48,9 @@ public class DeepseaTerminal implements PortFacility
     /** Terminal gate. */
     private Gate gate;
 
+    /** Terminal stack for handling. */
+    private Yard stack;
+
     private ModalSplit modalSplitImport;
 
     private ModalSplit modalSplitExport;
@@ -69,7 +72,7 @@ public class DeepseaTerminal implements PortFacility
      * @param lat latitude
      * @param lon longitude
      */
-    public DeepseaTerminal(final String id, final PortModel model, final double lat, final double lon)
+    public Terminal(final String id, final PortModel model, final double lat, final double lon)
     {
         this.id = id;
         this.model = model;
@@ -221,7 +224,7 @@ public class DeepseaTerminal implements PortFacility
     }
 
     @Override
-    public DeepseaTerminal setGate(final Gate gate)
+    public Terminal setGate(final Gate gate)
     {
         this.gate = gate;
         return this;
@@ -246,7 +249,7 @@ public class DeepseaTerminal implements PortFacility
     }
 
     @Override
-    public DeepseaTerminal setCapacityTeu(final int capacityTeu)
+    public Terminal setCapacityTeu(final int capacityTeu)
     {
         this.capacityTeu = capacityTeu;
         return this;
