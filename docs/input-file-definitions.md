@@ -51,7 +51,7 @@ The volume daypattern file is optional, and gives the distribution of the volume
 
 | name | explanation |
 | ---- | ----------- |
-| `day` | Day name. The day name can be in full or abbreviated to the first two letters. Capitalization and the order do not matter. Use English day names.  |
+| `day` | Day name or number. The day name can be in full or abbreviated to the first two letters. Capitalization and the order do not matter. Use English day names. Number is 1 for Monday to 7 for Sunday (ISO-8601). |
 | `volume` | The volume for that day, expressed in TEU, as a fraction, or as a percentage of the week volume. It will be normalized. |
 
 
@@ -108,7 +108,7 @@ The terminal-daypattern file is optional, and gives the distribution of the volu
 | name | explanation |
 | ---- | ----------- |
 | `terminal_id` | The id of the terminal. Has to be consistent with the terminals csv definition. |
-| `day` | Day name. The day name can be in full or abbreviated to the first two letters. Capitalization and the order do not matter. Use English day names. |
+| `day` | Day name or number. The day name can be in full or abbreviated to the first two letters. Capitalization and the order do not matter. Use English day names. Number is 1 for Monday to 7 for Sunday (ISO-8601). |
 | `volume` | The volume for that day, expressed in TEU, as a fraction, or as a percentage of the week volume. It will be normalized. |
 
 
