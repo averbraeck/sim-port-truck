@@ -1,19 +1,13 @@
 package nl.tudelft.simulation.simport.terminal;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.djutils.base.Identifiable;
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point3d;
-import org.djutils.io.ResourceResolver;
 
-import de.siegmar.fastcsv.reader.NamedCsvReader;
-import de.siegmar.fastcsv.reader.NamedCsvRow;
-import nl.tudelft.simulation.dsol.animation.Locatable;
-import nl.tudelft.simulation.dsol.simulators.AnimatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.Container;
@@ -21,18 +15,38 @@ import nl.tudelft.simulation.simport.TransportMode;
 import nl.tudelft.simulation.simport.model.PortModel;
 
 /**
- * Terminal.java.
+ * Terminal models a deepsea terminal.
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license. See <a href="https://opentrafficsim.org/docs/current/license.html">OpenTrafficSim License</a>.
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Terminal implements Identifiable, Locatable
+public class DeepseaTerminal implements PortFacility
 {
+    /** Terminal id. */
     private final String id;
 
+    /** Pointer to the model. */
     private final PortModel model;
+
+    /** Terminal latitude (y). */
+    private final double lat;
+
+    /** Terminal longitude (s). */
+    private final double lon;
+
+    /** Week pattern. If not present, 1/52 for each week. Key is coded as yyyyww, e.g., 202201. */
+    private Map<Integer, Double> weekPatternMap = new LinkedHashMap<>();
+
+    /** Day pattern. If not present, 1/7 for each day. Key is coded as 1 for Monday to 7 for Sunday (ISO-8601 standard). */
+    private Map<Integer, Double> dayPatternMap = new LinkedHashMap<>();
+
+    /** TEU capacity. */
+    private int capacityTeu;
+
+    /** Terminal gate. */
+    private Gate gate;
 
     private ModalSplit modalSplitImport;
 
@@ -48,20 +62,20 @@ public class Terminal implements Identifiable, Locatable
 
     private int teu = 0;
 
-    private final double x, y;
-
     /**
-     * Create a new terminal for the port model
+     * Create a new terminal for the port model.
      * @param id the id of the terminal
      * @param model the port model
+     * @param lat latitude
+     * @param lon longitude
      */
-    public Terminal(final String id, final PortModel model, final double x, final double y)
+    public DeepseaTerminal(final String id, final PortModel model, final double lat, final double lon)
     {
         this.id = id;
         this.model = model;
         this.model.addTerminal(this);
-        this.x = x;
-        this.y = y;
+        this.lat = lat;
+        this.lon = lon;
         if (model.isInteractive())
             new TerminalAnimation(this, model.getSimulator());
     }
@@ -134,6 +148,7 @@ public class Terminal implements Identifiable, Locatable
         return this.id;
     }
 
+    @Override
     public ClockDevsSimulatorInterface getSimulator()
     {
         return this.model.getSimulator();
@@ -142,7 +157,7 @@ public class Terminal implements Identifiable, Locatable
     @Override
     public Point3d getLocation()
     {
-        return new Point3d(this.x, this.y, 1.0);
+        return new Point3d(this.lon, this.lat, 1.0);
     }
 
     @Override
@@ -197,6 +212,50 @@ public class Terminal implements Identifiable, Locatable
     public int getTeu()
     {
         return this.teu;
+    }
+
+    @Override
+    public PortModel getModel()
+    {
+        return this.model;
+    }
+
+    @Override
+    public DeepseaTerminal setGate(final Gate gate)
+    {
+        this.gate = gate;
+        return this;
+    }
+
+    @Override
+    public Gate getGate()
+    {
+        return this.gate;
+    }
+
+    @Override
+    public double getLat()
+    {
+        return this.lat;
+    }
+
+    @Override
+    public double getLon()
+    {
+        return this.lon;
+    }
+
+    @Override
+    public DeepseaTerminal setCapacityTeu(final int capacityTeu)
+    {
+        this.capacityTeu = capacityTeu;
+        return this;
+    }
+
+    @Override
+    public int getCapacityTeu()
+    {
+        return this.capacityTeu;
     }
 
     @Override
