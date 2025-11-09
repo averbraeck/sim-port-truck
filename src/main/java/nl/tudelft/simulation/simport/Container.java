@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport;
 
+import org.djutils.base.Identifiable;
+
 /**
  * Container contains the information about a container.
  * <p>
@@ -8,7 +10,7 @@ package nl.tudelft.simulation.simport;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Container
+public class Container implements Identifiable
 {
     /** Container number. */
     private final int nr;
@@ -54,6 +56,12 @@ public class Container
     public int getNr()
     {
         return this.nr;
+    }
+
+    @Override
+    public String getId()
+    {
+        return String.valueOf(this.nr);
     }
 
     /**
