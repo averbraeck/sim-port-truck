@@ -22,7 +22,7 @@ The global timeline of events for one ship calling at a terminal is as follows:
 | TR<sub>ATA</sub>         | Queue at terminal gate |
 | TR<sub>ATA</sub>+t<sub>handling</sub> | Handling time at the terminal &rarr; TR<sub>ATD</sub> |
 | TR<sub>ATD</sub>         | Drive to next terminal if planned (after dropoff) or drive to destination. |
-| ...                      | Repeat process for multiple visits; handle missed slots.
+| ...                      | Repeat process for multiple visits; handle missed slots. |
 
 Events that are planned continuously are:
 

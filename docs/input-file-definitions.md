@@ -4,8 +4,8 @@
 
 The terminal csv-file has the following columns:
 
-| ---- | ------------|
 | name | explanation |
+| ---- | ------------|
 | id | The id of the terminal. To be used in other files as identifier. |
 | lat | Latitude for a terminal icon on the interactive map. |
 | lon | Longitude for a terminal icon on the interactive map. |
