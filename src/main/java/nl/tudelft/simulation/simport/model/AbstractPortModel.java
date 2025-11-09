@@ -148,10 +148,6 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                             "If container type file, define below", false, 7.0));
             terminalMap.add(new InputParameterString("ContainerTypeOverridePath",
                     "File path for override container types per terminal", "File path terminal-containertype.csv", "", 8.0));
-            terminalMap.add(new InputParameterBoolean("TransshipmentOverride", "Use a transshipment percentage per terminal?",
-                    "If transshipment override file, define below", false, 9.0));
-            terminalMap.add(new InputParameterString("TransshipmentOverridePath",
-                    "File path transshipment percentages per terminal", "File path terminal-transshipment.csv", "", 10.0));
             root.add(terminalMap);
 
             InputParameterMap vesselMap = new InputParameterMap("vessel", "Vessels", "Vessel parameters", 4.0);
@@ -263,6 +259,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         this.randomStream = new MersenneTwister(getInputParameterLong("generic.Seed") + 1L);
         this.streamInformation.addStream("default", new MersenneTwister(getInputParameterLong("generic.Seed")));
         this.u01 = new DistUniform(this.randomStream, 0.0, 1.0);
+
         readTerminalsFromCsv(getInputParameterString("terminal.TerminalDefinitionPath"));
 
         if (isInteractive())
@@ -313,8 +310,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         {
             for (NamedCsvRow row : csvReader)
             {
-                var terminal = new Terminal(row.getField("id"), this, Double.parseDouble(row.getField("lon")),
-                        Double.parseDouble(row.getField("lat")));
+                var terminal = new Terminal(row.getField("id"), this, Double.parseDouble(row.getField("lat")),
+                        Double.parseDouble(row.getField("lon")));
                 addTerminal(terminal);
             }
         }
