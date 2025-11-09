@@ -6,7 +6,7 @@ import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
-import nl.tudelft.simulation.simport.Truck;
+import nl.tudelft.simulation.simport.truck.Truck;
 
 /**
  * GateConstant is a gate with a constant number of lanes and a constant processing time.
@@ -19,7 +19,7 @@ import nl.tudelft.simulation.simport.Truck;
 public class GateConstant implements Gate
 {
     /** The terminal or depot to which the gate belongs. */
-    private final PortFacility portFacility;
+    private final ContainerFacility portFacility;
 
     /** the (sub) id for the gate. */
     private final String id;
@@ -47,7 +47,7 @@ public class GateConstant implements Gate
      * @param portFacility the terminal or depot
      * @param id the unique id within the portFacility; will be appended to the terminal id for display.
      */
-    public GateConstant(final PortFacility portFacility, final String id)
+    public GateConstant(final ContainerFacility portFacility, final String id)
     {
         this.portFacility = portFacility;
         this.id = id;
@@ -60,7 +60,7 @@ public class GateConstant implements Gate
     }
 
     @Override
-    public PortFacility getPortFacility()
+    public ContainerFacility getPortFacility()
     {
         return this.portFacility;
     }

@@ -6,7 +6,7 @@ import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.base.Identifiable;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
-import nl.tudelft.simulation.simport.Truck;
+import nl.tudelft.simulation.simport.truck.Truck;
 
 /**
  * The Gate simulates the process at the gate. Gate times and number of lanes can be constant, or fluctuate over the day.
@@ -19,7 +19,7 @@ import nl.tudelft.simulation.simport.Truck;
 public interface Gate extends Identifiable
 {
     /** @return the port facility (terminal or depot) to which this gate belongs. */
-    PortFacility getPortFacility();
+    ContainerFacility getPortFacility();
 
     /** @return the current number of lanes into the terminal or depot. */
     int getCurrentLanesIn();
