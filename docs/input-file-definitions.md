@@ -41,7 +41,7 @@ The volume weekpattern file is optional, and gives the distribution of the volum
 
 | name | explanation |
 | ---- | ----------- |
-| `week` | Week number. The week number follows the pattern `yyyy-ww` (e.g., `2022-01`) to allow broken years or multiple year simulations. |
+| `week` | Week number. The week number follows the 6-digit pattern `yyyyww` (e.g., `202201`) to allow broken years or multiple year simulations. |
 | `volume` | The volume for that week, expressed in TEU, as a fraction, or as a percentage of the total volume indicated in the `volume.TEU` parameter in the properties file. It will be normalized. |
 
 
@@ -97,7 +97,7 @@ The terminal-weekpattern file is optional, and gives the distribution of the vol
 | name | explanation |
 | ---- | ----------- |
 | `terminal_id` | The id of the terminal. Has to be consistent with the terminals csv definition. |
-| `week` | Week number. The week number follows the pattern `yyyy-ww` (e.g., `2022-01`) to allow broken years or multiple year simulations. |
+| `week` | Week number. The week number follows the 6-digit pattern `yyyyww` (e.g., `202201`) to allow broken years or multiple year simulations. |
 | `volume` | The volume for that week, expressed in TEU, as a fraction, or as a percentage of the total volume of the terminal in TEU. It will be normalized. |
 
 
