@@ -27,7 +27,7 @@ public interface PortFacility extends Identifiable, Locatable
      * @param gate the gate for the terminal
      * @return the terminal for method chaining
      */
-    DeepseaTerminal setGate(Gate gate);
+    PortFacility setGate(Gate gate);
 
     /** @return the gate. */
     Gate getGate();
@@ -43,7 +43,7 @@ public interface PortFacility extends Identifiable, Locatable
      * @param capacityTeu the capacity in TEU for the terminal
      * @return the terminal for method chaining
      */
-    DeepseaTerminal setCapacityTeu(int capacityTeu);
+    PortFacility setCapacityTeu(int capacityTeu);
 
     /** @return the capacity in TEU. */
     int getCapacityTeu();
