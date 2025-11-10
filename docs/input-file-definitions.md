@@ -81,11 +81,11 @@ The terminal-volumes file defines the volumes and call sizes per terminal, as we
 | name | explanation |
 | ---- | ------------|
 | `id` | The id of the terminal. Has to be consistent with the terminals csv definition. |
-| `teu_share` | The share of the terminal in ETUs. This can be a percentage, fraction, or number of TEUs. |
-| `ds_share`  | The share of deepsea at the terminal. This can be a percentage, fraction, or number of TEUs. |
-| `ss_share`  | The share of shortsea / feeder at the terminal. This can be a percentage, fraction, or number of TEUs. |
-| `ds_load_perc` | The percentage deepsea containers that are loaded. In a balanced terminal, that will be 50.0. |
-| `ss_load_perc` | The percentage shortsea  / feeder containers that are loaded. In a balanced terminal, that will be 50.0. |
+| `teu_share` | The share of the terminal in TEUs. This can be a percentage, fraction, or number of TEUs. The share will be normalized. |
+| `ds_share`  | The share of deepsea TEUs at the terminal. This can be a percentage, fraction, or number of TEUs. The share will be normalized. |
+| `ss_share`  | The share of shortsea / feeder TEUs at the terminal. This can be a percentage, fraction, or number of TEUs. The share will be normalized. |
+| `ds_load_perc` | The percentage deepsea containers that are loaded as opposed to unloaded. In a balanced terminal, that will be 50.0. |
+| `ss_load_perc` | The percentage shortsea  / feeder containers that are loaded as opposed to unloaded. In a balanced terminal, that will be 50.0. |
 | `ds_avg_call_size` | The average call size for deepsea shipments in TEU at this terminal. |
 | `ss_avg_call_size` | The average call size for shortsea / feeder shipments in TEU at this terminal. |
 
