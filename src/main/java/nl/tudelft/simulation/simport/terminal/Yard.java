@@ -53,7 +53,7 @@ public interface Yard extends Identifiable
      */
     default void pickupContainer(final Truck truck, final Container container)
     {
-        Throw.when(!truck.isEmpty(), SimPortRuntimeException.class, "Truck %s is not empty: carries container %s", truck,
+        Throw.when(!truck.isEmpty(), SimPortRuntimeException.class, "Truck %s is not empty: it carries container %s", truck,
                 truck.getContainer());
         Throw.when(!getContainerMap().containsKey(container.getNr()), SimPortRuntimeException.class,
                 "Container %s not found on yard of facility %s", truck, getContainerFacility());
@@ -66,6 +66,11 @@ public interface Yard extends Identifiable
      * @param truck the truck
      * @param container the container to drop off
      */
-    void dropoffContainer(Truck truck);
+    default void dropoffContainer(final Truck truck)
+    {
+        Throw.when(truck.isEmpty(), SimPortRuntimeException.class, "Truck %s is empty: it does not carry a container", truck);
+        Container container = truck.unloadContainer();
+        getContainerMap().put(container.getNr(), container);
+    }
 
 }
