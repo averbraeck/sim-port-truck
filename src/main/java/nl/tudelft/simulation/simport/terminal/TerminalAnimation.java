@@ -23,9 +23,6 @@ import nl.tudelft.simulation.dsol.simulators.SimulatorInterface;
  */
 public class TerminalAnimation extends SimRenderable2d<Terminal>
 {
-    /** */
-    private static final long serialVersionUID = 1L;
-
     /**
      *
      */
