@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.terminal;
 
+import org.djutils.event.EventProducer;
+
 import nl.tudelft.simulation.simport.Facility;
 
 /**
@@ -10,7 +12,7 @@ import nl.tudelft.simulation.simport.Facility;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public interface ContainerFacility extends Facility
+public interface ContainerFacility extends Facility, EventProducer
 {
     /**
      * Set the gate for the terminal.

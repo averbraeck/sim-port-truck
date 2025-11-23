@@ -2,6 +2,7 @@ package nl.tudelft.simulation.simport.terminal;
 
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point3d;
+import org.djutils.event.LocalEventProducer;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.simport.model.PortModel;
@@ -14,7 +15,7 @@ import nl.tudelft.simulation.simport.model.PortModel;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public abstract class AbstractContainerFacility implements ContainerFacility
+public abstract class AbstractContainerFacility extends LocalEventProducer implements ContainerFacility
 {
     /** Facility id. */
     private final String id;
