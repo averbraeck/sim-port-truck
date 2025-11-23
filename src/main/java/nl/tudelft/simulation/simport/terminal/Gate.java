@@ -19,7 +19,7 @@ import nl.tudelft.simulation.simport.truck.Truck;
 public interface Gate extends Identifiable
 {
     /** @return the port facility (terminal or depot) to which this gate belongs. */
-    ContainerFacility getPortFacility();
+    ContainerFacility getContainerFacility();
 
     /** @return the current number of lanes into the terminal or depot. */
     int getCurrentLanesIn();

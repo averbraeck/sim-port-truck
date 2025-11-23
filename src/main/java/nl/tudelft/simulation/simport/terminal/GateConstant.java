@@ -60,7 +60,7 @@ public class GateConstant implements Gate
     }
 
     @Override
-    public ContainerFacility getPortFacility()
+    public ContainerFacility getContainerFacility()
     {
         return this.portFacility;
     }
@@ -92,6 +92,7 @@ public class GateConstant implements Gate
         this.lanesOut = lanesOut;
         return this;
     }
+
     @Override
     public int getCurrentLanesOut()
     {
@@ -160,6 +161,12 @@ public class GateConstant implements Gate
     public ClockDevsSimulatorInterface getSimulator()
     {
         return this.portFacility.getSimulator();
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Gate [id=" + getContainerFacility().getId() + "." + this.id + "]";
     }
 
 }
