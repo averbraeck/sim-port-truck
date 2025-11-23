@@ -23,6 +23,16 @@ public interface ContainerFacility extends Facility
     Gate getGate();
 
     /**
+     * Set the yard for the terminal.
+     * @param yard the yard for the terminal
+     * @return the terminal for method chaining
+     */
+    ContainerFacility setYard(Yard yard);
+
+    /** @return the yard. */
+    Yard getYard();
+
+    /**
      * Set the capacity in TEU for the terminal.
      * @param capacityTeu the capacity in TEU for the terminal
      * @return the terminal for method chaining
