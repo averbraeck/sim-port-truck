@@ -32,10 +32,10 @@ public class ContainerStandard implements Container
      * @param empty true if empty; false if full
      * @param reefer true if reefer; false if normal container
      */
-    public ContainerStandard(final int nr, final byte size, final boolean empty, final boolean reefer)
+    public ContainerStandard(final int nr, final int size, final boolean empty, final boolean reefer)
     {
         this.nr = nr;
-        this.size = size;
+        this.size = (byte) size;
         this.empty = empty;
         this.reefer = reefer;
     }
