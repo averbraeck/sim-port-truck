@@ -1,16 +1,13 @@
 package nl.tudelft.simulation.simport.terminal;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.base.Identifiable;
 import org.djutils.exceptions.Throw;
 
-import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.Container;
-import nl.tudelft.simulation.simport.TransportMode;
 import nl.tudelft.simulation.simport.truck.Truck;
 import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 
