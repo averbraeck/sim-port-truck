@@ -3,116 +3,75 @@ package nl.tudelft.simulation.simport;
 import org.djutils.base.Identifiable;
 
 /**
- * Container contains the information about a container.
+ * Information about a container.
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
- * BSD-style license. See <a href="https://opentrafficsim.org/docs/current/license.html">OpenTrafficSim License</a>.
+ * BSD-style license.
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Container implements Identifiable
+public interface Container extends Identifiable
 {
-    /** Container number. */
-    private final int nr;
-
-    /** Size in ft (20/40/45). */
-    private final byte size;
-
-    /** Transport Mode. 0 = none, 1 = truck, 2 = barge, 3 = rail, 4 - short sea / feeder. */
-    private byte mode = 0;
-
-    /** Empty or full. */
-    private final boolean empty;
-
-    /** Reefer or not. */
-    private final boolean reefer;
-
-    /**
-     * Create a container for the model.
-     * @param nr container number
-     * @param size size in ft (20/40/45)
-     * @param empty true if empty; false if full
-     * @param reefer true if reefer; false if normal container
-     */
-    public Container(final int nr, final byte size, final boolean empty, final boolean reefer)
+    default String getType()
     {
-        this.nr = nr;
-        this.size = size;
-        this.empty = empty;
-        this.reefer = reefer;
+        int size = getSize();
+        if (isReefer())
+            return size == 40 ? "42R1" : size + "R1";
+        return size + "G1";
     }
 
-    public String getType()
-    {
-        if (this.reefer)
-            return this.size == 40 ? "42R1" : Byte.toString(this.size) + "R1";
-        return Byte.toString(this.size) + "G1";
-    }
-
-    /**
-     * Return container number.
-     * @return container number
-     */
-    public int getNr()
-    {
-        return this.nr;
-    }
+    /** @return the container number */
+    int getNr();
 
     @Override
-    public String getId()
+    default String getId()
     {
-        return String.valueOf(this.nr);
+        return String.valueOf(getNr());
     }
 
-    /**
-     * Return size in ft (20/40/45).
-     * @return size in ft (20/40/45)
-     */
-    public byte getSize()
+    /** @return size in ft (20/40/45) */
+    int getSize();
+
+    /** return true if 20ft, false if not */
+    default boolean is20ft()
     {
-        return this.size;
+        return getSize() == 20;
     }
 
-    /**
-     * Return true if empty; false if full.
-     * @return true if empty; false if full
-     */
-    public boolean isEmpty()
+    /** return true if 40ft, false if not */
+    default boolean is40ft()
     {
-        return this.empty;
+        return getSize() == 40;
     }
 
-    /**
-     * Return true if reefer; false if normal container.
-     * @return true if reefer; false if normal container
-     */
-    public boolean isReefer()
+    /** return the number of teu of this container */
+    default double teu()
     {
-        return this.reefer;
+        return getSize() / 20.0;
     }
 
-    /**
-     * Return transport mode for this container.
-     * @return the transport mode for this container
-     */
-    public TransportMode getMode()
+    /** return the integer number of teu of this container, 1 for 20 ft, 2 for 40 ft or more */
+    default int teuInt()
     {
-        return TransportMode.fromByte(this.mode);
+        return getSize() <= 20 ? 1 : 2;
     }
 
-    /**
-     * Set the transport mode for this container.
-     * @param mode the new transport mode
-     */
-    public void setMode(final TransportMode transportMode)
+    /** @return true if empty; false if full */
+    boolean isEmpty();
+
+    /** @return true if full; false if empty */
+    default boolean isFull()
     {
-        this.mode = transportMode.asByte();
+        return !isEmpty();
     }
 
-    @Override
-    public String toString()
+    /** @return true if reefer; false if normal container */
+    boolean isReefer();
+
+    /** @return true if normal container; false if reefer */
+    default boolean isNormal()
     {
-        return "Container [nr=" + this.nr + ", size=" + this.size + "]";
+        return !isReefer();
     }
 
 }
