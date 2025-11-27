@@ -39,6 +39,12 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
     int uniqueContainerNr();
 
     /**
+     * Get a unique booking number.
+     * @return a unique booking number
+     */
+    int uniqueBookingNr();
+
+    /**
      * Get a unique vessel number.
      * @return a unique vessel number
      */

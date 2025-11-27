@@ -65,6 +65,9 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     /** the container counter. */
     private final AtomicInteger uniqueContainerNumber = new AtomicInteger(1000000);
 
+    /** the booking counter. */
+    private final AtomicInteger uniqueBookingNumber = new AtomicInteger(2000000);
+
     /** the GIS map. */
     private MultiGisRenderable2d gisMap;
 
@@ -369,6 +372,12 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     public int uniqueContainerNr()
     {
         return this.uniqueContainerNumber.incrementAndGet();
+    }
+
+    @Override
+    public int uniqueBookingNr()
+    {
+        return this.uniqueBookingNumber.incrementAndGet();
     }
 
     @Override
