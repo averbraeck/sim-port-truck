@@ -23,7 +23,7 @@ import nl.tudelft.simulation.simport.util.DistributionParser;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class VesselDistCsv
+public class ReadVesselDistCsv
 {
     /**
      * Create VesselGenerators based on data from a csv-file.
@@ -52,8 +52,9 @@ public class VesselDistCsv
                 double emptyFractionL = Double.parseDouble(row.getField("emptyFractionLoading"));
                 double reeferFractionU = Double.parseDouble(row.getField("reeferFractionUnloading"));
                 double reeferFractionL = Double.parseDouble(row.getField("reeferFractionLoading"));
+                var vesselType = VesselType.DEEPSEA; // TODO: read DS/SS from file
                 // @formatter:off
-                var vesselGenerator = new VesselGeneratorDist("gen_" + terminal, model, terminal)
+                var vesselGenerator = new VesselGeneratorDist("gen_" + terminal, model, terminal, vesselType)
                         .setShipIatWeekdays(iatWd)
                         .setShipIatWeekends(iatWe)
                         .setCallSizeDistLoading(callSizeL)
