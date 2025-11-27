@@ -6,7 +6,6 @@ import java.util.List;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.container.Container;
-import nl.tudelft.simulation.simport.container.ContainerStandard;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
@@ -64,7 +63,7 @@ public class VesselStandard extends Vessel
             byte size = rng.nextDouble() < vli.fraction20ft() ? (byte) 20 : (byte) 40;
             boolean empty = rng.nextDouble() < vli.fractionEmpty();
             boolean reefer = rng.nextDouble() < vli.fractionReefer();
-            ll.add(new ContainerStandard(getModel().uniqueContainerNr(), size, empty, reefer));
+            ll.add(new Container(getModel().uniqueContainerNr(), size, empty, reefer));
         }
     }
 
