@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.model;
 
+import java.util.Map;
+
 import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.model.DsolModel;
@@ -60,5 +62,11 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
      * @return the terminal or null if it could not be found
      */
     Terminal getTerminal(String id);
+
+    /**
+     * Get the map of terminals.
+     * @return the map of terminals
+     */
+    Map<String, Terminal> getTerminalMap();
 
 }

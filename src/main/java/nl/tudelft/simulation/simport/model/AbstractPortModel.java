@@ -35,6 +35,7 @@ import nl.tudelft.simulation.simport.gis.GisHelper;
 import nl.tudelft.simulation.simport.gis.MultiGisRenderable2d;
 import nl.tudelft.simulation.simport.road.GraphFromGISObjects;
 import nl.tudelft.simulation.simport.terminal.Terminal;
+import nl.tudelft.simulation.simport.terminal.TerminalStandard;
 
 /**
  * PortModel is an abstract 'parent' model with key objects such as the terminals and the road network.
@@ -310,7 +311,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         {
             for (NamedCsvRow row : csvReader)
             {
-                var terminal = new Terminal(row.getField("id"), this, Double.parseDouble(row.getField("lat")),
+                var terminal = new TerminalStandard(row.getField("id"), this, Double.parseDouble(row.getField("lat")),
                         Double.parseDouble(row.getField("lon")));
                 addTerminal(terminal);
             }
@@ -356,6 +357,12 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     public Terminal getTerminal(final String id)
     {
         return this.terminalMap.get(id);
+    }
+
+    @Override
+    public Map<String, Terminal> getTerminalMap()
+    {
+        return this.terminalMap;
     }
 
     @Override
