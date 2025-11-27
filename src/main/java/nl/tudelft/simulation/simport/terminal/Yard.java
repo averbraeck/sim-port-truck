@@ -10,6 +10,7 @@ import org.djutils.exceptions.Throw;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.truck.Truck;
 import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
+import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
  * Yard models the handling at the terminal. It is defined as an interface to start simple, and be able to expand the logic
@@ -36,6 +37,18 @@ public interface Yard extends Identifiable
 
     /** @return the containers in the yard, as a map from container number to container. */
     Map<Integer, Container> getContainerMap();
+
+    /**
+     * @return the import containers for a Vessel in the yard, as a map from vessel to container. These are the unloaded
+     *         containers from the Vessel, that will be transshipped or transported by one of the transport modes.
+     */
+    Map<Vessel, Container> getImportVesselContainerMap();
+
+    /**
+     * @return the export containers for a Vessel in the yard, as a map from vessel to container. These are the containers that
+     *         have to be loaded onto the Vessel, and came into the terminal with one of the transport modes (or transshipment).
+     */
+    Map<Vessel, Container> getExportVesselContainerMap();
 
     /** @return the trucks at the yard. */
     Collection<Truck> getTrucks();

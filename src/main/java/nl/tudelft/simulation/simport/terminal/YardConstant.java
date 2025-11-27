@@ -10,6 +10,7 @@ import org.djunits.value.vdouble.scalar.Duration;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.truck.Truck;
+import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
  * YardConstant is an implementation of the Yard interface with constant parameters.
@@ -38,6 +39,18 @@ public class YardConstant implements Yard
 
     /** Map with containers in the yard (Container number -> Container). */
     private final Map<Integer, Container> containerMap = new LinkedHashMap<>();
+
+    /**
+     * The import containers for a Vessel in the yard, as a map from vessel to container. These are the unloaded containers from
+     * the Vessel, that will be transshipped or transported by one of the transport modes.
+     */
+    Map<Vessel, Container> importVesselContainerMap = new LinkedHashMap<>();
+
+    /**
+     * The export containers for a Vessel in the yard, as a map from vessel to container. These are the containers that have to
+     * be loaded onto the Vessel, and came into the terminal with one of the transport modes (or transshipment).
+     */
+    Map<Vessel, Container> exportVesselContainerMap = new LinkedHashMap<>();
 
     /** Set of trucks on the yard. */
     private Collection<Truck> trucks = new LinkedHashSet<Truck>();
@@ -75,6 +88,18 @@ public class YardConstant implements Yard
     public Map<Integer, Container> getContainerMap()
     {
         return this.containerMap;
+    }
+
+    @Override
+    public Map<Vessel, Container> getImportVesselContainerMap()
+    {
+        return this.importVesselContainerMap;
+    }
+
+    @Override
+    public Map<Vessel, Container> getExportVesselContainerMap()
+    {
+        return this.exportVesselContainerMap;
     }
 
     @Override
