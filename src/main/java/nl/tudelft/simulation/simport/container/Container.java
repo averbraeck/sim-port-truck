@@ -1,77 +1,76 @@
 package nl.tudelft.simulation.simport.container;
 
-import org.djutils.base.Identifiable;
-
 /**
- * Information about a container.
+ * Compact implementation of a container (all info in 1 byte).
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
- * BSD-style license.
+ * BSD-style license. See <a href="https://opentrafficsim.org/docs/current/license.html">OpenTrafficSim License</a>.
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public interface Container extends Identifiable
+public class Container implements Shipment
 {
-    default String getType()
-    {
-        int size = getSize();
-        if (isReefer())
-            return size == 40 ? "42R1" : size + "R1";
-        return size + "G1";
-    }
+    /** Container number. */
+    private final int nr;
 
-    /** @return the container number */
-    int getNr();
+    /**
+     * The status of the container.
+     * <ul>
+     * <li>bit 6+7: 00 = 20 ft, 01 = 40 ft, 10 = 45 ft</li>
+     * <li>bit 5: empty = 0, full = 1</li>
+     * <li>bit 4: normal = 0, reefer = 1</li>
+     * </ul>
+     */
+    private final byte status;
+
+    /**
+     * Create a container for the model.
+     * @param nr container number
+     * @param size size in ft (20/40/45)
+     * @param empty true if empty; false if full
+     * @param reefer true if reefer; false if normal container
+     */
+    public Container(final int nr, final int size, final boolean empty, final boolean reefer)
+    {
+        this.nr = nr;
+        int s = 0;
+        s = size == 40 ? 1 : size > 40 ? 2 : 0;
+        if (!empty)
+            s |= 0x4;
+        if (reefer)
+            s |= 8;
+        this.status = (byte) s;
+    }
 
     @Override
-    default String getId()
+    public int getNr()
     {
-        return String.valueOf(getNr());
+        return this.nr;
     }
 
-    /** @return size in ft (20/40/45) */
-    int getSize();
-
-    /** return true if 20ft, false if not */
-    default boolean is20ft()
+    @Override
+    public int getSize()
     {
-        return getSize() == 20;
+        int s = this.status & 0x3;
+        return s == 1 ? 40 : s == 2 ? 45 : 20;
     }
 
-    /** return true if 40ft, false if not */
-    default boolean is40ft()
+    @Override
+    public boolean isEmpty()
     {
-        return getSize() == 40;
+        return (this.status & 0x4) == 0;
     }
 
-    /** return the number of teu of this container */
-    default double teu()
+    @Override
+    public boolean isReefer()
     {
-        return getSize() / 20.0;
+        return (this.status & 0x8) == 0;
     }
 
-    /** return the integer number of teu of this container, 1 for 20 ft, 2 for 40 ft or more */
-    default int teuInt()
+    @Override
+    public String toString()
     {
-        return getSize() <= 20 ? 1 : 2;
-    }
-
-    /** @return true if empty; false if full */
-    boolean isEmpty();
-
-    /** @return true if full; false if empty */
-    default boolean isFull()
-    {
-        return !isEmpty();
-    }
-
-    /** @return true if reefer; false if normal container */
-    boolean isReefer();
-
-    /** @return true if normal container; false if reefer */
-    default boolean isNormal()
-    {
-        return !isReefer();
+        return "Container [nr=" + this.nr + ", size=" + getSize() + "]";
     }
 
 }
