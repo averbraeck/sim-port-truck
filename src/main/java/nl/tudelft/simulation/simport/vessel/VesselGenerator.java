@@ -27,17 +27,22 @@ public abstract class VesselGenerator implements Identifiable
     /** The terminal to generate ships for. */
     private final Terminal terminal;
 
+    /** The vessel type to generate. */
+    private final VesselType vesselType;
+
     /**
      * Create a VesselGenerator for one Terminal.
      * @param id the generator's id
      * @param model the model
      * @param terminal the terminal to generate ships for
+     * @param vesselType the vessel type to generate
      */
-    public VesselGenerator(final String id, final PortModel model, final Terminal terminal)
+    public VesselGenerator(final String id, final PortModel model, final Terminal terminal, final VesselType vesselType)
     {
         this.id = id;
         this.model = model;
         this.terminal = terminal;
+        this.vesselType = vesselType;
     }
 
     /**
@@ -51,8 +56,18 @@ public abstract class VesselGenerator implements Identifiable
     public void generateVessel(final String id, final ClockTime eta, final ClockTime etd, final VesselLoadInfo unloadInfo,
             final VesselLoadInfo loadInfo)
     {
-        new Vessel(id, this.model, eta, etd, unloadInfo, loadInfo, this.terminal);
+        new VesselStandard(id, this.vesselType, this.model, eta, etd, unloadInfo, loadInfo, this.terminal);
     }
+
+    /**
+     * Start the generator.
+     */
+    public abstract void start();
+
+    /**
+     * Stop the generator.
+     */
+    public abstract void stop();
 
     @Override
     public String getId()
