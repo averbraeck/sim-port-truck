@@ -1,18 +1,10 @@
 package nl.tudelft.simulation.simport.terminal;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.djutils.draw.bounds.Bounds2d;
-import org.djutils.draw.point.Point3d;
-
-import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
-import nl.tudelft.simulation.jstats.streams.StreamInterface;
-import nl.tudelft.simulation.simport.Container;
-import nl.tudelft.simulation.simport.TransportMode;
 import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.vessel.VesselGenerator;
 
 /**
  * Terminal models a deepsea terminal.
@@ -22,48 +14,22 @@ import nl.tudelft.simulation.simport.model.PortModel;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Terminal implements ContainerFacility
+public class TerminalStandard extends AbstractContainerFacility implements Terminal
 {
-    /** Terminal id. */
-    private final String id;
+    /** The vessel generators for this terminal. */
+    private Map<String, VesselGenerator> vesselgeneratorMap = new LinkedHashMap<>();
 
-    /** Pointer to the model. */
-    private final PortModel model;
+    /** The transshipment fraction for import containers. */
+    private double transshipmentFractionImport;
 
-    /** Terminal latitude (y). */
-    private final double lat;
+    /** The transshipment fraction for export containers. */
+    private double transshipmentFractionExport;
 
-    /** Terminal longitude (s). */
-    private final double lon;
-
-    /** Week pattern. If not present, 1/52 for each week. Key is coded as yyyyww, e.g., 202201. */
-    private Map<Integer, Double> weekPatternMap = new LinkedHashMap<>();
-
-    /** Day pattern. If not present, 1/7 for each day. Key is coded as 1 for Monday to 7 for Sunday (ISO-8601 standard). */
-    private Map<Integer, Double> dayPatternMap = new LinkedHashMap<>();
-
-    /** TEU capacity. */
-    private int capacityTeu;
-
-    /** Terminal gate. */
-    private Gate gate;
-
-    /** Terminal stack for handling. */
-    private Yard stack;
-
+    /** The modal split for import containers. */
     private ModalSplit modalSplitImport;
 
+    /** The modal split for export containers. */
     private ModalSplit modalSplitExport;
-
-    private List<Container> containersImport = new ArrayList<>();
-
-    private List<Container> containersExport = new ArrayList<>();
-
-    private List<Container> truckContainersImport = new ArrayList<>();
-
-    private List<Container> truckContainersExport = new ArrayList<>();
-
-    private int teu = 0;
 
     /**
      * Create a new terminal for the port model.
@@ -72,17 +38,15 @@ public class Terminal implements ContainerFacility
      * @param lat latitude
      * @param lon longitude
      */
-    public Terminal(final String id, final PortModel model, final double lat, final double lon)
+    public TerminalStandard(final String id, final PortModel model, final double lat, final double lon)
     {
-        this.id = id;
-        this.model = model;
-        this.model.addTerminal(this);
-        this.lat = lat;
-        this.lon = lon;
+        super(id, model, lat, lon);
+        model.addTerminal(this);
         if (model.isInteractive())
             new TerminalAnimation(this, model.getSimulator());
     }
 
+    /*-
     public void addImportContainers(final List<Container> containerList)
     {
         StreamInterface rng = this.model.getDefaultStream();
@@ -112,9 +76,36 @@ public class Terminal implements ContainerFacility
             this.teu -= (container.getSize() > 20) ? 2 : 1;
         }
     }
+    */
+
+    @Override
+    public void addVesselGenerator(final VesselGenerator vesselGenerator)
+    {
+        this.vesselgeneratorMap.put(vesselGenerator.getId(), vesselGenerator);
+        vesselGenerator.start();
+    }
+
+    @Override
+    public boolean removeVesselGenerator(final String id)
+    {
+        if (this.vesselgeneratorMap.containsKey(id))
+        {
+            var vesselGenerator = this.vesselgeneratorMap.remove(id);
+            vesselGenerator.stop();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Map<String, VesselGenerator> getVesselGeneratorMap()
+    {
+        return this.vesselgeneratorMap;
+    }
 
     /**
-     * @return modalSplitImport
+     * Return the modal split for import containers for this terminal.
+     * @return the modal split for import containers for this terminal
      */
     public ModalSplit getModalSplitImport()
     {
@@ -122,15 +113,17 @@ public class Terminal implements ContainerFacility
     }
 
     /**
-     * @param modalSplitImport set modalSplitImport
+     * Set the modal split for import containers for this terminal.
+     * @param modalSplitImport the modal split for import containers for this terminal
      */
-    public void setModalSplitIn(final ModalSplit modalSplitImport)
+    public void setModalSplitImport(final ModalSplit modalSplitImport)
     {
         this.modalSplitImport = modalSplitImport;
     }
 
     /**
-     * @return modalSplitExport
+     * Return the modal split for export containers for this terminal.
+     * @return the modal split for export containers for this terminal
      */
     public ModalSplit getModalSplitExport()
     {
@@ -138,133 +131,18 @@ public class Terminal implements ContainerFacility
     }
 
     /**
-     * @param modalSplitExport set modalSplitExport
+     * Set the modal split for export containers for this terminal.
+     * @param modalSplitExport the modal split for export containers for this terminal
      */
-    public void setModalSplitOut(final ModalSplit modalSplitExport)
+    public void setModalSplitExport(final ModalSplit modalSplitExport)
     {
         this.modalSplitExport = modalSplitExport;
     }
 
     @Override
-    public String getId()
-    {
-        return this.id;
-    }
-
-    @Override
-    public ClockDevsSimulatorInterface getSimulator()
-    {
-        return this.model.getSimulator();
-    }
-
-    @Override
-    public Point3d getLocation()
-    {
-        return new Point3d(this.lon, this.lat, 1.0);
-    }
-
-    @Override
-    public Bounds2d getRelativeBounds()
-    {
-        return new Bounds2d(0.0015, 0.0009);
-    }
-
-    /**
-     * @return containersImport
-     */
-    public List<Container> getContainersImport()
-    {
-        return this.containersImport;
-    }
-
-    /**
-     * @param containersImport set containersImport
-     */
-    public void setContainersImport(final List<Container> containersImport)
-    {
-        this.containersImport = containersImport;
-    }
-
-    /**
-     * @return containersExport
-     */
-    public List<Container> getContainersExport()
-    {
-        return this.containersExport;
-    }
-
-    /**
-     * @return truckContainersImport
-     */
-    public List<Container> getTruckContainersImport()
-    {
-        return this.truckContainersImport;
-    }
-
-    /**
-     * @return truckContainersExport
-     */
-    public List<Container> getTruckContainersExport()
-    {
-        return this.truckContainersExport;
-    }
-
-    /**
-     * @return teu
-     */
-    public int getTeu()
-    {
-        return this.teu;
-    }
-
-    @Override
-    public PortModel getModel()
-    {
-        return this.model;
-    }
-
-    @Override
-    public Terminal setGate(final Gate gate)
-    {
-        this.gate = gate;
-        return this;
-    }
-
-    @Override
-    public Gate getGate()
-    {
-        return this.gate;
-    }
-
-    @Override
-    public double getLat()
-    {
-        return this.lat;
-    }
-
-    @Override
-    public double getLon()
-    {
-        return this.lon;
-    }
-
-    @Override
-    public Terminal setCapacityTeu(final int capacityTeu)
-    {
-        this.capacityTeu = capacityTeu;
-        return this;
-    }
-
-    @Override
-    public int getCapacityTeu()
-    {
-        return this.capacityTeu;
-    }
-
-    @Override
     public String toString()
     {
-        return this.id;
+        return "Terminal [id=" + getId() + "]";
     }
 
 }
