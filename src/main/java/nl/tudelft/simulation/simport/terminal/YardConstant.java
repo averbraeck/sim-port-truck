@@ -3,6 +3,7 @@ package nl.tudelft.simulation.simport.terminal;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.djunits.value.vdouble.scalar.Duration;
@@ -44,13 +45,13 @@ public class YardConstant implements Yard
      * The import containers for a Vessel in the yard, as a map from vessel to container. These are the unloaded containers from
      * the Vessel, that will be transshipped or transported by one of the transport modes.
      */
-    Map<Vessel, Container> importVesselContainerMap = new LinkedHashMap<>();
+    Map<Vessel, List<Container>> importVesselContainerMap = new LinkedHashMap<>();
 
     /**
      * The export containers for a Vessel in the yard, as a map from vessel to container. These are the containers that have to
      * be loaded onto the Vessel, and came into the terminal with one of the transport modes (or transshipment).
      */
-    Map<Vessel, Container> exportVesselContainerMap = new LinkedHashMap<>();
+    Map<Vessel, List<Container>> exportVesselContainerMap = new LinkedHashMap<>();
 
     /** Set of trucks on the yard. */
     private Collection<Truck> trucks = new LinkedHashSet<Truck>();
@@ -91,13 +92,13 @@ public class YardConstant implements Yard
     }
 
     @Override
-    public Map<Vessel, Container> getImportVesselContainerMap()
+    public Map<Vessel, List<Container>> getImportVesselContainerMap()
     {
         return this.importVesselContainerMap;
     }
 
     @Override
-    public Map<Vessel, Container> getExportVesselContainerMap()
+    public Map<Vessel, List<Container>> getExportVesselContainerMap()
     {
         return this.exportVesselContainerMap;
     }

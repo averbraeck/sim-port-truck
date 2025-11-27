@@ -1,6 +1,7 @@
 package nl.tudelft.simulation.simport.terminal;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.djunits.value.vdouble.scalar.Duration;
@@ -42,13 +43,13 @@ public interface Yard extends Identifiable
      * @return the import containers for a Vessel in the yard, as a map from vessel to container. These are the unloaded
      *         containers from the Vessel, that will be transshipped or transported by one of the transport modes.
      */
-    Map<Vessel, Container> getImportVesselContainerMap();
+    Map<Vessel, List<Container>> getImportVesselContainerMap();
 
     /**
      * @return the export containers for a Vessel in the yard, as a map from vessel to container. These are the containers that
      *         have to be loaded onto the Vessel, and came into the terminal with one of the transport modes (or transshipment).
      */
-    Map<Vessel, Container> getExportVesselContainerMap();
+    Map<Vessel, List<Container>> getExportVesselContainerMap();
 
     /** @return the trucks at the yard. */
     Collection<Truck> getTrucks();
