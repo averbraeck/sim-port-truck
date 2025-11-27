@@ -8,7 +8,7 @@ import java.util.Map;
 import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
-import nl.tudelft.simulation.simport.Container;
+import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.truck.Truck;
 
 /**

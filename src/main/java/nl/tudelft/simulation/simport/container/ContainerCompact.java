@@ -1,4 +1,4 @@
-package nl.tudelft.simulation.simport;
+package nl.tudelft.simulation.simport.container;
 
 /**
  * Compact implementation of a container (all info in 1 byte).

@@ -8,8 +8,8 @@ import org.djutils.draw.point.Point3d;
 import nl.tudelft.simulation.dsol.animation.Locatable;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
-import nl.tudelft.simulation.simport.Container;
 import nl.tudelft.simulation.simport.Facility;
+import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
 
 /**

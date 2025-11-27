@@ -5,8 +5,8 @@ import java.util.List;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
-import nl.tudelft.simulation.simport.Container;
-import nl.tudelft.simulation.simport.ContainerStandard;
+import nl.tudelft.simulation.simport.container.Container;
+import nl.tudelft.simulation.simport.container.ContainerStandard;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 

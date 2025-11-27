@@ -1,4 +1,6 @@
-package nl.tudelft.simulation.simport;
+package nl.tudelft.simulation.simport.container;
+
+import nl.tudelft.simulation.simport.TransportMode;
 
 /**
  * Container contains the information about a container.
