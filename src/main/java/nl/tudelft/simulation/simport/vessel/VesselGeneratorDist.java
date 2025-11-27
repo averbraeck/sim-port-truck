@@ -62,19 +62,25 @@ public class VesselGeneratorDist extends VesselGenerator
     /** The fraction reefers for loading. */
     private double fractionReeferLoading = Double.NaN;
 
+    /** stopped? */
+    private boolean stopped = true;
+
     /**
      * Create a VesselGenerator based on distributions for one Terminal.
      * @param id the generator's id
      * @param model the model
      * @param terminal the terminal to generate ships for
+     * @param vesselType the vessel type to generate
      */
-    public VesselGeneratorDist(final String id, final PortModel model, final Terminal terminal)
+    public VesselGeneratorDist(final String id, final PortModel model, final Terminal terminal, final VesselType vesselType)
     {
-        super(id, model, terminal);
+        super(id, model, terminal, vesselType);
     }
 
+    @Override
     public void start()
     {
+        this.stopped = false;
         Throw.whenNull(this.vesselIatWeekdays, "vesselIatWeekdays");
         Throw.whenNull(this.vesselIatWeekends, "vesselIatWeekends");
         Throw.whenNull(this.callSizeDistUnloading, "callSizeDistUnloading");
@@ -89,8 +95,16 @@ public class VesselGeneratorDist extends VesselGenerator
         getSimulator().scheduleEventRel(this.vesselIatWeekends.draw(), () -> nextWeekend());
     }
 
+    @Override
+    public void stop()
+    {
+        this.stopped = true;
+    }
+
     protected void nextWeekday()
     {
+        if (this.stopped)
+            return;
         // is it a weekday?
         if (getSimulator().getSimulatorClockTime().dayOfWeekInt() <= 5)
         {
@@ -101,6 +115,8 @@ public class VesselGeneratorDist extends VesselGenerator
 
     protected void nextWeekend()
     {
+        if (this.stopped)
+            return;
         // is it a weekend?
         if (getSimulator().getSimulatorClockTime().dayOfWeekInt() >= 6)
         {
