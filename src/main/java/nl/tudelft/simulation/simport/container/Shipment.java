@@ -10,7 +10,7 @@ import org.djutils.base.Identifiable;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public interface Container extends Identifiable
+public interface Shipment extends Identifiable
 {
     default String getType()
     {
