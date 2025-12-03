@@ -16,9 +16,9 @@ public class Booking implements Shipment
     /**
      * The status of the booking.
      * <ul>
-     * <li>bit 6+7: 00 = 20 ft, 01 = 40 ft, 10 = 45 ft</li>
-     * <li>bit 5: empty = 0, full = 1</li>
-     * <li>bit 4: normal = 0, reefer = 1</li>
+     * <li>bit 0+1 (0x3): 00 = 20 ft, 01 = 40 ft, 10 = 45 ft</li>
+     * <li>bit 2 (0x4): empty = 0, full = 1</li>
+     * <li>bit 3 (0x8): normal = 0, reefer = 1</li>
      * </ul>
      */
     private final byte status;
