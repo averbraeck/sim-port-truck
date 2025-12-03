@@ -3,7 +3,7 @@ package nl.tudelft.simulation.simport.container;
 import org.djutils.base.Identifiable;
 
 /**
- * Information about a container.
+ * Superclass of a container (import) and a booking (export).
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license.
