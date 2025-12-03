@@ -1,7 +1,7 @@
 package nl.tudelft.simulation.simport;
 
 /**
- * TransportMode.java.
+ * TransportMode, e.g. into a terminal or out of a terminal.
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license.
@@ -10,28 +10,54 @@ package nl.tudelft.simulation.simport;
  */
 public enum TransportMode
 {
-    /** none = 0. */
-    NONE,
+    /** deepsea = 0. */
+    DEEPSEA,
 
-    /** truck = 1. */
+    /** feeder = 1. */
+    FEEDER,
+
+    /** truck = 2. */
     TRUCK,
 
-    /** barge = 2. */
+    /** barge = 3. */
     BARGE,
 
-    /** rail = 3. */
-    RAIL,
-
-    /** short-sea / feeder = 4. */
-    SHORTSEA;
+    /** rail = 4. */
+    RAIL;
 
     public byte asByte()
     {
         return (byte) (this.ordinal());
     }
 
-    public static TransportMode fromByte(final byte transportModeNr)
+    public static TransportMode of(final int transportModeNr)
     {
         return values()[transportModeNr];
     }
+
+    public boolean isDeepsea()
+    {
+        return this.equals(DEEPSEA);
+    }
+
+    public boolean isFeeder()
+    {
+        return this.equals(FEEDER);
+    }
+
+    public boolean isTruck()
+    {
+        return this.equals(TRUCK);
+    }
+
+    public boolean isBarge()
+    {
+        return this.equals(BARGE);
+    }
+
+    public boolean isRail()
+    {
+        return this.equals(RAIL);
+    }
+
 }
