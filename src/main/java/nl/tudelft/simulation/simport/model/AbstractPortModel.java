@@ -2,7 +2,6 @@ package nl.tudelft.simulation.simport.model;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,9 +13,6 @@ import org.djutils.io.ResourceResolver;
 import de.siegmar.fastcsv.reader.NamedCsvReader;
 import de.siegmar.fastcsv.reader.NamedCsvRow;
 import nl.tudelft.simulation.dsol.SimRuntimeException;
-import nl.tudelft.simulation.dsol.animation.gis.GisMapInterface;
-import nl.tudelft.simulation.dsol.animation.gis.esri.EsriFileCsvParser;
-import nl.tudelft.simulation.dsol.animation.gis.osm.OsmFileCsvParser;
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterBoolean;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterDouble;
@@ -30,10 +26,6 @@ import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
 import nl.tudelft.simulation.jstats.streams.MersenneTwister;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
-import nl.tudelft.simulation.simport.gis.CoordinateTransformRdNewToWgs84;
-import nl.tudelft.simulation.simport.gis.GisHelper;
-import nl.tudelft.simulation.simport.gis.MultiGisRenderable2d;
-import nl.tudelft.simulation.simport.road.GraphFromGISObjects;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.terminal.TerminalStandard;
 
@@ -67,9 +59,6 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
 
     /** the booking counter. */
     private final AtomicInteger uniqueBookingNumber = new AtomicInteger(2000000);
-
-    /** the GIS map. */
-    private MultiGisRenderable2d gisMap;
 
     /**
      * Create a port model.
@@ -261,6 +250,16 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
      */
     protected abstract void buildTerminals();
 
+    /**
+     * Build the vessel generators, can be per terminal, or by reading vessel information from a file.
+     */
+    protected abstract void buildVesselGenerators();
+
+    /**
+     * Draw maps for the interactive version of the model.
+     */
+    protected abstract void drawMaps();
+
     @Override
     public void constructModel() throws SimRuntimeException
     {
@@ -270,41 +269,11 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         this.u01 = new DistUniform(this.randomStream, 0.0, 1.0);
 
         buildTerminals();
+        buildVesselGenerators();
 
         if (isInteractive())
         {
-            URL csvUrl = ResourceResolver.resolve("/resources/maps/por.csv").asUrl();
-            System.out.println("GIS definitions file: " + csvUrl.toString());
-            URL osmUrl = ResourceResolver.resolve("/resources/maps/por.osm.pbf").asUrl();
-            GisMapInterface osmMap = null;
-            System.out.println("GIS data file: " + osmUrl.toString());
-            try
-            {
-                this.gisMap = new MultiGisRenderable2d(getSimulator().getReplication());
-                osmMap = OsmFileCsvParser.parseMapFile(csvUrl, osmUrl, "Port of Rotterdam");
-                this.gisMap.add(osmMap);
-            }
-            catch (IOException exception)
-            {
-                throw new SimRuntimeException(exception);
-            }
-
-            URL csvCentroidUrl = ResourceResolver.resolve("/resources/hvm50/centroids2.csv").asUrl();
-            GisMapInterface esriMap;
-            System.out.println("ESRI-map file: " + csvCentroidUrl.toString());
-            try
-            {
-                esriMap =
-                        EsriFileCsvParser.parseMapFile(csvCentroidUrl, "centroids", new CoordinateTransformRdNewToWgs84(0, 0));
-                this.gisMap.add(esriMap);
-            }
-            catch (IOException e)
-            {
-                throw new SimRuntimeException(e);
-            }
-
-            GisHelper.drawMarkers(esriMap, this, csvCentroidUrl);
-            new GraphFromGISObjects(esriMap, this, csvCentroidUrl);
+            drawMaps();
         }
     }
 
@@ -344,15 +313,6 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     public DistUniform getU01()
     {
         return this.u01;
-    }
-
-    /**
-     * Return the GIS map for an interactive simulation.
-     * @return the GIS map for an interactive simulation
-     */
-    public MultiGisRenderable2d getGisMap()
-    {
-        return this.gisMap;
     }
 
     @Override
