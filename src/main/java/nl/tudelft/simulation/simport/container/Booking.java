@@ -1,7 +1,9 @@
 package nl.tudelft.simulation.simport.container;
 
+import java.util.Objects;
+
 /**
- * Compact implementation of a booking (all info in 1 byte).
+ * Compact implementation of a booking (all type info in 1 byte).
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license. See <a href="https://opentrafficsim.org/docs/current/license.html">OpenTrafficSim License</a>.
@@ -10,8 +12,11 @@ package nl.tudelft.simulation.simport.container;
  */
 public class Booking implements Shipment
 {
-    /** Container number. */
+    /** Booking number. */
     private final int nr;
+
+    /** Container for this booking. */
+    private int containerNr = -1;
 
     /**
      * The status of the booking.
@@ -65,6 +70,43 @@ public class Booking implements Shipment
     public boolean isReefer()
     {
         return (this.status & 0x8) == 0;
+    }
+
+    /**
+     * Return the container nr (id) linked to this booking. The value is -1 if no container is linked yet.
+     * @return the container nr (id) linked to this booking, or -1 if no container is linked yet.
+     */
+    public int getContainerNr()
+    {
+        return this.containerNr;
+    }
+
+    /**
+     * Set the container nr (id) linked to this booking. The value is -1 if no container is linked yet.
+     * @param containerNr the container nr (id) linked to this booking
+     */
+    public void setContainerNr(final int containerNr)
+    {
+        this.containerNr = containerNr;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.nr);
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Booking other = (Booking) obj;
+        return this.nr == other.nr;
     }
 
     @Override
