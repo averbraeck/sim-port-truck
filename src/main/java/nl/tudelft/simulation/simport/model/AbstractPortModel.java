@@ -256,6 +256,11 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         return absolutePath;
     }
 
+    /**
+     * Build the terminals, e.g. by reading them from a file.
+     */
+    protected abstract void buildTerminals();
+
     @Override
     public void constructModel() throws SimRuntimeException
     {
@@ -264,7 +269,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         this.streamInformation.addStream("default", new MersenneTwister(getInputParameterLong("generic.Seed")));
         this.u01 = new DistUniform(this.randomStream, 0.0, 1.0);
 
-        readTerminalsFromCsv(getInputParameterString("terminal.TerminalDefinitionPath"));
+        buildTerminals();
 
         if (isInteractive())
         {

@@ -30,4 +30,10 @@ public class PortModelTruck extends AbstractPortModel
         // no additions at the moment
     }
 
+    @Override
+    protected void buildTerminals()
+    {
+        readTerminalsFromCsv(getInputParameterString("terminal.TerminalDefinitionPath"));
+    }
+
 }
