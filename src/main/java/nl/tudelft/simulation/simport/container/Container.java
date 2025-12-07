@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.container;
 
+import java.util.Objects;
+
 import nl.tudelft.simulation.simport.TransportMode;
 
 /**
@@ -173,6 +175,25 @@ public class Container implements Shipment
     public boolean isDepotTransshipment()
     {
         return (this.modes & 0xC0) == 0xC0;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.nr);
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Container other = (Container) obj;
+        return this.nr == other.nr;
     }
 
     @Override
