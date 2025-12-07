@@ -4,7 +4,7 @@ import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterException;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 
 /**
- * PortModelTruck. is the base model to run..
+ * PortModelTruck is the base model to run..
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license.
