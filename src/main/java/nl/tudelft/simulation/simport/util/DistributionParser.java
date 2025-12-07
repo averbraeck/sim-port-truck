@@ -10,6 +10,8 @@ import nl.tudelft.simulation.jstats.distributions.DistContinuous;
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.DistDiscreteConstant;
 import nl.tudelft.simulation.jstats.distributions.DistDiscreteUniform;
+import nl.tudelft.simulation.jstats.distributions.DistEmpiricalDiscreteLong;
+import nl.tudelft.simulation.jstats.distributions.DistEmpiricalInterpolated;
 import nl.tudelft.simulation.jstats.distributions.DistErlang;
 import nl.tudelft.simulation.jstats.distributions.DistExponential;
 import nl.tudelft.simulation.jstats.distributions.DistGamma;
@@ -23,6 +25,8 @@ import nl.tudelft.simulation.jstats.distributions.DistPearson6;
 import nl.tudelft.simulation.jstats.distributions.DistPoisson;
 import nl.tudelft.simulation.jstats.distributions.DistTriangular;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
+import nl.tudelft.simulation.jstats.distributions.empirical.DiscreteEmpiricalDistribution;
+import nl.tudelft.simulation.jstats.distributions.empirical.InterpolatedEmpiricalDistribution;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 
 /**
@@ -168,6 +172,22 @@ public final class DistributionParser
                 return new DistUniform(stream, min, max);
             }
 
+            // An empirical distribution is coded as: empirical(0.0, v0, c1, v1, ..., 1.0, vn)
+            case "empirical":
+            case "interpolated":
+            {
+                int nr = argArray.length / 2;
+                var values = new Double[nr];
+                var cumulativeProbabilities = new double[nr];
+                for (int i = 0; i < nr; i++)
+                {
+                    cumulativeProbabilities[i] = Double.parseDouble(argArray[2 * i].strip());
+                    values[i] = Double.parseDouble(argArray[2 * i + 1].strip());
+                }
+                var empiricalDist = new InterpolatedEmpiricalDistribution(values, cumulativeProbabilities);
+                return new DistEmpiricalInterpolated(stream, empiricalDist);
+            }
+
             default:
                 throw new SimPortRuntimeException(
                         "parsing distribution " + distStr + ": distribution " + distName + " unknown");
@@ -246,6 +266,22 @@ public final class DistributionParser
                 checkArgs(distStr, argArray, 1);
                 double lambda = argDouble(distStr, argArray, 0);
                 return new DistPoisson(stream, lambda);
+            }
+
+            // A discrete empirical distribution is coded as: discrete(0.0, v0, c1, v1, ..., 1.0, vn)
+            case "discreteempirical":
+            case "discrete":
+            {
+                int nr = argArray.length / 2;
+                var values = new Long[nr];
+                var cumulativeProbabilities = new double[nr];
+                for (int i = 0; i < nr; i++)
+                {
+                    cumulativeProbabilities[i] = Double.parseDouble(argArray[2 * i].strip());
+                    values[i] = Long.parseLong(argArray[2 * i + 1].strip());
+                }
+                var empiricalDist = new DiscreteEmpiricalDistribution(values, cumulativeProbabilities);
+                return new DistEmpiricalDiscreteLong(stream, empiricalDist);
             }
 
             default:
