@@ -18,7 +18,7 @@ When continuous stochastic distributions are used in the input parameters, they 
 | `pearson5`  |   | Pearson-5 distribution. | `pearson5(alpha,beta)` | `alpha` = shape parameter, `beta` = scale parameter |
 | `pearson6`  |   | Pearson-6 distribution. | `pearson6(alpha1,alpha2,beta)` | `alpha1` = shape parameter 1, `alpha2` = shape parameter 2, `beta` = scale parameter |
 | `unif` | `uniform` | Uniform distribution. | `unif(min,max)` | `min` = lowest value, `max` = highest value |
-| `empirical` | `interpolated` | `empirical(c0,v0,c1,v1,..,cn,vn)` | `c` = cumulative probability, `v` = value. `c0` = 0.0, `cn` = 1.0. `c` values have to be sorted. |
+| `empirical` | `interpolated` | Empirical distribution | `empirical(c0,v0,c1,v1,..,cn,vn)` | `c` = cumulative probability, `v` = value. `c0` = 0.0, `cn` = 1.0. `c` values have to be sorted. |
 
 
 ## Discrete stochastic distributions
@@ -34,7 +34,7 @@ When discrete stochastic distributions are used in the input parameters, they ca
 | `geometric` |  | Distribution that returns the number of failures before first success. | `geometric(p)` | `p` = the probability of success |
 | `negbinomial` |  | Negative Binomial distribution | `negbinomial(s,p)` | `p` = the probability of success, `s` = the number of successes |
 | `pois`  | `poisson` | Poisson distribution. | `pois(lambda)` | `lambda` = average number of arrivals per time unit |
-| `discreteempirical` | `discrete` | `discrete(c0,v0,c1,v1,..,cn,vn)` | `c` = cumulative probability, `v` = value. `c0` = 0.0, `cn` = 1.0. `c` values have to be sorted. |
+| `discreteempirical` | `discrete` | Empirical distribution | `discrete(c0,v0,c1,v1,..,cn,vn)` | `c` = cumulative probability, `v` = value. `c0` = 0.0, `cn` = 1.0. `c` values have to be sorted. |
 
 
 ## volume-weekpattern csv file definition
