@@ -1,5 +1,8 @@
 package nl.tudelft.simulation.simport.vessel;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.base.Identifiable;
 import org.djutils.event.LocalEventProducer;
@@ -10,6 +13,8 @@ import nl.tudelft.simulation.dsol.formalisms.eventscheduling.SimEventInterface;
 import nl.tudelft.simulation.dsol.logger.Cat;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
+import nl.tudelft.simulation.simport.container.Booking;
+import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
@@ -21,7 +26,7 @@ import nl.tudelft.simulation.simport.terminal.Terminal;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public abstract class Vessel extends LocalEventProducer implements Identifiable
+public class Vessel extends LocalEventProducer implements Identifiable
 {
     /** the id of the ship. */
     private final String id;
@@ -55,6 +60,12 @@ public abstract class Vessel extends LocalEventProducer implements Identifiable
 
     /** Event for ATD. */
     private SimEventInterface<Duration> atdEvent;
+
+    /** load container list. */
+    private List<Booking> loadList = new ArrayList<>();
+
+    /** unloadload container list. */
+    private List<Container> unloadList = new ArrayList<>();
 
     /**
      * Create a Vessel.
@@ -157,7 +168,7 @@ public abstract class Vessel extends LocalEventProducer implements Identifiable
 
     protected void vesselArrival()
     {
-        CategoryLogger.with(Cat.DSOL).debug("Vessel {} arrived at    terminal {}", this.id, this.terminal);
+        CategoryLogger.with(Cat.DSOL).debug("Vessel {} arrived at terminal {}", this.id, this.terminal);
         // TODO: getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.25), () -> unloadContainers());
         // TODO: getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.75), () -> loadContainers());
     }

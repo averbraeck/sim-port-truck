@@ -56,7 +56,7 @@ public abstract class VesselGenerator implements Identifiable
     public void generateVessel(final String id, final ClockTime eta, final ClockTime etd, final VesselLoadInfo unloadInfo,
             final VesselLoadInfo loadInfo)
     {
-        new VesselStandard(id, this.vesselType, this.model, eta, etd, unloadInfo, loadInfo, this.terminal);
+        new Vessel(id, this.vesselType, this.model, eta, etd, this.terminal);
     }
 
     /**
@@ -82,6 +82,15 @@ public abstract class VesselGenerator implements Identifiable
     public ClockDevsSimulatorInterface getSimulator()
     {
         return this.model.getSimulator();
+    }
+
+    /**
+     * Return the model.
+     * @return the model
+     */
+    public PortModel getModel()
+    {
+        return this.model;
     }
 
     /**

@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.vessel;
 
+import java.util.List;
+
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.exceptions.Throw;
@@ -7,6 +9,9 @@ import org.djutils.exceptions.Throw;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
+import nl.tudelft.simulation.jstats.streams.StreamInterface;
+import nl.tudelft.simulation.simport.container.Booking;
+import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 
@@ -99,6 +104,34 @@ public class VesselGeneratorDist extends VesselGenerator
     public void stop()
     {
         this.stopped = true;
+    }
+
+    protected void makeContainerList(final VesselLoadInfo vli, final List<Container> ll)
+    {
+        // #cont = #teu / (2.0 - frac20), because c.f + 2.c.(1-f) = t => c = t / (2 - f)
+        int nrContainers = (int) (vli.callSizeTEU() / (2.0 - vli.fraction20ft()));
+        StreamInterface rng = getModel().getDefaultStream();
+        for (int i = 0; i < nrContainers; i++)
+        {
+            byte size = rng.nextDouble() < vli.fraction20ft() ? (byte) 20 : (byte) 40;
+            boolean empty = rng.nextDouble() < vli.fractionEmpty();
+            boolean reefer = rng.nextDouble() < vli.fractionReefer();
+            ll.add(new Container(getModel().uniqueContainerNr(), size, empty, reefer));
+        }
+    }
+
+    protected void makeBookingList(final VesselLoadInfo vli, final List<Booking> ll)
+    {
+        // #cont = #teu / (2.0 - frac20), because c.f + 2.c.(1-f) = t => c = t / (2 - f)
+        int nrContainers = (int) (vli.callSizeTEU() / (2.0 - vli.fraction20ft()));
+        StreamInterface rng = getModel().getDefaultStream();
+        for (int i = 0; i < nrContainers; i++)
+        {
+            byte size = rng.nextDouble() < vli.fraction20ft() ? (byte) 20 : (byte) 40;
+            boolean empty = rng.nextDouble() < vli.fractionEmpty();
+            boolean reefer = rng.nextDouble() < vli.fractionReefer();
+            ll.add(new Booking(getModel().uniqueBookingNr(), size, empty, reefer));
+        }
     }
 
     protected void nextWeekday()
