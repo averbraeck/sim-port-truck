@@ -35,9 +35,6 @@ import nl.tudelft.simulation.naming.context.util.ContextUtil;
  */
 public class MultiGisRenderable2d implements GisRenderable2d
 {
-    /** */
-    private static final long serialVersionUID = 20200108L;
-
     /** the map to display. */
     protected List<GisMapInterface> mapList = new ArrayList<>();
 
@@ -259,8 +256,6 @@ public class MultiGisRenderable2d implements GisRenderable2d
 
     public static class InternalGisRenderable2d implements GisRenderable2d
     {
-        private static final long serialVersionUID = 1L;
-
         private final GisMapInterface map;
 
         private final MultiGisRenderable2d parent;

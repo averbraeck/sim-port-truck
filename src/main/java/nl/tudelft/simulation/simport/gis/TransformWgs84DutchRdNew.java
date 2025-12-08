@@ -18,7 +18,6 @@ import java.awt.geom.Rectangle2D;
  **/
 public final class TransformWgs84DutchRdNew
 {
-
     /** Western boundary of the Dutch RD system. */
     private static final double WGS84_WEST_LIMIT = 3.2;
 
@@ -63,7 +62,6 @@ public final class TransformWgs84DutchRdNew
             throw new IllegalArgumentException("ellipswgs842rd input out of range (" + wgs84East + ", " + wgs84North + ")");
         }
         //@formatter:off
-        @SuppressWarnings("checkstyle:nowhitespacebefore")
         /** Coefficients for ellipsewgs842rd. */
         final double[][] r =
         { /* p down, q right */
@@ -73,7 +71,6 @@ public final class TransformWgs84DutchRdNew
             {      0.0  ,     -2.340,    0.0  ,   0.0  , 0.0   , },
             {      0.0  ,      0.0  ,    0.0  ,   0.0  , 0.0   , }
         };
-        @SuppressWarnings("checkstyle:nowhitespacebefore")
         final double[][] s =
         { /* p down, q right */
             { 463000.00 ,      0.433, 3638.893,   0.0  ,  0.092, },
@@ -121,7 +118,6 @@ public final class TransformWgs84DutchRdNew
         final double dY = (rdY - 463000) / 100000;
         /* Coefficients are for zone 31 (0E .. 6E); roughly west of Apeldoorn */
         //@formatter:off
-        @SuppressWarnings("checkstyle:nowhitespacebefore")
         final double[][] k =
         { /* p down, q right */
             { 3600 * 52.15517440, 3235.65389, -0.24750, -0.06550, 0.0    , },
@@ -131,7 +127,6 @@ public final class TransformWgs84DutchRdNew
             {         0.00530   ,    0.00033,  0.0    ,  0.0    , 0.0    , },
             {         0.0       ,    0.0    ,  0.0    ,  0.0    , 0.0    , }
         };
-        @SuppressWarnings("checkstyle:nowhitespacebefore")
         final double[][] l = { /* p down, q right */
             {  3600 * 5.38720621,    0.01199,  0.00022,  0.0    , 0.0    , },
             {      5260.52916   ,  105.94684,  2.45656,  0.05594, 0.00128, },
