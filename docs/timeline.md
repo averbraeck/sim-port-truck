@@ -16,8 +16,8 @@ The global timeline of events for one ship calling at a terminal is as follows:
 | DS<sub>ATA</sub>         | Start planning full import container truck visits to other terminal (DS terminal &rarr; DS/FD/SS terminal) |
 | TR<sub>ETD</sub>-24 h    | Make combi visits according to the percentage of possible combi visits |
 | TR<sub>ETD</sub>-24 h    | Book slots at terminals that have slot management. |
-| TR<sub>ETD</sub>-24 h    | Pre-notification to Portbase. |
-| TR<sub>ETD</sub>         | Drive to Terminal. |
+| TR<sub>ETD</sub>-24 h    | Pre-notification for terminal arrival. |
+| TR<sub>ETD</sub>         | Drive to terminal. |
 | TR<sub>ETA</sub> &plusmn; &Delta;t | Arrive at terminal with a deviation depending on congestion &rarr; TR<sub>ATA</sub>. Handle missed slot. |
 | TR<sub>ATA</sub>         | Queue at terminal gate |
 | TR<sub>ATA</sub>+t<sub>handling</sub> | Handling time at the terminal &rarr; TR<sub>ATD</sub> |
