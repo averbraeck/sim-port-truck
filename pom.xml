@@ -5,8 +5,8 @@
   <groupId>nl.tudelft.simulation</groupId>
   <artifactId>sim-port-truck</artifactId>
   <version>0.1</version>
-  <name>Dynamic Port Planning</name>
-  <description>Dynamic Port Planning for Hinterland Truck Transport</description>
+  <name>Port simulation library</name>
+  <description>Port Simulation Library for Hinterland Truck Transport</description>
 
   <properties>
     <maven.compiler.target>17</maven.compiler.target>
