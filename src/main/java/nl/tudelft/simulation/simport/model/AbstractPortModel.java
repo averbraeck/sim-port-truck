@@ -1,12 +1,16 @@
 package nl.tudelft.simulation.simport.model;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.io.ResourceResolver;
 
@@ -24,10 +28,14 @@ import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterMap;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterString;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
+import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
 import nl.tudelft.simulation.jstats.streams.MersenneTwister;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
+import nl.tudelft.simulation.simport.terminal.GateConstant;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.terminal.TerminalStandard;
+import nl.tudelft.simulation.simport.terminal.YardConstant;
+import nl.tudelft.simulation.simport.util.DistributionParser;
 
 /**
  * PortModel is an abstract 'parent' model with key objects such as the terminals and the road network.
@@ -110,7 +118,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     true, "%d", 4.0));
             volumeMap.add(new InputParameterDouble("DeepseaFraction", "Fraction deepsea containers", "[0,1]", 0.5, 0.0, 1.0,
                     true, true, "%d", 5.0));
-            volumeMap.add(new InputParameterDouble("ShortseaTransshipFraction", "Fraction shortsea transshipment", "[0,1]", 0.9,
+            volumeMap.add(new InputParameterDouble("FeederTransshipFraction", "Fraction feeder transshipment", "[0,1]", 0.9,
                     0.0, 1.0, true, true, "%d", 6.0));
             volumeMap.add(new InputParameterBoolean("WeekPattern", "Use week/month pattern file?",
                     "If week/month pattern file, define below", false, 7.0));
@@ -122,12 +130,10 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     "", 10.0));
 
             InputParameterMap terminalMap = new InputParameterMap("terminal", "Terminals", "Terminal parameters", 3.0);
-            terminalMap.add(new InputParameterString("TerminalDefinitionPath", "File path terminal definitions",
-                    "File path terminals.csv", "", 1.0));
-            terminalMap.add(new InputParameterString("VolumePath", "File path terminal volumes",
-                    "Volumes and call size csv file", "", 2.0));
+            terminalMap.add(new InputParameterString("TerminalFiles", "List of terminal files, separated by comma",
+                    "Properties files for terminals", "", 1.0));
             terminalMap.add(new InputParameterString("DepotDefinitionPath", "File path empty depot definitions",
-                    "File path depots.csv", "", 2.5));
+                    "File path depots.csv", "", 2.0));
             terminalMap.add(new InputParameterBoolean("WeekPattern", "Use terminal week/month pattern file?",
                     "If week/month pattern file, define below", false, 3.0));
             terminalMap.add(new InputParameterString("WeekPatternPath", "File path terminal week/month pattern",
@@ -278,24 +284,52 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     }
 
     /**
-     * Read the terminals from a CSV file.
+     * Read the terminals with a constant number of lanes for the gate, and constant distributions for gate handling times and
+     * yard handling times from a list of property files
      * @param terminalCsvPath path to the file with terminal parameters
      */
-    public void readTerminalsFromCsv(final String terminalCsvPath)
+    public void readTerminalPropertyFiles()
     {
-        try (NamedCsvReader csvReader =
-                NamedCsvReader.builder().build(new InputStreamReader(ResourceResolver.resolve(terminalCsvPath).openStream())))
+        String[] tpNames = getInputParameterString("terminal.terminalFiles").split(",");
+        for (String tpName : tpNames)
         {
-            for (NamedCsvRow row : csvReader)
+            String tpFilename = getInputParameterString("generic.InputPath") + "/" + tpName;
+            Properties tp = new Properties();
+            try (InputStream tpStream = new FileInputStream(tpFilename))
             {
-                var terminal = new TerminalStandard(row.getField("id"), this, Double.parseDouble(row.getField("lat")),
-                        Double.parseDouble(row.getField("lon")));
+                tp.load(tpStream);
+                String id = tp.getProperty("id");
+                String name = tp.getProperty("name"); // TODO
+                var lat = Double.parseDouble(tp.getProperty("lat"));
+                var lon = Double.parseDouble(tp.getProperty("lon"));
+                var terminal = new TerminalStandard(id, this, lat, lon);
                 addTerminal(terminal);
+                var gate = new GateConstant(terminal, "gate");
+                gate.setLanesIn(Integer.parseInt(tp.getProperty("gate.lanesIn")));
+                gate.setLanesOut(Integer.parseInt(tp.getProperty("gate.lanesOut")));
+                gate.setTimeInDist(
+                        DistributionParser.parseDistContinuousDuration(tp.getProperty("gate.timeInDist"), DurationUnit.MINUTE,
+                        this.randomStream));
+                gate.setTimeOutDist(new DistContinuousDuration(
+                        DistributionParser.parseDistContinuous(row.getField("gatetime_out"), this.randomStream),
+                        DurationUnit.MINUTE));
+                terminal.setGate(gate);
+                var yard = new YardConstant(terminal, "yard");
+                terminal.setYard(yard);
+                yard.setHandlingTimeImportDist(new DistContinuousDuration(
+                        DistributionParser.parseDistContinuous(row.getField("ht_import"), this.randomStream),
+                        DurationUnit.MINUTE));
+                yard.setHandlingTimeExportDist(new DistContinuousDuration(
+                        DistributionParser.parseDistContinuous(row.getField("ht_export"), this.randomStream),
+                        DurationUnit.MINUTE));
+                yard.setHandlingTimeDualDist(new DistContinuousDuration(
+                        DistributionParser.parseDistContinuous(row.getField("ht_dual"), this.randomStream),
+                        DurationUnit.MINUTE));
             }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
+            catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
     }
 

@@ -21,8 +21,20 @@ public interface Gate extends Identifiable
     /** @return the port facility (terminal or depot) to which this gate belongs. */
     ContainerFacility getContainerFacility();
 
+    /**
+     * Set the (current or fixed) number of lanes into the terminal.
+     * @param lanesIn the number of lanes into the terminal
+     */
+    void setLanesIn(int lanesIn);
+
     /** @return the current number of lanes into the terminal or depot. */
     int getCurrentLanesIn();
+
+    /**
+     * Set the (current or fixed) number of lanes out of the terminal.
+     * @param lanesOut the number of lanes out of the terminal
+     */
+    void setLanesOut(int lanesOut);
 
     /** @return the current number of lanes out of the terminal or depot. */
     int getCurrentLanesOut();

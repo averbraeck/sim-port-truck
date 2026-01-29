@@ -37,23 +37,26 @@ public class TestReadNdwData
         // 51.997346972229955, 3.964056685829537
         // 51.8647871885184, 4.337355551237825
 
+        // var bbox =
+        // new DailyDataProcessor.BoundingBox(51.8647871885184, 3.964056685829537, 51.997346972229955, 4.337355551237825);
+        // 52.02041607603942, 4.363869022825655, 52.015563571159035, 4.374816079872749
         var bbox =
-                new DailyDataProcessor.BoundingBox(51.8647871885184, 3.964056685829537, 51.997346972229955, 4.337355551237825);
+                new DailyDataProcessor.BoundingBox(52.015563571159035, 4.363869022825655, 52.02041607603942, 4.374816079872749);
         var proc = new DailyDataProcessor(metadataMap, java.time.Duration.ofMinutes(15).toMillis(), bbox, true);
 
         // 1) Sequential (baseline)
-        try (var out = new BufferedWriter(new FileWriter("E:/NDW/seq.csv"), 1 << 20))
-        {
-            proc.processZipSequential(data, out);
-        }
+        // try (var out = new BufferedWriter(new FileWriter("E:/NDW/seq.csv"), 1 << 20))
+        // {
+        // proc.processZipSequential(data, out);
+        // }
 
         // 2) Ordered parallel (barrier per bucket)
-//        try (var out = new BufferedWriter(new FileWriter("E:/NDW/par.csv"), 1 << 20))
-//        {
+        try (var out = new BufferedWriter(new FileWriter("E:/NDW/par.csv"), 1 << 20))
+        {
             // true argument for fastcsv
-            // proc.processZipParallelOrderedAndStreamCsv(data, Runtime.getRuntime().availableProcessors(), out, true);
-//            proc.processZipParallel(data, Runtime.getRuntime().availableProcessors(), out);
-//        }
+            proc.processZipParallelOrderedAndStreamCsv(data, Runtime.getRuntime().availableProcessors(), out, true);
+            proc.processZipParallel(data, Runtime.getRuntime().availableProcessors(), out);
+        }
     }
 
 }

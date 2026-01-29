@@ -8,10 +8,8 @@ import org.djutils.io.ResourceResolver;
 
 import de.siegmar.fastcsv.reader.NamedCsvReader;
 import de.siegmar.fastcsv.reader.NamedCsvRow;
-import nl.tudelft.simulation.jstats.distributions.DistContinuous;
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
-import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.util.DistributionParser;
 
@@ -38,10 +36,10 @@ public class ReadVesselDistCsv
             for (NamedCsvRow row : csvReader)
             {
                 var terminal = model.getTerminal(row.getField("terminal"));
-                DistContinuousDuration iatWd =
-                        parseDcd(row.getField("iatDistWeekdays"), DurationUnit.HOUR, model.getDefaultStream());
-                DistContinuousDuration iatWe =
-                        parseDcd(row.getField("iatDistWeekends"), DurationUnit.HOUR, model.getDefaultStream());
+                DistContinuousDuration iatWd = DistributionParser.parseDistContinuousDuration(row.getField("iatDistWeekdays"),
+                        DurationUnit.HOUR, model.getDefaultStream());
+                DistContinuousDuration iatWe = DistributionParser.parseDistContinuousDuration(row.getField("iatDistWeekends"),
+                        DurationUnit.HOUR, model.getDefaultStream());
                 DistDiscrete callSizeU =
                         DistributionParser.parseDistDiscrete(row.getField("callSizeDistUnloading"), model.getDefaultStream());
                 DistDiscrete callSizeL =
@@ -73,12 +71,6 @@ public class ReadVesselDistCsv
         {
             throw new RuntimeException(e);
         }
-    }
-
-    public static DistContinuousDuration parseDcd(final String distStr, final DurationUnit unit, final StreamInterface stream)
-    {
-        DistContinuous dc = DistributionParser.parseDistContinuous(distStr, stream);
-        return new DistContinuousDuration(dc, unit);
     }
 
 }

@@ -61,10 +61,10 @@ public class Vessel extends LocalEventProducer implements Identifiable
     /** Event for ATD. */
     private SimEventInterface<Duration> atdEvent;
 
-    /** load container list. */
+    /** load booking list. */
     private List<Booking> loadList = new ArrayList<>();
 
-    /** unloadload container list. */
+    /** unload container list. */
     private List<Container> unloadList = new ArrayList<>();
 
     /**

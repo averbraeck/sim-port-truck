@@ -1,5 +1,6 @@
 package nl.tudelft.simulation.simport.util;
 
+import org.djunits.unit.DurationUnit;
 import org.djutils.exceptions.Throw;
 
 import nl.tudelft.simulation.jstats.distributions.DistBernoulli;
@@ -27,6 +28,7 @@ import nl.tudelft.simulation.jstats.distributions.DistTriangular;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
 import nl.tudelft.simulation.jstats.distributions.empirical.DiscreteEmpiricalDistribution;
 import nl.tudelft.simulation.jstats.distributions.empirical.InterpolatedEmpiricalDistribution;
+import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 
 /**
@@ -288,6 +290,13 @@ public final class DistributionParser
                 throw new SimPortRuntimeException(
                         "parsing distribution " + distStr + ": distribution " + distName + " unknown");
         }
+    }
+
+    public static DistContinuousDuration parseDistContinuousDuration(final String distStr, final DurationUnit unit,
+            final StreamInterface stream)
+    {
+        DistContinuous dc = DistributionParser.parseDistContinuous(distStr, stream);
+        return new DistContinuousDuration(dc, unit);
     }
 
     private static void checkArgs(final String distStr, final String[] argArray, final int expectedNr)

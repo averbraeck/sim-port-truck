@@ -67,6 +67,34 @@ public class YardConstant implements Yard
         this.id = id;
     }
 
+    /**
+     * Set the distribution for the handling time for dropping off an export container.
+     * @param handlingTimeExportDist the distribution for the handling time for dropping off an export container
+     */
+    public void setHandlingTimeExportDist(final DistContinuousDuration handlingTimeExportDist)
+    {
+        this.handlingTimeExportDist = handlingTimeExportDist;
+    }
+
+    /**
+     * Set the distribution for the handling time for picking up an import container.
+     * @param handlingTimeImportDist the distribution for the handling time for picking up an import container
+     */
+    public void setHandlingTimeImportDist(final DistContinuousDuration handlingTimeImportDist)
+    {
+        this.handlingTimeImportDist = handlingTimeImportDist;
+    }
+
+    /**
+     * Set the distribution for the handling time for a dual move (dropping off and picking up a container).
+     * @param handlingTimeDualDist the distribution for the handling time for a dual move (dropping off and picking up a
+     *            container)
+     */
+    public void setHandlingTimeDualDist(final DistContinuousDuration handlingTimeDualDist)
+    {
+        this.handlingTimeDualDist = handlingTimeDualDist;
+    }
+
     @Override
     public Duration getHandlingTimeExport()
     {

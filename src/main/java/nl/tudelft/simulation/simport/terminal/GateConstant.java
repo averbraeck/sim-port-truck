@@ -65,15 +65,10 @@ public class GateConstant implements Gate
         return this.portFacility;
     }
 
-    /**
-     * Set the number of lanes into the terminal.
-     * @param lanesIn the number of lanes into the terminal
-     * @return the facility instance for method chaining
-     */
-    public GateConstant setLanesIn(final int lanesIn)
+    @Override
+    public void setLanesIn(final int lanesIn)
     {
         this.lanesIn = lanesIn;
-        return this;
     }
 
     @Override
@@ -82,15 +77,10 @@ public class GateConstant implements Gate
         return this.lanesIn;
     }
 
-    /**
-     * Set the number of lanes out of the terminal.
-     * @param lanesOut the number of lanes out of the terminal
-     * @return the facility instance for method chaining
-     */
-    public GateConstant setLanesOut(final int lanesOut)
+    @Override
+    public void setLanesOut(final int lanesOut)
     {
         this.lanesOut = lanesOut;
-        return this;
     }
 
     @Override
@@ -102,12 +92,10 @@ public class GateConstant implements Gate
     /**
      * Set the fixed handling time distribution for entering the terminal.
      * @param timeInDist the fixed handling time distribution for entering the terminal
-     * @return the facility instance for method chaining
      */
-    public GateConstant setTimeInDist(final DistContinuousDuration timeInDist)
+    public void setTimeInDist(final DistContinuousDuration timeInDist)
     {
         this.timeInDist = timeInDist;
-        return this;
     }
 
     @Override
@@ -119,12 +107,10 @@ public class GateConstant implements Gate
     /**
      * Set the fixed handling time distribution for leaving the terminal.
      * @param timeInDist the fixed handling time distribution for leaving the terminal
-     * @return the facility instance for method chaining
      */
-    public GateConstant setTimeOutDist(final DistContinuousDuration timeOutDist)
+    public void setTimeOutDist(final DistContinuousDuration timeOutDist)
     {
         this.timeOutDist = timeOutDist;
-        return this;
     }
 
     @Override

@@ -419,28 +419,34 @@ public class DailyDataProcessor
     private void writeRow(final CsvWriter csv, final TrafficAggregator.AggregatedBucket b)
     {
         SiteMetadata md = this.metadataMap.get(b.siteId);
-        String road = md != null ? md.roadName() : "";
-        String dir = md != null ? md.direction() : "";
-        String lanes = String.valueOf(md != null ? md.numberOfLanes() : 0);
-        String lat = md != null && !Double.isNaN(md.lat()) ? String.format(Locale.ROOT, "%.7f", md.lat()) : "";
-        String lon = md != null && !Double.isNaN(md.lon()) ? String.format(Locale.ROOT, "%.7f", md.lon()) : "";
-        String hm = (md != null && md.hm() != null) ? String.format(Locale.ROOT, "%.2f", md.hm()) : "";
-        String flow = String.format(Locale.ROOT, "%.0f", b.totalFlow);
-        String spd = String.format(Locale.ROOT, "%.3f", b.avgSpeed());
-        csv.writeRow(String.valueOf(b.bucketId), b.siteId, road, dir, lanes, lat, lon, hm, b.classLabel, flow, spd);
+        if (this.bbox.contains(md.lat(), md.lon()))
+        {
+            String road = md != null ? md.roadName() : "";
+            String dir = md != null ? md.direction() : "";
+            String lanes = String.valueOf(md != null ? md.numberOfLanes() : 0);
+            String lat = md != null && !Double.isNaN(md.lat()) ? String.format(Locale.ROOT, "%.7f", md.lat()) : "";
+            String lon = md != null && !Double.isNaN(md.lon()) ? String.format(Locale.ROOT, "%.7f", md.lon()) : "";
+            String hm = (md != null && md.hm() != null) ? String.format(Locale.ROOT, "%.2f", md.hm()) : "";
+            String flow = String.format(Locale.ROOT, "%.0f", b.totalFlow);
+            String spd = String.format(Locale.ROOT, "%.3f", b.avgSpeed());
+            csv.writeRow(String.valueOf(b.bucketId), b.siteId, road, dir, lanes, lat, lon, hm, b.classLabel, flow, spd);
+        }
     }
 
     private void writeRow(final PrintWriter pw, final TrafficAggregator.AggregatedBucket b)
     {
         SiteMetadata md = this.metadataMap.get(b.siteId);
-        String road = md != null ? safeCsv(md.roadName()) : "";
-        String dir = md != null ? safeCsv(md.direction()) : "";
-        int lanes = md != null ? md.numberOfLanes() : 0;
-        double lat = md != null ? md.lat() : Double.NaN;
-        double lon = md != null ? md.lon() : Double.NaN;
-        String hm = (md != null && md.hm() != null) ? String.format(Locale.ROOT, "%.2f", md.hm()) : "";
-        pw.printf(Locale.ROOT, "%d,%s,%s,%s,%d,%.7f,%.7f,%s,%s,%.0f,%.3f%n", b.bucketId, b.siteId, road, dir, lanes, lat, lon,
-                hm, b.classLabel, b.totalFlow, b.avgSpeed());
+        if (this.bbox.contains(md.lat(), md.lon()))
+        {
+            String road = md != null ? safeCsv(md.roadName()) : "";
+            String dir = md != null ? safeCsv(md.direction()) : "";
+            int lanes = md != null ? md.numberOfLanes() : 0;
+            double lat = md != null ? md.lat() : Double.NaN;
+            double lon = md != null ? md.lon() : Double.NaN;
+            String hm = (md != null && md.hm() != null) ? String.format(Locale.ROOT, "%.2f", md.hm()) : "";
+            pw.printf(Locale.ROOT, "%d,%s,%s,%s,%d,%.7f,%.7f,%s,%s,%.0f,%.3f%n", b.bucketId, b.siteId, road, dir, lanes, lat,
+                    lon, hm, b.classLabel, b.totalFlow, b.avgSpeed());
+        }
     }
 
     private static double safeParseDouble(final String s)
