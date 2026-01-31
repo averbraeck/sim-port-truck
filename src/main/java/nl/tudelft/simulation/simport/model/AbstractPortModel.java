@@ -3,7 +3,6 @@ package nl.tudelft.simulation.simport.model;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -12,10 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
-import org.djutils.io.ResourceResolver;
 
-import de.siegmar.fastcsv.reader.NamedCsvReader;
-import de.siegmar.fastcsv.reader.NamedCsvRow;
 import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterBoolean;
@@ -28,7 +24,6 @@ import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterMap;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterString;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
-import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
 import nl.tudelft.simulation.jstats.streams.MersenneTwister;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.terminal.GateConstant;
@@ -290,7 +285,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
      */
     public void readTerminalPropertyFiles()
     {
-        String[] tpNames = getInputParameterString("terminal.terminalFiles").split(",");
+        String[] tpNames = getInputParameterString("terminal.TerminalFiles").split(",");
         for (String tpName : tpNames)
         {
             String tpFilename = getInputParameterString("generic.InputPath") + "/" + tpName;
@@ -307,24 +302,19 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                 var gate = new GateConstant(terminal, "gate");
                 gate.setLanesIn(Integer.parseInt(tp.getProperty("gate.lanesIn")));
                 gate.setLanesOut(Integer.parseInt(tp.getProperty("gate.lanesOut")));
-                gate.setTimeInDist(
-                        DistributionParser.parseDistContinuousDuration(tp.getProperty("gate.timeInDist"), DurationUnit.MINUTE,
-                        this.randomStream));
-                gate.setTimeOutDist(new DistContinuousDuration(
-                        DistributionParser.parseDistContinuous(row.getField("gatetime_out"), this.randomStream),
-                        DurationUnit.MINUTE));
+                gate.setTimeInDist(DistributionParser.parseDistContinuousDuration(tp.getProperty("gate.timeInDist"),
+                        DurationUnit.MINUTE, this.randomStream));
+                gate.setTimeOutDist(DistributionParser.parseDistContinuousDuration(tp.getProperty("gate.timeOutDist"),
+                        DurationUnit.MINUTE, this.randomStream));
                 terminal.setGate(gate);
                 var yard = new YardConstant(terminal, "yard");
                 terminal.setYard(yard);
-                yard.setHandlingTimeImportDist(new DistContinuousDuration(
-                        DistributionParser.parseDistContinuous(row.getField("ht_import"), this.randomStream),
-                        DurationUnit.MINUTE));
-                yard.setHandlingTimeExportDist(new DistContinuousDuration(
-                        DistributionParser.parseDistContinuous(row.getField("ht_export"), this.randomStream),
-                        DurationUnit.MINUTE));
-                yard.setHandlingTimeDualDist(new DistContinuousDuration(
-                        DistributionParser.parseDistContinuous(row.getField("ht_dual"), this.randomStream),
-                        DurationUnit.MINUTE));
+                yard.setHandlingTimeImportDist(DistributionParser.parseDistContinuousDuration(
+                        tp.getProperty("handling.timeImportDist"), DurationUnit.MINUTE, this.randomStream));
+                yard.setHandlingTimeExportDist(DistributionParser.parseDistContinuousDuration(
+                        tp.getProperty("handling.timeExportDist"), DurationUnit.MINUTE, this.randomStream));
+                yard.setHandlingTimeDualDist(DistributionParser.parseDistContinuousDuration(
+                        tp.getProperty("handling.timeDualDist"), DurationUnit.MINUTE, this.randomStream));
             }
             catch (IOException e)
             {

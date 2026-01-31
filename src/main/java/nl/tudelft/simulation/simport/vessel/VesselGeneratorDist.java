@@ -7,6 +7,8 @@ import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.exceptions.Throw;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
+import nl.tudelft.simulation.jstats.distributions.Dist;
+import nl.tudelft.simulation.jstats.distributions.DistContinuous;
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
@@ -43,11 +45,17 @@ public class VesselGeneratorDist extends VesselGenerator
     /** The vessel interarrival times on weekends. */
     private DistContinuousDuration vesselIatWeekends;
 
-    /** The call size distribution for unloading. */
-    private DistDiscrete callSizeDistUnloading;
+    /** The call size distribution (discrete) for unloading. */
+    private DistDiscrete callSizeDistDiscUnloading;
 
-    /** The call size distribution for loading. */
-    private DistDiscrete callSizeDistLoading;
+    /** The call size distribution (discrete) for loading. */
+    private DistDiscrete callSizeDistDiscLoading;
+
+    /** The call size distribution (continuous) for unloading. */
+    private DistContinuous callSizeDistContUnloading;
+
+    /** The call size distribution (continuous) for loading. */
+    private DistContinuous callSizeDistContLoading;
 
     /** The 20/40 ft ratio for unloading. */
     private double fraction20ftUnloading = Double.NaN;
@@ -88,8 +96,10 @@ public class VesselGeneratorDist extends VesselGenerator
         this.stopped = false;
         Throw.whenNull(this.vesselIatWeekdays, "vesselIatWeekdays");
         Throw.whenNull(this.vesselIatWeekends, "vesselIatWeekends");
-        Throw.whenNull(this.callSizeDistUnloading, "callSizeDistUnloading");
-        Throw.whenNull(this.callSizeDistLoading, "callSizeDistLoading");
+        Throw.when(this.callSizeDistDiscUnloading == null || this.callSizeDistContUnloading == null, NullPointerException.class,
+                "callSizeDistUnloading not defined");
+        Throw.when(this.callSizeDistDiscLoading == null || this.callSizeDistContLoading == null, NullPointerException.class,
+                "callSizeDistLoading not defined");
         Throw.whenNaN(this.fraction20ftUnloading, "fraction20ftUnloading");
         Throw.whenNaN(this.fraction20ftLoading, "fraction20ftLoading");
         Throw.whenNaN(this.fractionEmptyUnloading, "fractionEmptyUnloading");
@@ -163,10 +173,12 @@ public class VesselGeneratorDist extends VesselGenerator
         String id = "";
         var eta = new ClockTime(getSimulator().getSimulatorClockTime()); // .plus(new Duration(1.0, DurationUnit.MINUTE)));
         var etd = new ClockTime(eta.plus(new Duration(1.0, DurationUnit.DAY)));
-        var unloadInfo = new VesselLoadInfo((int) this.callSizeDistUnloading.draw(), this.fraction20ftUnloading,
-                this.fractionEmptyUnloading, this.fractionReeferUnloading);
-        var loadInfo = new VesselLoadInfo((int) this.callSizeDistLoading.draw(), this.fraction20ftLoading,
-                this.fractionEmptyLoading, this.fractionReeferLoading);
+        int callSizeUnloading = drawCallSizeUnloading();
+        var unloadInfo = new VesselLoadInfo((int) callSizeUnloading, this.fraction20ftUnloading, this.fractionEmptyUnloading,
+                this.fractionReeferUnloading);
+        int callSizeLoading = drawCallSizeLoading();
+        var loadInfo = new VesselLoadInfo((int) callSizeLoading, this.fraction20ftLoading, this.fractionEmptyLoading,
+                this.fractionReeferLoading);
         generateVessel(id, eta, etd, unloadInfo, loadInfo);
     }
 
@@ -209,9 +221,9 @@ public class VesselGeneratorDist extends VesselGenerator
     /**
      * @return callSizeDistUnloading
      */
-    public DistDiscrete getCallSizeDistUnloading()
+    public Dist getCallSizeDistUnloading()
     {
-        return this.callSizeDistUnloading;
+        return this.callSizeDistContUnloading != null ? this.callSizeDistContUnloading : this.callSizeDistDiscUnloading;
     }
 
     /**
@@ -220,16 +232,34 @@ public class VesselGeneratorDist extends VesselGenerator
      */
     public VesselGeneratorDist setCallSizeDistUnloading(final DistDiscrete callSizeDistUnloading)
     {
-        this.callSizeDistUnloading = callSizeDistUnloading;
+        this.callSizeDistDiscUnloading = callSizeDistUnloading;
+        this.callSizeDistContUnloading = null;
         return this;
+    }
+
+    /**
+     * @param callSizeDistUnloading set callSizeDistUnloading
+     * @return the object itself for method chaining
+     */
+    public VesselGeneratorDist setCallSizeDistUnloading(final DistContinuous callSizeDistUnloading)
+    {
+        this.callSizeDistDiscUnloading = null;
+        this.callSizeDistContUnloading = callSizeDistUnloading;
+        return this;
+    }
+
+    public int drawCallSizeUnloading()
+    {
+        return this.callSizeDistContUnloading != null ? (int) this.callSizeDistContUnloading.draw()
+                : (int) this.callSizeDistDiscUnloading.draw();
     }
 
     /**
      * @return callSizeDistLoading
      */
-    public DistDiscrete getCallSizeDistLoading()
+    public Dist getCallSizeDistLoading()
     {
-        return this.callSizeDistLoading;
+        return this.callSizeDistContLoading != null ? this.callSizeDistContLoading : this.callSizeDistDiscLoading;
     }
 
     /**
@@ -238,8 +268,26 @@ public class VesselGeneratorDist extends VesselGenerator
      */
     public VesselGeneratorDist setCallSizeDistLoading(final DistDiscrete callSizeDistLoading)
     {
-        this.callSizeDistLoading = callSizeDistLoading;
+        this.callSizeDistDiscLoading = callSizeDistLoading;
+        this.callSizeDistContLoading = null;
         return this;
+    }
+
+    /**
+     * @param callSizeDistLoading set callSizeDistLoading
+     * @return the object itself for method chaining
+     */
+    public VesselGeneratorDist setCallSizeDistLoading(final DistContinuous callSizeDistLoading)
+    {
+        this.callSizeDistDiscLoading = null;
+        this.callSizeDistContLoading = callSizeDistLoading;
+        return this;
+    }
+
+    public int drawCallSizeLoading()
+    {
+        return this.callSizeDistContLoading != null ? (int) this.callSizeDistContLoading.draw()
+                : (int) this.callSizeDistDiscLoading.draw();
     }
 
     /**
