@@ -111,6 +111,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     true, "%d", 3.0));
             volumeMap.add(new InputParameterDouble("EmptyFraction", "Fraction empty containers", "[0,1]", 0.2, 0.0, 1.0, true,
                     true, "%d", 4.0));
+            volumeMap.add(new InputParameterDouble("ReeferFraction", "Fraction reefer containers", "[0,1]", 0.2, 0.0, 1.0, true,
+                    true, "%d", 4.5));
             volumeMap.add(new InputParameterDouble("DeepseaFraction", "Fraction deepsea containers", "[0,1]", 0.5, 0.0, 1.0,
                     true, true, "%d", 5.0));
             volumeMap.add(new InputParameterDouble("FeederTransshipFraction", "Fraction feeder transshipment", "[0,1]", 0.9,
