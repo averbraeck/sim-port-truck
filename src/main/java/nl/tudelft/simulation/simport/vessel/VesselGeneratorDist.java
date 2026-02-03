@@ -96,9 +96,9 @@ public class VesselGeneratorDist extends VesselGenerator
         this.stopped = false;
         Throw.whenNull(this.vesselIatWeekdays, "vesselIatWeekdays");
         Throw.whenNull(this.vesselIatWeekends, "vesselIatWeekends");
-        Throw.when(this.callSizeDistDiscUnloading == null || this.callSizeDistContUnloading == null, NullPointerException.class,
+        Throw.when(this.callSizeDistDiscUnloading == null && this.callSizeDistContUnloading == null, NullPointerException.class,
                 "callSizeDistUnloading not defined");
-        Throw.when(this.callSizeDistDiscLoading == null || this.callSizeDistContLoading == null, NullPointerException.class,
+        Throw.when(this.callSizeDistDiscLoading == null && this.callSizeDistContLoading == null, NullPointerException.class,
                 "callSizeDistLoading not defined");
         Throw.whenNaN(this.fraction20ftUnloading, "fraction20ftUnloading");
         Throw.whenNaN(this.fraction20ftLoading, "fraction20ftLoading");
@@ -170,7 +170,8 @@ public class VesselGeneratorDist extends VesselGenerator
 
     protected void generateVessel()
     {
-        String id = "";
+        String id = getTerminal().getId() + "." + (getVesselType().equals(VesselType.DEEPSEA) ? "DS." : "FF.")
+                + getModel().uniqueVesselNr();
         var eta = new ClockTime(getSimulator().getSimulatorClockTime()); // .plus(new Duration(1.0, DurationUnit.MINUTE)));
         var etd = new ClockTime(eta.plus(new Duration(1.0, DurationUnit.DAY)));
         int callSizeUnloading = drawCallSizeUnloading();

@@ -76,6 +76,14 @@ public abstract class VesselGenerator implements Identifiable
     }
 
     /**
+     * @return vesselType
+     */
+    public VesselType getVesselType()
+    {
+        return this.vesselType;
+    }
+
+    /**
      * Return the simulator.
      * @return the simulator
      */
