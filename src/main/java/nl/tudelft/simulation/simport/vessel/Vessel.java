@@ -166,11 +166,68 @@ public class Vessel extends LocalEventProducer implements Identifiable
         this.atdEvent = this.simulator.scheduleEventAbs(this.atd, this, "vesselDeparture", null);
     }
 
+    /**
+     * @return loadList
+     */
+    public List<Booking> getLoadList()
+    {
+        return this.loadList;
+    }
+
+    /**
+     * @param loadList set loadList
+     */
+    public void setLoadList(final List<Booking> loadList)
+    {
+        this.loadList = loadList;
+    }
+
+    /**
+     * @return unloadList
+     */
+    public List<Container> getUnloadList()
+    {
+        return this.unloadList;
+    }
+
+    /**
+     * @param unloadList set unloadList
+     */
+    public void setUnloadList(final List<Container> unloadList)
+    {
+        this.unloadList = unloadList;
+    }
+
     protected void vesselArrival()
     {
         CategoryLogger.with(Cat.DSOL).debug("Vessel {} arrived at terminal {}", this.id, this.terminal);
-        // TODO: getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.25), () -> unloadContainers());
-        // TODO: getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.75), () -> loadContainers());
+        getSimulator().scheduleEventNow(() -> unloadContainers());
+        getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.5), () -> loadContainers());
+    }
+
+    protected void unloadContainers()
+    {
+        Duration unloadTime = this.etd.minus(this.ata).times(0.5);
+        if (this.unloadList.size() > 0)
+        {
+            unloadContainer(unloadTime.divide(this.unloadList.size()));
+        }
+    }
+
+    protected void unloadContainer(final Duration deltaT)
+    {
+        getTerminal().getYard().dropoffContainer(this, this.unloadList.remove(0));
+        if (this.unloadList.size() > 0)
+        {
+            getSimulator().scheduleEventRel(deltaT, () -> unloadContainer(deltaT));
+        }
+
+    }
+
+    protected void loadContainers()
+    {
+        Duration loadTime = this.etd.minus(this.ata).times(0.5);
+
     }
 
     protected void vesselDeparture()

@@ -61,6 +61,16 @@ public interface Yard extends Identifiable
     }
 
     /**
+     * Add a container from a vessel to the yard.
+     * @param vessel the vessel
+     * @param container the container
+     */
+    default void dropoffContainer(final Vessel vessel, final Container container)
+    {
+        getContainerMap().put(container.getNr(), container);
+    }
+
+    /**
      * Have a truck pick up a container.
      * @param truck the truck
      * @param container the container to pick up

@@ -1,5 +1,6 @@
 package nl.tudelft.simulation.simport.vessel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.djunits.unit.DurationUnit;
@@ -93,6 +94,7 @@ public class VesselGeneratorDist extends VesselGenerator
     @Override
     public void start()
     {
+        Throw.when(!this.stopped, IllegalStateException.class, "Starting an already started vessel generator " + getId());
         this.stopped = false;
         Throw.whenNull(this.vesselIatWeekdays, "vesselIatWeekdays");
         Throw.whenNull(this.vesselIatWeekends, "vesselIatWeekends");
@@ -113,35 +115,42 @@ public class VesselGeneratorDist extends VesselGenerator
     @Override
     public void stop()
     {
+        Throw.when(this.stopped, IllegalStateException.class, "Stopping an already stopped vessel generator " + getId());
         this.stopped = true;
     }
 
-    protected void makeContainerList(final VesselLoadInfo vli, final List<Container> ll)
+    protected List<Container> makeContainerList()
     {
+        List<Container> ll = new ArrayList<>();
+        int callSizeTEU = drawCallSizeUnloading();
         // #cont = #teu / (2.0 - frac20), because c.f + 2.c.(1-f) = t => c = t / (2 - f)
-        int nrContainers = (int) (vli.callSizeTEU() / (2.0 - vli.fraction20ft()));
+        int nrContainers = (int) (callSizeTEU / (2.0 - this.fraction20ftUnloading));
         StreamInterface rng = getModel().getDefaultStream();
         for (int i = 0; i < nrContainers; i++)
         {
-            byte size = rng.nextDouble() < vli.fraction20ft() ? (byte) 20 : (byte) 40;
-            boolean empty = rng.nextDouble() < vli.fractionEmpty();
-            boolean reefer = rng.nextDouble() < vli.fractionReefer();
+            byte size = rng.nextDouble() < this.fraction20ftUnloading ? (byte) 20 : (byte) 40;
+            boolean empty = rng.nextDouble() < this.fractionEmptyUnloading;
+            boolean reefer = rng.nextDouble() < this.fractionReeferUnloading;
             ll.add(new Container(getModel().uniqueContainerNr(), size, empty, reefer));
         }
+        return ll;
     }
 
-    protected void makeBookingList(final VesselLoadInfo vli, final List<Booking> ll)
+    protected List<Booking> makeBookingList()
     {
+        List<Booking> ll = new ArrayList<>();
+        int callSizeTEU = drawCallSizeLoading();
         // #cont = #teu / (2.0 - frac20), because c.f + 2.c.(1-f) = t => c = t / (2 - f)
-        int nrContainers = (int) (vli.callSizeTEU() / (2.0 - vli.fraction20ft()));
+        int nrBookings = (int) (callSizeTEU / (2.0 - this.fraction20ftLoading));
         StreamInterface rng = getModel().getDefaultStream();
-        for (int i = 0; i < nrContainers; i++)
+        for (int i = 0; i < nrBookings; i++)
         {
-            byte size = rng.nextDouble() < vli.fraction20ft() ? (byte) 20 : (byte) 40;
-            boolean empty = rng.nextDouble() < vli.fractionEmpty();
-            boolean reefer = rng.nextDouble() < vli.fractionReefer();
+            byte size = rng.nextDouble() < this.fraction20ftLoading ? (byte) 20 : (byte) 40;
+            boolean empty = rng.nextDouble() < this.fractionEmptyLoading;
+            boolean reefer = rng.nextDouble() < this.fractionReeferLoading;
             ll.add(new Booking(getModel().uniqueBookingNr(), size, empty, reefer));
         }
+        return ll;
     }
 
     protected void nextWeekday()
@@ -174,13 +183,9 @@ public class VesselGeneratorDist extends VesselGenerator
                 + getModel().uniqueVesselNr();
         var eta = new ClockTime(getSimulator().getSimulatorClockTime()); // .plus(new Duration(1.0, DurationUnit.MINUTE)));
         var etd = new ClockTime(eta.plus(new Duration(1.0, DurationUnit.DAY)));
-        int callSizeUnloading = drawCallSizeUnloading();
-        var unloadInfo = new VesselLoadInfo((int) callSizeUnloading, this.fraction20ftUnloading, this.fractionEmptyUnloading,
-                this.fractionReeferUnloading);
-        int callSizeLoading = drawCallSizeLoading();
-        var loadInfo = new VesselLoadInfo((int) callSizeLoading, this.fraction20ftLoading, this.fractionEmptyLoading,
-                this.fractionReeferLoading);
-        generateVessel(id, eta, etd, unloadInfo, loadInfo);
+        var vessel = new Vessel(id, getVesselType(), getModel(), eta, etd, getTerminal());
+        vessel.setLoadList(makeBookingList());
+        vessel.setUnloadList(makeContainerList());
     }
 
     /**

@@ -50,11 +50,8 @@ public abstract class VesselGenerator implements Identifiable
      * @param id the id of the ship
      * @param eta the ETA of the vessel
      * @param etd the ETD of the vessel
-     * @param unloadInfo the info for containers to unload
-     * @param loadInfo the info for containers to load
      */
-    public void generateVessel(final String id, final ClockTime eta, final ClockTime etd, final VesselLoadInfo unloadInfo,
-            final VesselLoadInfo loadInfo)
+    public void generateVessel(final String id, final ClockTime eta, final ClockTime etd)
     {
         new Vessel(id, this.vesselType, this.model, eta, etd, this.terminal);
     }
