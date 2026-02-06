@@ -31,6 +31,9 @@ public class Vessel extends LocalEventProducer implements Identifiable
     /** the id of the ship. */
     private final String id;
 
+    /** the unique vessel nr. */
+    private final int vesselNr;
+
     /** Vessel type. */
     private final VesselType vesselType;
 
@@ -61,11 +64,14 @@ public class Vessel extends LocalEventProducer implements Identifiable
     /** Event for ATD. */
     private SimEventInterface<Duration> atdEvent;
 
-    /** load booking list. */
+    /** Booking list for containers to be loaded onto the vessel. */
     private List<Booking> loadList = new ArrayList<>();
 
-    /** unload container list. */
-    private List<Container> unloadList = new ArrayList<>();
+    /** Booking list for containers to be unloaded from the vessel. */
+    private List<Booking> unloadList = new ArrayList<>();
+
+    /** List of containers physically present on the vessel. */
+    private List<Container> containerList = new ArrayList<>();
 
     /**
      * Create a Vessel.
@@ -76,10 +82,11 @@ public class Vessel extends LocalEventProducer implements Identifiable
      * @param etd estimated time of departure
      * @param terminal the terminal to visit
      */
-    public Vessel(final String id, final VesselType vesselType, final PortModel model, final ClockTime eta, final ClockTime etd,
+    public Vessel(final VesselType vesselType, final PortModel model, final ClockTime eta, final ClockTime etd,
             final Terminal terminal)
     {
-        this.id = id;
+        this.vesselNr = model.uniqueVesselNr();
+        this.id = terminal.getId() + "." + (vesselType.equals(VesselType.DEEPSEA) ? "DS." : "FF.") + this.vesselNr;
         this.vesselType = vesselType;
         this.model = model;
         this.simulator = model.getSimulator();
@@ -88,6 +95,15 @@ public class Vessel extends LocalEventProducer implements Identifiable
         this.etd = etd;
         setAtd(etd);
         this.terminal = terminal;
+    }
+
+    /**
+     * Return the unique vessel number.
+     * @return the unique vesselNr
+     */
+    public int getVesselNr()
+    {
+        return this.vesselNr;
     }
 
     @Override
@@ -167,7 +183,8 @@ public class Vessel extends LocalEventProducer implements Identifiable
     }
 
     /**
-     * @return loadList
+     * Return the booking list for containers to be loaded onto the vessel
+     * @return the booking list for containers to be loaded onto the vessel
      */
     public List<Booking> getLoadList()
     {
@@ -175,7 +192,8 @@ public class Vessel extends LocalEventProducer implements Identifiable
     }
 
     /**
-     * @param loadList set loadList
+     * Set the booking list for containers to be loaded onto the vessel
+     * @param loadList the booking list for containers to be loaded onto the vessel
      */
     public void setLoadList(final List<Booking> loadList)
     {
@@ -183,56 +201,144 @@ public class Vessel extends LocalEventProducer implements Identifiable
     }
 
     /**
-     * @return unloadList
+     * Return the booking list for containers to be unloaded from the vessel
+     * @return the booking list for containers to be unloaded from the vessel
      */
-    public List<Container> getUnloadList()
+    public List<Booking> getUnloadList()
     {
         return this.unloadList;
     }
 
     /**
-     * @param unloadList set unloadList
+     * Set the booking list for containers to be unloaded from the vessel
+     * @param unloadList the booking list for containers to be unloaded from the vessel
      */
-    public void setUnloadList(final List<Container> unloadList)
+    public void setUnloadList(final List<Booking> unloadList)
     {
         this.unloadList = unloadList;
     }
 
+    /**
+     * Return the list of containers physically present on the ship. This is not a safe copy, so containers can be added
+     * @return list of containers physically present on the ship
+     */
+    public List<Container> getContainerList()
+    {
+        return this.containerList;
+    }
+
+    /**
+     * Set the list of containers physically present on the ship.
+     * @param containerList set the list of containers physically present on the ship
+     */
+    public void setContainerList(final List<Container> containerList)
+    {
+        this.containerList = containerList;
+    }
+
+    /**
+     * Vessel arrival. Unload containers first, then load containers. Schedule vessel departure after unloading and loading.
+     */
     protected void vesselArrival()
     {
         CategoryLogger.with(Cat.DSOL).debug("Vessel {} arrived at terminal {}", this.id, this.terminal);
         getSimulator().scheduleEventNow(() -> unloadContainers());
         getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.5), () -> loadContainers());
+        getSimulator().scheduleEventAbs(this.atd, () -> vesselDeparture());
     }
 
+    /**
+     * Unload all containers from the vessel.
+     */
     protected void unloadContainers()
     {
         Duration unloadTime = this.etd.minus(this.ata).times(0.5);
+        Duration deltaT = unloadTime.divide(Math.max(1.0, this.unloadList.size()));
         if (this.unloadList.size() > 0)
         {
-            unloadContainer(unloadTime.divide(this.unloadList.size()));
+            unloadContainer(0, deltaT);
         }
     }
 
-    protected void unloadContainer(final Duration deltaT)
+    /**
+     * Unload one container from the vessel, and place it in the yard.
+     * @param index the index of the container in the booking unload list to be unloaded
+     * @param deltaT the time till the next container is unloaded
+     */
+    protected void unloadContainer(final int index, final Duration deltaT)
     {
-        getTerminal().getYard().dropoffContainer(this, this.unloadList.remove(0));
-        if (this.unloadList.size() > 0)
+        Container container = this.unloadList.get(index).getContainer();
+        if (container != null)
         {
-            getSimulator().scheduleEventRel(deltaT, () -> unloadContainer(deltaT));
+            getTerminal().getYard().addContainer(container);
+            if (!this.containerList.remove(container))
+            {
+                CategoryLogger.with(Cat.DSOL).debug("Container {} not on vessel {} for booking {}", container, this,
+                        this.unloadList.get(index));
+            }
         }
-
+        else
+        {
+            CategoryLogger.with(Cat.DSOL).debug("Container not found for booking " + this.unloadList.get(index));
+        }
+        if (index < this.unloadList.size() - 1)
+        {
+            getSimulator().scheduleEventRel(deltaT, () -> unloadContainer(index + 1, deltaT));
+        }
     }
 
+    /**
+     * Load all containers onto the vessel.
+     */
     protected void loadContainers()
     {
         Duration loadTime = this.etd.minus(this.ata).times(0.5);
+        Duration deltaT = loadTime.divide(this.loadList.size());
+        if (this.loadList.size() > 0)
+        {
+            loadContainer(0, deltaT);
+        }
+    }
 
+    /**
+     * Load one container from the yard into the vessel.
+     * @param index the index of the container in the booking load list to be loaded
+     * @param deltaT the time till the next container is loaded
+     */
+    protected void loadContainer(final int index, final Duration deltaT)
+    {
+        Container container = this.loadList.get(index).getContainer();
+        if (container != null)
+        {
+            if (!getTerminal().getYard().removeContainer(container))
+            {
+                CategoryLogger.with(Cat.DSOL).debug("Container {} not in the yard for booking {}", container,
+                        this.loadList.get(index));
+            }
+            else
+            {
+                this.containerList.add(container);
+            }
+        }
+        else
+        {
+            CategoryLogger.with(Cat.DSOL).debug("Container not allocated for booking " + this.loadList.get(index));
+        }
+        if (index < this.loadList.size() - 1)
+        {
+            getSimulator().scheduleEventRel(deltaT, () -> loadContainer(index + 1, deltaT));
+        }
     }
 
     protected void vesselDeparture()
     {
         CategoryLogger.with(Cat.DSOL).debug("Vessel {} departed from terminal {}", this.id, this.terminal);
+        // TODO statistics
+        this.loadList = null;
+        this.unloadList = null;
+        this.containerList = null;
+        this.ataEvent = null;
+        this.atdEvent = null;
     }
 
     /**
