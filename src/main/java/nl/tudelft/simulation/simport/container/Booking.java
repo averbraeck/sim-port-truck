@@ -1,6 +1,6 @@
 package nl.tudelft.simulation.simport.container;
 
-import java.util.Objects;
+import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
  * Compact implementation of a booking (all type info in 1 byte).
@@ -10,109 +10,80 @@ import java.util.Objects;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Booking implements Shipment
+public class Booking extends Shipment
 {
-    /** Booking number. */
-    private final int nr;
+    /** Vessel for which this is a booking. */
+    private final Vessel vessel;
 
-    /** Container for this booking. */
-    private int containerNr = -1;
+    /** Container for this booking, can be null when it still has to be allocated. */
+    private Container container = null;
 
-    /**
-     * The status of the booking.
-     * <ul>
-     * <li>bit 0+1 (0x3): 00 = 20 ft, 01 = 40 ft, 10 = 45 ft</li>
-     * <li>bit 2 (0x4): empty = 0, full = 1</li>
-     * <li>bit 3 (0x8): normal = 0, reefer = 1</li>
-     * </ul>
-     */
-    private final byte status;
+    /** Whether the container id unloaded from the ship (false) or is loaded onto the ship (true). */
+    private final boolean loading;
 
     /**
      * Create a booking for the model.
+     * @param vessel the vessel for which this is a booking
+     * @param loading whether the container id unloaded from the ship (false) or is loaded onto the ship (true)
      * @param nr container number
      * @param size size in ft (20/40/45)
      * @param empty true if empty; false if full
      * @param reefer true if reefer; false if normal container
      */
-    public Booking(final int nr, final int size, final boolean empty, final boolean reefer)
+    public Booking(final Vessel vessel, final boolean loading, final int nr, final int size, final boolean empty,
+            final boolean reefer)
     {
-        this.nr = nr;
-        int s = 0;
-        s = size == 40 ? 1 : size > 40 ? 2 : 0;
-        if (!empty)
-            s |= 0x4;
-        if (reefer)
-            s |= 8;
-        this.status = (byte) s;
-    }
-
-    @Override
-    public int getNr()
-    {
-        return this.nr;
-    }
-
-    @Override
-    public int getSize()
-    {
-        int s = this.status & 0x3;
-        return s == 1 ? 40 : s == 2 ? 45 : 20;
-    }
-
-    @Override
-    public boolean isEmpty()
-    {
-        return (this.status & 0x4) == 0;
-    }
-
-    @Override
-    public boolean isReefer()
-    {
-        return (this.status & 0x8) == 0;
+        super(nr, size, empty, reefer);
+        this.vessel = vessel;
+        this.loading = loading;
     }
 
     /**
-     * Return the container nr (id) linked to this booking. The value is -1 if no container is linked yet.
-     * @return the container nr (id) linked to this booking, or -1 if no container is linked yet.
+     * @return the vessel for which this is a booking
      */
-    public int getContainerNr()
+    public Vessel getVessel()
     {
-        return this.containerNr;
+        return this.vessel;
     }
 
     /**
-     * Set the container nr (id) linked to this booking. The value is -1 if no container is linked yet.
-     * @param containerNr the container nr (id) linked to this booking
+     * Set the container for this booking.
+     * @param container the container for this booking
      */
-    public void setContainerNr(final int containerNr)
+    public void setContainer(final Container container)
     {
-        this.containerNr = containerNr;
+        this.container = container;
     }
 
-    @Override
-    public int hashCode()
+    /**
+     * @return the container for this booking, can be null when it still has to be allocated
+     */
+    public Container getContainer()
     {
-        return Objects.hash(this.nr);
+        return this.container;
     }
 
-    @Override
-    public boolean equals(final Object obj)
+    /**
+     * Return whether this booking has a container allocated.
+     * @return whether this booking has a container allocated
+     */
+    public boolean hasContainer()
     {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Booking other = (Booking) obj;
-        return this.nr == other.nr;
+        return this.container != null;
+    }
+
+    /**
+     * @return whether the container id unloaded from the ship (false) or is loaded onto the ship (true)
+     */
+    public boolean isLoading()
+    {
+        return this.loading;
     }
 
     @Override
     public String toString()
     {
-        return "Booking [nr=" + this.nr + ", size=" + getSize() + "]";
+        return "Booking [nr=" + getNr() + ", size=" + getSize() + "]";
     }
 
 }

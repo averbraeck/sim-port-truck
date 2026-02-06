@@ -5,33 +5,20 @@ import java.util.Objects;
 import nl.tudelft.simulation.simport.TransportMode;
 
 /**
- * Compact implementation of a container (all info in 1 byte).
+ * Implementation of a physical container.
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license. See <a href="https://opentrafficsim.org/docs/current/license.html">OpenTrafficSim License</a>.
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Container implements Shipment
+public class Container extends Shipment
 {
-    /** Container number. */
-    private final int nr;
-
-    /**
-     * The status of the container.
-     * <ul>
-     * <li>bit 0-1 (0x3): 00 = 20 ft, 01 = 40 ft, 10 = 45 ft</li>
-     * <li>bit 2 (0x4): empty = 0, full = 1</li>
-     * <li>bit 3 (0x8): normal = 0, reefer = 1</li>
-     * </ul>
-     */
-    private final byte status;
-
     /**
      * The transport modes of the container.
      * <ul>
-     * <li>bit 0-2 (0x7): Terminal IN via 000 = DS, 001 = Feeder, 010 = Truck, 011 = Barge, 100 = Rail</li>
-     * <li>bit 3-5 (0x37): Terminal OUT via 000 = DS, 001 = Feeder, 010 = Truck, 011 = Barge, 100 = Rail</li>
+     * <li>bit 0-2 (0x07): Terminal IN via 000 = DS, 001 = Feeder, 010 = Truck, 011 = Barge, 100 = Rail</li>
+     * <li>bit 3-5 (0x38): Terminal OUT via 000 = DS, 001 = Feeder, 010 = Truck, 011 = Barge, 100 = Rail</li>
      * <li>bit 6-7 (0xC0): 00 = no transshipment, 01 = internal transshipment, 10 = external transshipment, 11 = depot MV2</li>
      * </ul>
      */
@@ -46,38 +33,7 @@ public class Container implements Shipment
      */
     public Container(final int nr, final int size, final boolean empty, final boolean reefer)
     {
-        this.nr = nr;
-        int s = size == 40 ? 0x01 : size > 40 ? 0x02 : 0x00;
-        if (!empty)
-            s |= 0x04;
-        if (reefer)
-            s |= 0x08;
-        this.status = (byte) s;
-    }
-
-    @Override
-    public int getNr()
-    {
-        return this.nr;
-    }
-
-    @Override
-    public int getSize()
-    {
-        int s = this.status & 0x03;
-        return s == 0x01 ? 40 : s == 0x02 ? 45 : 20;
-    }
-
-    @Override
-    public boolean isEmpty()
-    {
-        return (this.status & 0x04) == 0;
-    }
-
-    @Override
-    public boolean isReefer()
-    {
-        return (this.status & 0x08) == 0;
+        super(nr, size, empty, reefer);
     }
 
     /**
@@ -121,7 +77,7 @@ public class Container implements Shipment
      */
     public void setNoTransshipment()
     {
-        this.modes &= 0x37;
+        this.modes &= 0xC3;
     }
 
     /**
@@ -180,7 +136,10 @@ public class Container implements Shipment
     @Override
     public int hashCode()
     {
-        return Objects.hash(this.nr);
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + Objects.hash(this.modes);
+        return result;
     }
 
     @Override
@@ -188,18 +147,18 @@ public class Container implements Shipment
     {
         if (this == obj)
             return true;
-        if (obj == null)
+        if (!super.equals(obj))
             return false;
         if (getClass() != obj.getClass())
             return false;
         Container other = (Container) obj;
-        return this.nr == other.nr;
+        return this.modes == other.modes;
     }
 
     @Override
     public String toString()
     {
-        return "Container [nr=" + this.nr + ", size=" + getSize() + "]";
+        return "Container [nr=" + getNr() + ", size=" + getSize() + "]";
     }
 
 }
