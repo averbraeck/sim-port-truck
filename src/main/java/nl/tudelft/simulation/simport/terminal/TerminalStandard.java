@@ -1,10 +1,6 @@
 package nl.tudelft.simulation.simport.terminal;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import nl.tudelft.simulation.simport.model.PortModel;
-import nl.tudelft.simulation.simport.vessel.VesselGenerator;
 
 /**
  * Terminal models a deepsea terminal.
@@ -14,11 +10,8 @@ import nl.tudelft.simulation.simport.vessel.VesselGenerator;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class TerminalStandard extends AbstractContainerFacility implements Terminal
+public class TerminalStandard extends Terminal
 {
-    /** The vessel generators for this terminal. */
-    private Map<String, VesselGenerator> vesselgeneratorMap = new LinkedHashMap<>();
-
     /** The transshipment fraction for import containers. */
     private double transshipmentFractionImport;
 
@@ -77,31 +70,6 @@ public class TerminalStandard extends AbstractContainerFacility implements Termi
         }
     }
     */
-
-    @Override
-    public void addVesselGenerator(final VesselGenerator vesselGenerator)
-    {
-        this.vesselgeneratorMap.put(vesselGenerator.getId(), vesselGenerator);
-        vesselGenerator.start();
-    }
-
-    @Override
-    public boolean removeVesselGenerator(final String id)
-    {
-        if (this.vesselgeneratorMap.containsKey(id))
-        {
-            var vesselGenerator = this.vesselgeneratorMap.remove(id);
-            vesselGenerator.stop();
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public Map<String, VesselGenerator> getVesselGeneratorMap()
-    {
-        return this.vesselgeneratorMap;
-    }
 
     /**
      * Return the modal split for import containers for this terminal.

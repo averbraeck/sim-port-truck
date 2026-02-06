@@ -1,7 +1,9 @@
 package nl.tudelft.simulation.simport.terminal;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.vessel.VesselGenerator;
 
 /**
@@ -12,20 +14,40 @@ import nl.tudelft.simulation.simport.vessel.VesselGenerator;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public interface Terminal extends ContainerFacility
+public abstract class Terminal extends AbstractContainerFacility
 {
+    /** The vessel generators for this terminal. */
+    private Map<String, VesselGenerator> vesselgeneratorMap = new LinkedHashMap<>();
+
+    /**
+     * Create a new terminal for the port model.
+     * @param id the id of the terminal
+     * @param model the port model
+     * @param lat latitude
+     * @param lon longitude
+     */
+    public Terminal(final String id, final PortModel model, final double lat, final double lon)
+    {
+        super(id, model, lat, lon);
+        model.addTerminal(this);
+    }
+
     /**
      * Add a vessel generator to the terminal, and start scheduling arrivals of vessels.
      * @param vesselGenerator the new VesselGenerator to add
      */
-    void addVesselGenerator(VesselGenerator vesselGenerator);
+    public void addVesselGenerator(final VesselGenerator vesselGenerator)
+    {
+        this.vesselgeneratorMap.put(vesselGenerator.getId(), vesselGenerator);
+        vesselGenerator.start();
+    }
 
     /**
      * Remove a vessel generator from the terminal, and stop scheduling arrivals of vessels.
      * @param vesselGenerator the VesselGenerator to remove
      * @return whether the removal was successful; false if it the generator was not found
      */
-    default boolean removeVesselGenerator(final VesselGenerator vesselGenerator)
+    public boolean removeVesselGenerator(final VesselGenerator vesselGenerator)
     {
         return removeVesselGenerator(vesselGenerator.getId());
     }
@@ -35,12 +57,24 @@ public interface Terminal extends ContainerFacility
      * @param is the id of the VesselGenerator to remove
      * @return whether the removal was successful; false if it the generator was not found
      */
-    boolean removeVesselGenerator(String id);
+    public boolean removeVesselGenerator(final String id)
+    {
+        if (this.vesselgeneratorMap.containsKey(id))
+        {
+            var vesselGenerator = this.vesselgeneratorMap.remove(id);
+            vesselGenerator.stop();
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Return a map of the vessel generators for this terminal, based on their id.
      * @return a map of the vessel generators for this terminal
      */
-    Map<String, VesselGenerator> getVesselGeneratorMap();
+    public Map<String, VesselGenerator> getVesselGeneratorMap()
+    {
+        return this.vesselgeneratorMap;
+    }
 
 }
