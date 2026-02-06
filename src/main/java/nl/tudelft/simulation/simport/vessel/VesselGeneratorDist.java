@@ -119,9 +119,15 @@ public class VesselGeneratorDist extends VesselGenerator
         this.stopped = true;
     }
 
-    protected List<Container> makeContainerList()
+    /**
+     * Make the unload list for a vessel, and put the physical containers on the vessel.
+     * @param vessel the vessel (deepsea or feeder)
+     * @param containerList the list of containers on the vessel
+     * @return the unload bookings for the vessel
+     */
+    protected List<Booking> makeUnloadList(final Vessel vessel, final List<Container> containerList)
     {
-        List<Container> ll = new ArrayList<>();
+        List<Booking> bookingList = new ArrayList<>();
         int callSizeTEU = drawCallSizeUnloading();
         // #cont = #teu / (2.0 - frac20), because c.f + 2.c.(1-f) = t => c = t / (2 - f)
         int nrContainers = (int) (callSizeTEU / (2.0 - this.fraction20ftUnloading));
@@ -131,14 +137,23 @@ public class VesselGeneratorDist extends VesselGenerator
             byte size = rng.nextDouble() < this.fraction20ftUnloading ? (byte) 20 : (byte) 40;
             boolean empty = rng.nextDouble() < this.fractionEmptyUnloading;
             boolean reefer = rng.nextDouble() < this.fractionReeferUnloading;
-            ll.add(new Container(getModel().uniqueContainerNr(), size, empty, reefer));
+            Container container = new Container(getModel().uniqueContainerNr(), size, empty, reefer);
+            Booking booking = new Booking(vessel, true, getModel().uniqueBookingNr(), size, empty, reefer);
+            booking.setContainer(container);
+            bookingList.add(booking);
+            containerList.add(container);
         }
-        return ll;
+        return bookingList;
     }
 
-    protected List<Booking> makeBookingList()
+    /**
+     * Make the load list for a vessel (bookings only).
+     * @param vessel the vessel (deepsea or feeder)
+     * @return the load bookings for the vessel
+     */
+    protected List<Booking> makeLoadList(final Vessel vessel)
     {
-        List<Booking> ll = new ArrayList<>();
+        List<Booking> bookingList = new ArrayList<>();
         int callSizeTEU = drawCallSizeLoading();
         // #cont = #teu / (2.0 - frac20), because c.f + 2.c.(1-f) = t => c = t / (2 - f)
         int nrBookings = (int) (callSizeTEU / (2.0 - this.fraction20ftLoading));
@@ -148,9 +163,9 @@ public class VesselGeneratorDist extends VesselGenerator
             byte size = rng.nextDouble() < this.fraction20ftLoading ? (byte) 20 : (byte) 40;
             boolean empty = rng.nextDouble() < this.fractionEmptyLoading;
             boolean reefer = rng.nextDouble() < this.fractionReeferLoading;
-            ll.add(new Booking(getModel().uniqueBookingNr(), size, empty, reefer));
+            bookingList.add(new Booking(vessel, true, getModel().uniqueBookingNr(), size, empty, reefer));
         }
-        return ll;
+        return bookingList;
     }
 
     protected void nextWeekday()
@@ -179,13 +194,11 @@ public class VesselGeneratorDist extends VesselGenerator
 
     protected void generateVessel()
     {
-        String id = getTerminal().getId() + "." + (getVesselType().equals(VesselType.DEEPSEA) ? "DS." : "FF.")
-                + getModel().uniqueVesselNr();
         var eta = new ClockTime(getSimulator().getSimulatorClockTime()); // .plus(new Duration(1.0, DurationUnit.MINUTE)));
         var etd = new ClockTime(eta.plus(new Duration(1.0, DurationUnit.DAY)));
-        var vessel = new Vessel(id, getVesselType(), getModel(), eta, etd, getTerminal());
-        vessel.setLoadList(makeBookingList());
-        vessel.setUnloadList(makeContainerList());
+        var vessel = new Vessel(getVesselType(), getModel(), eta, etd, getTerminal());
+        vessel.setLoadList(makeLoadList(vessel));
+        vessel.setUnloadList(makeUnloadList(vessel, vessel.getContainerList()));
     }
 
     /**
