@@ -96,19 +96,19 @@ public class YardConstant implements Yard
     }
 
     @Override
-    public Duration getHandlingTimeExport()
+    public Duration drawHandlingTimeExport()
     {
         return this.handlingTimeExportDist.draw();
     }
 
     @Override
-    public Duration getHandlingTimeImport()
+    public Duration drawHandlingTimeImport()
     {
         return this.handlingTimeImportDist.draw();
     }
 
     @Override
-    public Duration getHandlingTimeDual()
+    public Duration drawHandlingTimeDual()
     {
         return this.handlingTimeDualDist.draw();
     }

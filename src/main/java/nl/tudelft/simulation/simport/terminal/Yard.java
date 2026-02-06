@@ -28,13 +28,13 @@ public interface Yard extends Identifiable
     ContainerFacility getContainerFacility();
 
     /** @return a handling time for a truck dropping off an export container. */
-    Duration getHandlingTimeExport();
+    Duration drawHandlingTimeExport();
 
     /** @return a handling time for a truck picking up an import container. */
-    Duration getHandlingTimeImport();
+    Duration drawHandlingTimeImport();
 
     /** @return a handling time for a dual handling. */
-    Duration getHandlingTimeDual();
+    Duration drawHandlingTimeDual();
 
     /** @return the containers in the yard, as a map from container number to container. */
     Map<Integer, Container> getContainerMap();
@@ -61,13 +61,21 @@ public interface Yard extends Identifiable
     }
 
     /**
-     * Add a container from a vessel to the yard.
-     * @param vessel the vessel
-     * @param container the container
+     * Add a container to the yard.
+     * @param container the container to add
      */
-    default void dropoffContainer(final Vessel vessel, final Container container)
+    default void addContainer(final Container container)
     {
         getContainerMap().put(container.getNr(), container);
+    }
+
+    /**
+     * Remove a container from the yard.
+     * @param container the container to remove
+     */
+    default boolean removeContainer(final Container container)
+    {
+        return getContainerMap().remove(container.getNr()) != null;
     }
 
     /**
