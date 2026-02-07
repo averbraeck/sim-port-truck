@@ -15,4 +15,15 @@ public enum VesselType
 
     /** Feeder. */
     FEEDER;
+
+    public boolean isDeepSea()
+    {
+        return this.equals(DEEPSEA);
+    }
+
+    public boolean isFeeder()
+    {
+        return this.equals(FEEDER);
+    }
+
 }
