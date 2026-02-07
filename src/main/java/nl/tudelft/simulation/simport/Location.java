@@ -1,38 +1,58 @@
 package nl.tudelft.simulation.simport;
 
 /**
- * TransportMode, e.g. into a terminal or out of a terminal.
+ * Location, e.g. a terminal, truck or out of a terminal.
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license.
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public enum TransportMode
+public enum Location
 {
-    /** deepsea = 0. */
+    /** unused = 0. */
+    UNUSED,
+
+    /** deepsea = 1. */
     DEEPSEA,
 
-    /** feeder = 1. */
+    /** feeder = 2. */
     FEEDER,
 
-    /** truck = 2. */
-    TRUCK,
+    /** rail = 3. */
+    RAIL,
 
-    /** barge = 3. */
+    /** barge = 4. */
     BARGE,
 
-    /** rail = 4. */
-    RAIL;
+    /** truck = 5. */
+    TRUCK,
+
+    /** truck = 6. */
+    TERMINAL,
+
+    /** truck = 7. */
+    DEPOT,
+
+    /** truck = 8. */
+    HINTERLAND,
+
+    /** truck = 9. */
+    PORT;
 
     public byte asByte()
     {
         return (byte) (this.ordinal());
     }
 
-    public static TransportMode of(final int transportModeNr)
+    public static Location of(final int transportModeNr)
     {
         return values()[transportModeNr];
+    }
+
+    public boolean isUnused()
+    {
+        return this.equals(UNUSED);
     }
 
     public boolean isDeepsea()
@@ -58,6 +78,26 @@ public enum TransportMode
     public boolean isRail()
     {
         return this.equals(RAIL);
+    }
+
+    public boolean isTerminal()
+    {
+        return this.equals(TERMINAL);
+    }
+
+    public boolean isDepot()
+    {
+        return this.equals(DEPOT);
+    }
+
+    public boolean isHinterland()
+    {
+        return this.equals(HINTERLAND);
+    }
+
+    public boolean isPort()
+    {
+        return this.equals(PORT);
     }
 
 }
