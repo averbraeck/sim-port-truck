@@ -13,6 +13,7 @@ import nl.tudelft.simulation.jstats.distributions.DistContinuous;
 import nl.tudelft.simulation.jstats.distributions.DistDiscrete;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
+import nl.tudelft.simulation.simport.Location;
 import nl.tudelft.simulation.simport.container.Booking;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
@@ -137,7 +138,8 @@ public class VesselGeneratorDist extends VesselGenerator
             byte size = rng.nextDouble() < this.fraction20ftUnloading ? (byte) 20 : (byte) 40;
             boolean empty = rng.nextDouble() < this.fractionEmptyUnloading;
             boolean reefer = rng.nextDouble() < this.fractionReeferUnloading;
-            Container container = new Container(getModel().uniqueContainerNr(), size, empty, reefer);
+            Location loc = getVesselType().isDeepSea() ? Location.DEEPSEA : Location.FEEDER;
+            Container container = new Container(getModel().uniqueContainerNr(), size, empty, reefer, loc);
             Booking booking = new Booking(vessel, true, getModel().uniqueBookingNr(), size, empty, reefer);
             booking.setContainer(container);
             bookingList.add(booking);
