@@ -273,13 +273,13 @@ public class Vessel extends LocalEventProducer implements Identifiable
             getTerminal().getYard().addContainer(container);
             if (!this.containerList.remove(container))
             {
-                CategoryLogger.with(Cat.DSOL).debug("Container {} not on vessel {} for booking {}", container, this,
+                CategoryLogger.with(Cat.DSOL).trace("Container {} not on vessel {} for booking {}", container, this,
                         this.unloadList.get(index));
             }
         }
         else
         {
-            CategoryLogger.with(Cat.DSOL).debug("Container not found for booking " + this.unloadList.get(index));
+            CategoryLogger.with(Cat.DSOL).trace("Container not found for booking " + this.unloadList.get(index));
         }
         if (index < this.unloadList.size() - 1)
         {
@@ -312,7 +312,7 @@ public class Vessel extends LocalEventProducer implements Identifiable
         {
             if (!getTerminal().getYard().removeContainer(container))
             {
-                CategoryLogger.with(Cat.DSOL).debug("Container {} not in the yard for booking {}", container,
+                CategoryLogger.with(Cat.DSOL).trace("Container {} not in the yard for booking {}", container,
                         this.loadList.get(index));
             }
             else
@@ -322,7 +322,7 @@ public class Vessel extends LocalEventProducer implements Identifiable
         }
         else
         {
-            CategoryLogger.with(Cat.DSOL).debug("Container not allocated for booking " + this.loadList.get(index));
+            CategoryLogger.with(Cat.DSOL).trace("Container not allocated for booking " + this.loadList.get(index));
         }
         if (index < this.loadList.size() - 1)
         {
