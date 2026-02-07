@@ -3,7 +3,7 @@ package nl.tudelft.simulation.simport.container;
 import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
- * Compact implementation of a booking (all type info in 1 byte).
+ * Compact implementation of a booking of a (future) container on a vessel.
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license. See <a href="https://opentrafficsim.org/docs/current/license.html">OpenTrafficSim License</a>.
