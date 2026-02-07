@@ -1,8 +1,9 @@
 package nl.tudelft.simulation.simport.container;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
-import nl.tudelft.simulation.simport.TransportMode;
+import nl.tudelft.simulation.simport.Location;
 
 /**
  * Implementation of a physical container.
@@ -15,14 +16,25 @@ import nl.tudelft.simulation.simport.TransportMode;
 public class Container extends Shipment
 {
     /**
-     * The transport modes of the container.
+     * The transport modes of the container for statistics.
      * <ul>
-     * <li>bit 0-2 (0x07): Terminal IN via 000 = DS, 001 = Feeder, 010 = Truck, 011 = Barge, 100 = Rail</li>
-     * <li>bit 3-5 (0x38): Terminal OUT via 000 = DS, 001 = Feeder, 010 = Truck, 011 = Barge, 100 = Rail</li>
-     * <li>bit 6-7 (0xC0): 00 = no transshipment, 01 = internal transshipment, 10 = external transshipment, 11 = depot MV2</li>
+     * <li>0000 = Unused</li>
+     * <li>0001 = Deepsea</li>
+     * <li>0010 = Feeder</li>
+     * <li>0011 = Rail</li>
+     * <li>0100 = Barge</li>
+     * <li>0101 = Truck</li>
+     * <li>0110 = Terminal</li>
+     * <li>0111 = Depot</li>
+     * <li>1000 = Hinterland</li>
+     * <li>1001 = Port</li>
      * </ul>
+     * Example: Deepsea - Terminal - Truck - Hinterland.
      */
-    private byte modes;
+    private byte[] locations = new byte[6];
+
+    /** index of the current location. */
+    private byte currentIndex = 0;
 
     /**
      * Create a container for the model.
@@ -30,135 +42,48 @@ public class Container extends Shipment
      * @param size size in ft (20/40/45)
      * @param empty true if empty; false if full
      * @param reefer true if reefer; false if normal container
+     * @param location the current location of the container
      */
-    public Container(final int nr, final int size, final boolean empty, final boolean reefer)
+    public Container(final int nr, final int size, final boolean empty, final boolean reefer, final Location location)
     {
         super(nr, size, empty, reefer);
+        this.locations[0] = location.asByte();
     }
 
     /**
-     * Set the transport mode INTO the deepsea terminal.
-     * @param transportMode the transport mode INTO the deepsea terminal
+     * Add a new location of the container.
+     * @param location the new location
      */
-    public void setTransportModeIntoDS(final TransportMode transportMode)
+    public void addLocation(final Location location)
     {
-        this.modes |= transportMode.asByte();
+        this.locations[++this.currentIndex] = location.asByte();
     }
 
     /**
-     * Get the transport mode of the container INTO the deepsea terminal.
-     * @return the transport mode INTO the deepsea terminal
+     * Get the current location.
+     * @return the current location
      */
-    public TransportMode getTransportModeIntoDS()
+    public Location getLocation()
     {
-        return TransportMode.of(this.modes & 0x07);
+        return Location.of(this.locations[this.currentIndex]);
     }
 
     /**
-     * Set the transport mode OUT OF the deepsea terminal.
-     * @param transportMode the transport mode OUT OF the deepsea terminal
+     * Get a list of locations for the container.
+     * @return a list of locations for the container
      */
-    public void setTransportModeFromDS(final TransportMode transportMode)
+    public List<Location> getLocations()
     {
-        this.modes |= (transportMode.ordinal() << 3);
-    }
-
-    /**
-     * Get the transport mode of the container OUT OF the deepsea terminal.
-     * @return the transport mode OUT OF the deepsea terminal
-     */
-    public TransportMode getTransportModeFromDS()
-    {
-        return TransportMode.of((this.modes >> 3) & 0x07);
-    }
-
-    /**
-     * Set the transshipment status to None.
-     */
-    public void setNoTransshipment()
-    {
-        this.modes &= 0xC3;
-    }
-
-    /**
-     * Set the internal transshipment status: Deepsea -> Feeder or Feeder -> Deepsea on the same terminal.
-     */
-    public void setInternalTransshipment()
-    {
-        setNoTransshipment();
-        this.modes |= 0x40;
-    }
-
-    /**
-     * Return whether the container is an internal transshipment: Deepsea -> Feeder or Feeder -> Deepsea on the same terminal.
-     * @return whether the container has an internal transshipment status
-     */
-    public boolean isInternalTransshipment()
-    {
-        return (this.modes & 0x40) == 0x40;
-    }
-
-    /**
-     * Set the external transshipment status: Deepsea -> Feeder or Feeder -> Deepsea on different terminals.
-     */
-    public void setExternalTransshipment()
-    {
-        setNoTransshipment();
-        this.modes |= 0x80;
-    }
-
-    /**
-     * Return whether the container has the external transshipment status: Deepsea -> Feeder or Feeder -> Deepsea.
-     * @return whether the container has the external transshipment status
-     */
-    public boolean isExternalTransshipment()
-    {
-        return (this.modes & 0x80) == 0x80;
-    }
-
-    /**
-     * Set the "depot transshipment" status: Deepsea -> MV2-Depot or MV2-Depot -> Deepsea.
-     */
-    public void setDepotTransshipment()
-    {
-        this.modes |= 0xC0;
-    }
-
-    /**
-     * Return whether the container has the "depot transshipment" status: Deepsea -> MV2-Depot or MV2-Depot -> Deepsea.
-     * @return whether the container has the "depot transshipment" status
-     */
-    public boolean isDepotTransshipment()
-    {
-        return (this.modes & 0xC0) == 0xC0;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + Objects.hash(this.modes);
-        return result;
-    }
-
-    @Override
-    public boolean equals(final Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Container other = (Container) obj;
-        return this.modes == other.modes;
+        List<Location> ret = new ArrayList<>();
+        for (int i = 0; i < this.currentIndex; i++)
+            ret.add(Location.of(this.locations[i]));
+        return ret;
     }
 
     @Override
     public String toString()
     {
-        return "Container [nr=" + getNr() + ", size=" + getSize() + "]";
+        return "Container [nr=" + this.getNr() + ", type=" + this.getType() + ", locations=" + this.getLocations() + "]";
     }
 
 }
