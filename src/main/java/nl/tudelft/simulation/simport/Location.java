@@ -1,7 +1,7 @@
 package nl.tudelft.simulation.simport;
 
 /**
- * Location, e.g. a terminal, truck or out of a terminal.
+ * Location, e.g. a terminal, truck or vessel.
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license.
@@ -45,9 +45,9 @@ public enum Location
         return (byte) (this.ordinal());
     }
 
-    public static Location of(final int transportModeNr)
+    public static Location of(final byte locationByte)
     {
-        return values()[transportModeNr];
+        return values()[locationByte];
     }
 
     public boolean isUnused()
