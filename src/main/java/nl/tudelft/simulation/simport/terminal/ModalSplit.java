@@ -19,9 +19,6 @@ public class ModalSplit
     /** fraction rail. */
     private final double railFraction;
 
-    /** fraction rail. */
-    private final double shortSeaFraction;
-
     /**
      * Create a modal split. The fractions will be normalized, so they can be given in TEU, as a percentage, or as a fraction.
      * @param truckFraction fraction truck
@@ -29,14 +26,12 @@ public class ModalSplit
      * @param railFraction fraction rail
      * @param shortSeaFraction fraction short sea / feeder
      */
-    public ModalSplit(final double truckFraction, final double bargeFraction, final double railFraction,
-            final double shortSeaFraction)
+    public ModalSplit(final double truckFraction, final double bargeFraction, final double railFraction)
     {
-        var sum = bargeFraction + railFraction + truckFraction + shortSeaFraction;
+        var sum = bargeFraction + railFraction + truckFraction;
         this.bargeFraction = bargeFraction / sum;
         this.railFraction = railFraction / sum;
         this.truckFraction = truckFraction / sum;
-        this.shortSeaFraction = shortSeaFraction / sum;
     }
 
     /**
@@ -64,17 +59,9 @@ public class ModalSplit
     }
 
     /**
-     * @return shortSeaFraction
-     */
-    public double getShortSeaFraction()
-    {
-        return this.shortSeaFraction;
-    }
-
-    /**
      * @return cumulative truckFraction
      */
-    public double cumulativeTruckFraction()
+    public double cumulativeTruckFractionTBR()
     {
         return this.truckFraction;
     }
@@ -82,7 +69,7 @@ public class ModalSplit
     /**
      * @return cumulative bargeFraction
      */
-    public double cumulativeBargeFraction()
+    public double cumulativeBargeFractionTBR()
     {
         return Math.max(1.0, this.truckFraction + this.bargeFraction);
     }
@@ -90,17 +77,10 @@ public class ModalSplit
     /**
      * @return cumulative railFraction
      */
-    public double cumulativeRailFraction()
-    {
-        return Math.max(1.0, this.truckFraction + this.bargeFraction + this.railFraction);
-    }
-
-    /**
-     * @return cumulative shortSeaFraction
-     */
-    public double cumulativeShortSeaFraction()
+    public double cumulativeRailFractionTBR()
     {
         return 1.0;
     }
+
 
 }
