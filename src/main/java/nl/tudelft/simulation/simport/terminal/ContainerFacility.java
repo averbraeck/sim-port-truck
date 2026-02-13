@@ -14,6 +14,9 @@ import nl.tudelft.simulation.simport.Facility;
  */
 public interface ContainerFacility extends Facility, EventProducer
 {
+    /** @return the name */
+    String getName();
+
     /**
      * Set the gate for the terminal.
      * @param gate the gate for the terminal

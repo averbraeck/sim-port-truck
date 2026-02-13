@@ -20,6 +20,9 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     /** Facility id. */
     private final String id;
 
+    /** Facility name. */
+    private final String name;
+
     /** Pointer to the model. */
     private final PortModel model;
 
@@ -40,14 +43,17 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
 
     /**
      * Create a new container facility for the port model.
+     * @param name the name of the facility
      * @param id the id of the container facility
      * @param model the port model
      * @param lat latitude
      * @param lon longitude
      */
-    public AbstractContainerFacility(final String id, final PortModel model, final double lat, final double lon)
+    public AbstractContainerFacility(final String id, final String name, final PortModel model, final double lat,
+            final double lon)
     {
         this.id = id;
+        this.name = name;
         this.model = model;
         this.lat = lat;
         this.lon = lon;
@@ -57,6 +63,12 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     public String getId()
     {
         return this.id;
+    }
+
+    @Override
+    public String getName()
+    {
+        return this.name;
     }
 
     @Override
