@@ -8,7 +8,9 @@ import nl.tudelft.simulation.dsol.model.DsolModel;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
+import nl.tudelft.simulation.simport.freightforwarder.FreightForwarder;
 import nl.tudelft.simulation.simport.terminal.Terminal;
+import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
  * PortModel defines the important functions of a model for simulating (truck) traffic in a large container port.
@@ -51,6 +53,12 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
     int uniqueVesselNr();
 
     /**
+     * Get a unique truck number.
+     * @return a unique truck number
+     */
+    int uniqueTruckNr();
+
+    /**
      * Return whether the simulation is interactive or not.
      * @return whether the simulation is interactive or not
      */
@@ -75,4 +83,10 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
      */
     Map<String, Terminal> getTerminalMap();
 
+    /**
+     * Return the correct Freight Forwarder. This can be dependent on the terminal and the vessel (e.g., the liner).
+     * @param terminal the terminal that requests a freight forwarder
+     * @param vessel the vessel for which a freight forwarder is requested
+     */
+    FreightForwarder getFreightForwarder(Terminal terminal, Vessel vessel);
 }

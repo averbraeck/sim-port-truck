@@ -63,6 +63,9 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     /** the booking counter. */
     private final AtomicInteger uniqueBookingNumber = new AtomicInteger(2000000);
 
+    /** the truck counter. */
+    private final AtomicInteger uniqueTruckNumber = new AtomicInteger(10000);
+
     /**
      * Create a port model.
      * @param simulator the simulator to use
@@ -186,18 +189,18 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     "File path to terminal-modalsplit.csv file", "", 5.0));
             root.add(modalSplitMap);
 
-            InputParameterMap dwellTimeMap = new InputParameterMap("dwelltime", "Dwell time", "Dwell time parameters", 6.0);
-            dwellTimeMap.add(new InputParameterString("fig", "Dwell time distribution full import general container",
+            InputParameterMap dwellTimeMap = new InputParameterMap("leadtime", "Lead time", "Lead time parameters", 6.0);
+            dwellTimeMap.add(new InputParameterString("ImportFullGeneral", "Lead time distribution full import general container",
                     "Distribution function (days)", "UNIF(1,7)", 1.0));
-            dwellTimeMap.add(new InputParameterString("fir", "Dwell time distribution full import reefer container",
+            dwellTimeMap.add(new InputParameterString("ImportFullReefer", "Lead time distribution full import reefer container",
                     "Distribution function (days)", "UNIF(1,7)", 2.0));
-            dwellTimeMap.add(new InputParameterString("feg", "Dwell time distribution full export general container",
+            dwellTimeMap.add(new InputParameterString("ExportFullGeneral", "Lead time distribution full export general container",
                     "Distribution function (days)", "UNIF(1,7)", 3.0));
-            dwellTimeMap.add(new InputParameterString("fer", "Dwell time distribution full export reefer container",
+            dwellTimeMap.add(new InputParameterString("ExportFullReefer", "Lead time distribution full export reefer container",
                     "Distribution function (days)", "UNIF(1,7)", 4.0));
-            dwellTimeMap.add(new InputParameterString("ei", "Dwell time distribution empty import container",
+            dwellTimeMap.add(new InputParameterString("ImportEmpty", "Lead time distribution empty import container",
                     "Distribution function (days)", "UNIF(1,2)", 5.0));
-            dwellTimeMap.add(new InputParameterString("ee", "Dwell time distribution empty export container",
+            dwellTimeMap.add(new InputParameterString("ExportEmpty", "Lead time distribution empty export container",
                     "Distribution function (days)", "UNIF(1,2)", 6.0));
             root.add(dwellTimeMap);
 
@@ -289,6 +292,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
 
         buildTerminals();
         buildVesselGenerators();
+        buildFreightForwarders();
+        buildTruckingFirms();
 
         if (isInteractive())
         {
@@ -310,6 +315,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
             Properties tp = new Properties();
             try (InputStream tpStream = new FileInputStream(tpFilename))
             {
+                // terminal
                 tp.load(tpStream);
                 String id = tp.getProperty("id");
                 String name = tp.getProperty("name");
@@ -327,6 +333,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                 terminal.setModalSplitImport(msImport);
                 terminal.setModalSplitExport(msExport);
                 addTerminal(terminal);
+
+                // gate
                 var gate = new GateConstant(terminal, "gate");
                 gate.setLanesIn(Integer.parseInt(tp.getProperty("gate.lanesIn")));
                 gate.setLanesOut(Integer.parseInt(tp.getProperty("gate.lanesOut")));
@@ -335,6 +343,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                 gate.setTimeOutDist(DistributionParser.parseDistContinuousDuration(tp.getProperty("gate.timeOutDist"),
                         DurationUnit.MINUTE, this.randomStream));
                 terminal.setGate(gate);
+
+                // yard
                 var yard = new YardConstant(terminal, "yard");
                 terminal.setYard(yard);
                 yard.setHandlingTimeImportDist(DistributionParser.parseDistContinuousDuration(
@@ -350,6 +360,16 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
             }
         }
     }
+
+    /**
+     * Set the lead times for a terminal at the freight forwarder(s).
+     */
+    protected abstract void buildFreightForwarders();
+
+    /**
+     * Construct the trucking companies.
+     */
+    protected abstract void buildTruckingFirms();
 
     /* ***************************************************************************************************************** */
     /* ********************************************** GETTERS AND SETTERS ********************************************** */
@@ -401,6 +421,12 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     public int uniqueVesselNr()
     {
         return this.uniqueVesselNumber.incrementAndGet();
+    }
+
+    @Override
+    public int uniqueTruckNr()
+    {
+        return this.uniqueTruckNumber.incrementAndGet();
     }
 
     @Override
