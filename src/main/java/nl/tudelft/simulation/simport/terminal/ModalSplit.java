@@ -71,7 +71,7 @@ public class ModalSplit
      */
     public double cumulativeBargeFractionTBR()
     {
-        return Math.max(1.0, this.truckFraction + this.bargeFraction);
+        return Math.min(1.0, this.truckFraction + this.bargeFraction);
     }
 
     /**
