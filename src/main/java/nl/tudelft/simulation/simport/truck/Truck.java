@@ -9,6 +9,7 @@ import nl.tudelft.simulation.dsol.animation.Locatable;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.simport.Facility;
+import nl.tudelft.simulation.simport.Location;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
 
@@ -64,6 +65,7 @@ public class Truck implements Identifiable, Locatable
     public void loadContainer(final Container container)
     {
         this.container = container;
+        container.addLocation(Location.TRUCK);
     }
 
     /**
@@ -137,4 +139,11 @@ public class Truck implements Identifiable, Locatable
     {
         return this.model.getSimulator();
     }
+
+    @Override
+    public String toString()
+    {
+        return "Truck [id=" + this.id + ", container=" + this.container + "]";
+    }
+
 }
