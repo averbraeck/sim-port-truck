@@ -6,11 +6,12 @@ import java.util.Map;
 
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.base.Identifiable;
-import org.djutils.exceptions.Throw;
+import org.djutils.logger.CategoryLogger;
 
+import nl.tudelft.simulation.dsol.logger.Cat;
+import nl.tudelft.simulation.simport.Location;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.truck.Truck;
-import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
@@ -67,6 +68,7 @@ public interface Yard extends Identifiable
     default void addContainer(final Container container)
     {
         getContainerMap().put(container.getNr(), container);
+        container.addLocation(Location.TERMINAL);
     }
 
     /**
@@ -85,10 +87,11 @@ public interface Yard extends Identifiable
      */
     default void pickupContainer(final Truck truck, final Container container)
     {
-        Throw.when(!truck.isEmpty(), SimPortRuntimeException.class, "Truck %s is not empty: it carries container %s", truck,
-                truck.getContainer());
-        Throw.when(!getContainerMap().containsKey(container.getNr()), SimPortRuntimeException.class,
-                "Container %s not found on yard of facility %s", truck, getContainerFacility());
+        if (!truck.isEmpty())
+            CategoryLogger.with(Cat.DSOL).warn("Truck {} is not empty: it carries container {}", truck, truck.getContainer());
+        if (!getContainerMap().containsKey(container.getNr()))
+            CategoryLogger.with(Cat.DSOL).warn("Container {} not found on yard of facility {}", container,
+                    getContainerFacility());
         truck.loadContainer(container);
         getContainerMap().remove(container.getNr());
     }
@@ -100,9 +103,11 @@ public interface Yard extends Identifiable
      */
     default void dropoffContainer(final Truck truck)
     {
-        Throw.when(truck.isEmpty(), SimPortRuntimeException.class, "Truck %s is empty: it does not carry a container", truck);
+        if (truck.isEmpty())
+            CategoryLogger.with(Cat.DSOL).warn("Truck {} is empty: it does not carry a container", truck);
         Container container = truck.unloadContainer();
         getContainerMap().put(container.getNr(), container);
+        container.addLocation(Location.TERMINAL);
     }
 
 }
