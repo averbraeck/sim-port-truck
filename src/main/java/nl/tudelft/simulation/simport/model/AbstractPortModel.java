@@ -27,8 +27,8 @@ import nl.tudelft.simulation.jstats.distributions.DistUniform;
 import nl.tudelft.simulation.jstats.streams.MersenneTwister;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.terminal.GateConstant;
+import nl.tudelft.simulation.simport.terminal.ModalSplit;
 import nl.tudelft.simulation.simport.terminal.Terminal;
-import nl.tudelft.simulation.simport.terminal.TerminalStandard;
 import nl.tudelft.simulation.simport.terminal.YardConstant;
 import nl.tudelft.simulation.simport.util.DistributionParser;
 
@@ -144,6 +144,22 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                             "If container type file, define below", false, 7.0));
             terminalMap.add(new InputParameterString("ContainerTypeOverridePath",
                     "File path for override container types per terminal", "File path terminal-containertype.csv", "", 8.0));
+            terminalMap.add(new InputParameterString("GenerateDeepsea", "Generation time before ETA for deepsea ships",
+                    "Generation time before ETA for deepsea ships", "", 9.0));
+            terminalMap.add(new InputParameterString("GenerateFeeder", "Generation time before ETA for feeder ships",
+                    "Generation time before ETA for feeder ships", "", 10.0));
+            terminalMap.add(new InputParameterString("TransloadingMatchInterval",
+                    "Interval between transloading match attempts", "Interval between transloading match attempts", "", 11.0));
+            terminalMap.add(new InputParameterString("CutoffTransloadingDeepsea",
+                    "Cutoff time before ETA to start allocating modes (deepsea)",
+                    "GCutoff time before ETA to start allocating modes (deepsea)", "", 12.0));
+            terminalMap.add(new InputParameterString("CutoffTransloadingFeeder",
+                    "Cutoff time before ETA to start allocating modes (feeder)",
+                    "Cutoff time before ETA to start allocating modes (feeder)", "", 13.0));
+            terminalMap.add(new InputParameterString("TransloadingBufferTime", "Transloading buffer time",
+                    "Min transloading buffer time between feeder and deepsea", "", 14.0));
+            terminalMap.add(new InputParameterDouble("MaxDeepseaTransloadFraction", "Max deepsea transload fraction",
+                    "Max fraction of containers that a deepsea vessel will transload", 0.2, 15.0));
             root.add(terminalMap);
 
             InputParameterMap vesselMap = new InputParameterMap("vessel", "Vessels", "Vessel parameters", 4.0);
@@ -296,10 +312,20 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
             {
                 tp.load(tpStream);
                 String id = tp.getProperty("id");
-                String name = tp.getProperty("name"); // TODO
+                String name = tp.getProperty("name");
                 var lat = Double.parseDouble(tp.getProperty("lat"));
                 var lon = Double.parseDouble(tp.getProperty("lon"));
-                var terminal = new TerminalStandard(id, this, lat, lon);
+                var terminal = new Terminal(id, name, this, lat, lon);
+                terminal.setTransshipmentFractionImport(getInputParameterDouble("volume.FeederTransshipFraction"));
+                terminal.setTransshipmentFractionExport(getInputParameterDouble("volume.FeederTransshipFraction"));
+                double truckFraction = getInputParameterDouble("modalsplit.Truck");
+                double bargeFraction = getInputParameterDouble("modalsplit.Barge");
+                double railFraction = getInputParameterDouble("modalsplit.Rail");
+                double sum = truckFraction + bargeFraction + railFraction;
+                ModalSplit msImport = new ModalSplit(truckFraction / sum, bargeFraction / sum, railFraction / sum);
+                ModalSplit msExport = new ModalSplit(truckFraction / sum, bargeFraction / sum, railFraction / sum);
+                terminal.setModalSplitImport(msImport);
+                terminal.setModalSplitExport(msExport);
                 addTerminal(terminal);
                 var gate = new GateConstant(terminal, "gate");
                 gate.setLanesIn(Integer.parseInt(tp.getProperty("gate.lanesIn")));
