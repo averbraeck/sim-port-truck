@@ -75,7 +75,7 @@ public class Container extends Shipment
     public List<Location> getLocations()
     {
         List<Location> ret = new ArrayList<>();
-        for (int i = 0; i < this.currentIndex; i++)
+        for (int i = 0; i <= this.currentIndex; i++)
             ret.add(Location.of(this.locations[i]));
         return ret;
     }
@@ -83,7 +83,8 @@ public class Container extends Shipment
     @Override
     public String toString()
     {
-        return "Container [nr=" + this.getNr() + ", type=" + this.getType() + ", locations=" + this.getLocations() + "]";
+        return "Container [nr=" + this.getNr() + ", type=" + this.getType() + (isEmpty() ? "(E)" : "(F)") + ", locations="
+                + this.getLocations() + "]";
     }
 
 }
