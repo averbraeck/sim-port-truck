@@ -73,6 +73,12 @@ public class Vessel extends LocalEventProducer implements Identifiable
     /** List of containers physically present on the vessel. */
     private List<Container> containerList = new ArrayList<>();
 
+    /** Number of loaded containers that have been marked as transshipped. */
+    private int nrContainersTransshippedLoaded = 0;
+
+    /** Number of unloaded containers that have been marked as transshipped. */
+    private int nrContainersTransshippedUnloaded = 0;
+
     /**
      * Create a Vessel.
      * @param id the id of the ship
@@ -219,7 +225,8 @@ public class Vessel extends LocalEventProducer implements Identifiable
     }
 
     /**
-     * Return the list of containers physically present on the ship. This is not a safe copy, so containers can be added
+     * Return the list of containers physically present on the ship. This is NOT a safe copy, so containers can be added or
+     * removed.
      * @return list of containers physically present on the ship
      */
     public List<Container> getContainerList()
@@ -375,6 +382,40 @@ public class Vessel extends LocalEventProducer implements Identifiable
     public VesselType getVesselType()
     {
         return this.vesselType;
+    }
+
+    /**
+     * @return nrContainersTransshippedLoaded
+     */
+    public int getNrContainersTransshippedLoaded()
+    {
+        return this.nrContainersTransshippedLoaded;
+    }
+
+    /**
+     * @return nrContainersTransshippedUnloaded
+     */
+    public int getNrContainersTransshippedUnloaded()
+    {
+        return this.nrContainersTransshippedUnloaded;
+    }
+
+    /**
+     * Increment the number of loaded containers that have been transshipped.
+     * @param increment the number of loaded containers that have been transshipped
+     */
+    public void incNrContainersTransshippedLoaded(final int increment)
+    {
+        this.nrContainersTransshippedLoaded += increment;
+    }
+
+    /**
+     * Increment the number of unloaded containers that have been transshipped.
+     * @param increment the number of unloaded containers that have been transshipped
+     */
+    public void incNrContainersTransshippedUnloaded(final int increment)
+    {
+        this.nrContainersTransshippedUnloaded += increment;
     }
 
 }

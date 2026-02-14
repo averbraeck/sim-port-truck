@@ -196,11 +196,15 @@ public class VesselGeneratorDist extends VesselGenerator
 
     protected void generateVessel()
     {
-        var eta = new ClockTime(getSimulator().getSimulatorClockTime()); // .plus(new Duration(1.0, DurationUnit.MINUTE)));
+        Duration etaAdvance = Duration.valueOf(getModel()
+                .getInputParameterString(getVesselType().isDeepSea() ? "terminal.GenerateDeepsea" : "terminal.GenerateFeeder"));
+        var eta = new ClockTime(getSimulator().getSimulatorClockTime().plus(etaAdvance));
         var etd = new ClockTime(eta.plus(new Duration(1.0, DurationUnit.DAY)));
         var vessel = new Vessel(getVesselType(), getModel(), eta, etd, getTerminal());
         vessel.setLoadList(makeLoadList(vessel));
+        getTerminal().addToUnallocatedExportMap(vessel);
         vessel.setUnloadList(makeUnloadList(vessel, vessel.getContainerList()));
+        getTerminal().addToUnallocatedImportMap(vessel);
     }
 
     /**
