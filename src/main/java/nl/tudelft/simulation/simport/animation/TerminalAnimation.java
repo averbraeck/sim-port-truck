@@ -1,4 +1,4 @@
-package nl.tudelft.simulation.simport.terminal;
+package nl.tudelft.simulation.simport.animation;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -12,6 +12,7 @@ import org.djutils.draw.bounds.Bounds2d;
 import nl.tudelft.simulation.dsol.animation.SimRenderable2d;
 import nl.tudelft.simulation.dsol.animation.d2.RenderableScale;
 import nl.tudelft.simulation.dsol.simulators.SimulatorInterface;
+import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
  * TerminalAnimation.java.
