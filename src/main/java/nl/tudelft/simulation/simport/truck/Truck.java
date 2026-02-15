@@ -16,7 +16,7 @@ import nl.tudelft.simulation.simport.model.PortModel;
 /**
  * Truck can transport a container from A to B, and load/unload a container.<br>
  * TODO: Note that in theory the truck can pick up a 2nd 20-ft container after a 20 ft container was already loaded. (in
- * reality: only if weight permits of course).
+ * reality: only if weight permits of course, e.g., in case of 2 empties).
  * <p>
  * Copyright (c) 2025-2025 Delft University of Technology, PO Box 5, 2600 AA, Delft, the Netherlands. All rights reserved. <br>
  * BSD-style license. See <a href="https://opentrafficsim.org/docs/current/license.html">OpenTrafficSim License</a>.
@@ -26,7 +26,13 @@ import nl.tudelft.simulation.simport.model.PortModel;
 public class Truck implements Identifiable, Locatable
 {
     /** The truck id. */
-    private final int id;
+    private final int uniqueId;
+
+    /** The trucking company to which the truck belongs. */
+    private final TruckingCompany truckingCompany;
+
+    /** The id within the trucking cmpany. */
+    private final int idWithinCompany;
 
     /** the model. */
     private final PortModel model;
@@ -52,10 +58,12 @@ public class Truck implements Identifiable, Locatable
     /** Arrival time, given gongestion. */
     private ClockTime arrivalTime;
 
-    public Truck(final int id, final PortModel model)
+    public Truck(final int id, final TruckingCompany truckingCompany, final int idWithinCompany)
     {
-        this.id = id;
-        this.model = model;
+        this.uniqueId = id;
+        this.truckingCompany = truckingCompany;
+        this.idWithinCompany = idWithinCompany;
+        this.model = truckingCompany.getModel();
     }
 
     /**
@@ -128,10 +136,18 @@ public class Truck implements Identifiable, Locatable
         return new Bounds2d(0.000146, 0.00009); // 10x10 m at Rotterdam (51.9 deg latitude)
     }
 
+    /**
+     * @return the uniqueId
+     */
+    public int getUniqueId()
+    {
+        return this.uniqueId;
+    }
+
     @Override
     public String getId()
     {
-        return String.valueOf(this.id);
+        return this.truckingCompany.getId() + "." + this.idWithinCompany;
     }
 
     /** @return the simulator. */
@@ -143,7 +159,7 @@ public class Truck implements Identifiable, Locatable
     @Override
     public String toString()
     {
-        return "Truck [id=" + this.id + ", container=" + this.container + "]";
+        return "Truck [id=" + getId() + ", container=" + this.container + "]";
     }
 
 }
