@@ -17,6 +17,7 @@ import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.truck.Truck;
+import nl.tudelft.simulation.simport.truck.TruckingCompany;
 import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
@@ -59,6 +60,12 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     /** The export lead time distributions for rail per terminal. */
     private Map<Terminal, Map<String, DistContinuousDuration>> exportLeadTimeRailDist = new HashMap<>();
 
+    /** TEMPORARY: TRUCKING COMPANY. */
+    private TruckingCompany truckingCompany;
+
+    /** TEMPORARY: TRUCK COUNTER. */
+    private int truckCounter = 0;
+
     /**
      * Instantiate a new Freight Forwarder.
      * @param id the id of the FF
@@ -69,6 +76,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
         this.id = id;
         this.model = model;
         this.simulator = model.getSimulator();
+        this.truckingCompany = new TruckingCompany("FF-TR", model, 5000);
     }
 
     private String containerType(final boolean reefer, final boolean empty)
@@ -156,7 +164,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
      */
     protected void truckDepartureToTerminal(final Terminal terminal, final Vessel vessel, final Container container)
     {
-        Truck truck = new Truck(this.model.uniqueTruckNr(), this.model);
+        Truck truck = this.truckingCompany.getFleet().get(this.truckCounter++ % 5000);
         truck.loadContainer(container);
         this.simulator.scheduleEventRel(new Duration(2.0, DurationUnit.HOUR), () -> terminal.getYard().dropoffContainer(truck));
     }
@@ -183,7 +191,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
      */
     protected void truckDepartureFromTerminal(final Terminal terminal, final Vessel vessel, final Container container)
     {
-        Truck truck = new Truck(this.model.uniqueTruckNr(), this.model);
+        Truck truck = this.truckingCompany.getFleet().get(this.truckCounter++ % 5000);
         terminal.getYard().pickupContainer(truck, container);
         this.simulator.scheduleEventRel(new Duration(2.0, DurationUnit.HOUR), () -> unloadContainerHinterland(truck));
     }
