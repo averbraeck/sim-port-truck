@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
+import org.djutils.io.ResourceResolver;
 
 import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
@@ -23,9 +24,15 @@ import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterLong;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterMap;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterString;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.dsol.swing.gui.animation.DsolAnimationTab;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
 import nl.tudelft.simulation.jstats.streams.MersenneTwister;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
+import nl.tudelft.simulation.simport.network.Centroid;
+import nl.tudelft.simulation.simport.network.RoadLink;
+import nl.tudelft.simulation.simport.network.Node;
+import nl.tudelft.simulation.simport.network.RoadNetwork;
+import nl.tudelft.simulation.simport.network.RoadTurn;
 import nl.tudelft.simulation.simport.terminal.GateConstant;
 import nl.tudelft.simulation.simport.terminal.ModalSplit;
 import nl.tudelft.simulation.simport.terminal.Terminal;
@@ -44,6 +51,9 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
 {
     /** interactive run? */
     private final boolean interactive;
+
+    /** the animation tab for an interactive model, can be null. */
+    private DsolAnimationTab animationTab;
 
     /** the standard random stream of the model. */
     protected StreamInterface randomStream;
@@ -65,6 +75,9 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
 
     /** the truck counter. */
     private final AtomicInteger uniqueTruckNumber = new AtomicInteger(10000);
+
+    /** the road network. */
+    private RoadNetwork roadNetwork;
 
     /**
      * Create a port model.
@@ -190,12 +203,12 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
             root.add(modalSplitMap);
 
             InputParameterMap dwellTimeMap = new InputParameterMap("leadtime", "Lead time", "Lead time parameters", 6.0);
-            dwellTimeMap.add(new InputParameterString("ImportFullGeneral", "Lead time distribution full import general container",
-                    "Distribution function (days)", "UNIF(1,7)", 1.0));
+            dwellTimeMap.add(new InputParameterString("ImportFullGeneral",
+                    "Lead time distribution full import general container", "Distribution function (days)", "UNIF(1,7)", 1.0));
             dwellTimeMap.add(new InputParameterString("ImportFullReefer", "Lead time distribution full import reefer container",
                     "Distribution function (days)", "UNIF(1,7)", 2.0));
-            dwellTimeMap.add(new InputParameterString("ExportFullGeneral", "Lead time distribution full export general container",
-                    "Distribution function (days)", "UNIF(1,7)", 3.0));
+            dwellTimeMap.add(new InputParameterString("ExportFullGeneral",
+                    "Lead time distribution full export general container", "Distribution function (days)", "UNIF(1,7)", 3.0));
             dwellTimeMap.add(new InputParameterString("ExportFullReefer", "Lead time distribution full export reefer container",
                     "Distribution function (days)", "UNIF(1,7)", 4.0));
             dwellTimeMap.add(new InputParameterString("ImportEmpty", "Lead time distribution empty import container",
@@ -268,6 +281,23 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     }
 
     /**
+     * @return the animationTab
+     */
+    public DsolAnimationTab getAnimationTab()
+    {
+        return this.animationTab;
+    }
+
+    /**
+     * Set the animation tab for toggles.
+     * @param animationTab the animation tab for an interactive model, can be null
+     */
+    public void setAnimationTab(final DsolAnimationTab animationTab)
+    {
+        this.animationTab = animationTab;
+    }
+
+    /**
      * Build the terminals, e.g. by reading them from a file.
      */
     protected abstract void buildTerminals();
@@ -282,6 +312,23 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
      */
     protected abstract void drawMaps();
 
+    /**
+     * Build the animation.
+     */
+    public void buildAnimation()
+    {
+        if (this.interactive)
+        {
+            drawMaps();
+            this.animationTab.addToggleText("");
+            this.animationTab.addToggleText("NETWORK");
+            this.animationTab.addToggleAnimationButtonText("Centroids", Centroid.class, "centroids", true);
+            this.animationTab.addToggleAnimationButtonText("Nodes", Node.class, "nodes", true);
+            this.animationTab.addToggleAnimationButtonText("Links", RoadLink.class, "links", false);
+            this.animationTab.addToggleAnimationButtonText("Turns", RoadTurn.class, "turns", false);
+        }
+    }
+
     @Override
     public void constructModel() throws SimRuntimeException
     {
@@ -295,10 +342,11 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         buildFreightForwarders();
         buildTruckingFirms();
 
-        if (isInteractive())
-        {
-            drawMaps();
-        }
+        this.roadNetwork = new RoadNetwork(this);
+        this.roadNetwork.readNodes(ResourceResolver.resolve("file:///E:/por/HVM50/network2022/nodes.shp").asUrl());
+        this.roadNetwork.readCentroids(ResourceResolver.resolve("file:///E:/por/HVM50/centroids/centroids.shp").asUrl());
+        this.roadNetwork.readSections(ResourceResolver.resolve("file:///E:/por/HVM50/network2022/section.shp").asUrl());
+        this.roadNetwork.readTurns(ResourceResolver.resolve("file:///E:/por/HVM50/network2022/turning.shp").asUrl());
     }
 
     /**
