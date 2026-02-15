@@ -1,5 +1,12 @@
 package nl.tudelft.simulation.simport.network;
 
+import org.djutils.draw.bounds.Bounds;
+import org.djutils.draw.bounds.Bounds2d;
+import org.djutils.draw.point.Point;
+import org.djutils.draw.point.Point2d;
+
+import nl.tudelft.simulation.dsol.animation.Locatable;
+
 /**
  * A Centroid is an origin/destination of goods in a CentroidArea. It has a connected Node that lies on the road network.
  * <p>
@@ -8,14 +15,32 @@ package nl.tudelft.simulation.simport.network;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Centroid
+public class Centroid implements Locatable
 {
+    /** x in WGS84. */
+    private final double x;
+
+    /** y in WGS84. */
+    private final double y;
 
     /**
      *
      */
-    public Centroid()
+    public Centroid(final double x, final double y)
     {
+        this.x = x;
+        this.y = y;
     }
 
+    @Override
+    public Point<?> getLocation()
+    {
+        return new Point2d(this.x, this.y);
+    }
+
+    @Override
+    public Bounds<?, ?> getRelativeBounds()
+    {
+        return new Bounds2d(0.02, 0.02);
+    }
 }
