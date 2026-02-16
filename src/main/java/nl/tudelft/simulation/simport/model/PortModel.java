@@ -3,6 +3,8 @@ package nl.tudelft.simulation.simport.model;
 import java.util.Map;
 
 import org.djunits.value.vdouble.scalar.Duration;
+import org.djutils.event.EventProducer;
+import org.djutils.event.EventType;
 
 import nl.tudelft.simulation.dsol.model.DsolModel;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
@@ -20,8 +22,11 @@ import nl.tudelft.simulation.simport.vessel.Vessel;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterface>
+public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterface>, EventProducer
 {
+    /** A container has been delivered and is about to leave the model. */
+    static EventType CONTAINER_EVENT = new EventType("CONTAINER_EVENT");
+
     /**
      * Return the standard random stream of the model.
      * @return the standard random stream of the model
@@ -89,4 +94,24 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
      * @param vessel the vessel for which a freight forwarder is requested
      */
     FreightForwarder getFreightForwarder(Terminal terminal, Vessel vessel);
+
+    /**
+     * Add a vessel to the model.
+     * @param Vessel the vessel to add
+     */
+    void addVessel(Vessel vessel);
+
+    /**
+     * Get a vessel based on its id.
+     * @param id the vessel id to search for
+     * @return the vessel or null if it could not be found
+     */
+    Vessel getVessel(int id);
+
+    /**
+     * Get the map of vessels.
+     * @return the map of vessels
+     */
+    Map<Integer, Vessel> getVesselMap();
+
 }

@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -33,11 +34,13 @@ import nl.tudelft.simulation.simport.network.Node;
 import nl.tudelft.simulation.simport.network.RoadLink;
 import nl.tudelft.simulation.simport.network.RoadNetwork;
 import nl.tudelft.simulation.simport.network.RoadTurn;
+import nl.tudelft.simulation.simport.output.OutputWriter;
 import nl.tudelft.simulation.simport.terminal.GateConstant;
 import nl.tudelft.simulation.simport.terminal.ModalSplit;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.terminal.YardConstant;
 import nl.tudelft.simulation.simport.util.DistributionParser;
+import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
  * PortModel is an abstract 'parent' model with key objects such as the terminals and the road network.
@@ -78,6 +81,9 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
 
     /** the road network. */
     private RoadNetwork roadNetwork;
+
+    /** The vessels. */
+    private Map<Integer, Vessel> vesselMap = new HashMap<>();
 
     /**
      * Create a port model.
@@ -353,6 +359,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         this.roadNetwork.readSections(ResourceResolver.resolve(getInputParameterString("generic.SectionFile")).asUrl());
         this.roadNetwork.readTurns(ResourceResolver.resolve(getInputParameterString("generic.TurningFile")).asUrl());
         this.roadNetwork.readOd(ResourceResolver.resolve(getInputParameterString("generic.ODFile")).asPath());
+
+        new OutputWriter(this, getInputParameterString("generic.OutputPath"));
     }
 
     /**
@@ -487,6 +495,24 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     public boolean isInteractive()
     {
         return this.interactive;
+    }
+
+    @Override
+    public void addVessel(final Vessel vessel)
+    {
+        this.vesselMap.put(vessel.getVesselNr(), vessel);
+    }
+
+    @Override
+    public Vessel getVessel(final int id)
+    {
+        return this.vesselMap.get(id);
+    }
+
+    @Override
+    public Map<Integer, Vessel> getVesselMap()
+    {
+        return this.vesselMap;
     }
 
 }
