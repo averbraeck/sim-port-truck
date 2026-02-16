@@ -12,6 +12,7 @@ import nl.tudelft.simulation.simport.Facility;
 import nl.tudelft.simulation.simport.Location;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.network.Centroid;
 
 /**
  * Truck can transport a container from A to B, and load/unload a container.<br>
@@ -45,6 +46,12 @@ public class Truck implements Identifiable, Locatable
 
     /** The destination when driving (null when not driving). */
     private Point2d destination;
+
+    /** the load centroid. */
+    private Centroid loadCentroid;
+
+    /** the unload centroid. */
+    private Centroid unloadCentroid;
 
     /** The facility when waiting or (un)loading. */
     private Facility facility;
@@ -148,6 +155,78 @@ public class Truck implements Identifiable, Locatable
     public String getId()
     {
         return this.truckingCompany.getId() + "." + this.idWithinCompany;
+    }
+
+    /**
+     * @return departureTime
+     */
+    public ClockTime getDepartureTime()
+    {
+        return this.departureTime;
+    }
+
+    /**
+     * @param departureTime set departureTime
+     */
+    public void setDepartureTime(final ClockTime departureTime)
+    {
+        this.departureTime = departureTime;
+    }
+
+    /**
+     * @return arrivalTime
+     */
+    public ClockTime getArrivalTime()
+    {
+        return this.arrivalTime;
+    }
+
+    /**
+     * @param arrivalTime set arrivalTime
+     */
+    public void setArrivalTime(final ClockTime arrivalTime)
+    {
+        this.arrivalTime = arrivalTime;
+    }
+
+    /**
+     * @return truckingCompany
+     */
+    public TruckingCompany getTruckingCompany()
+    {
+        return this.truckingCompany;
+    }
+
+    /**
+     * @return loadCentroid
+     */
+    public Centroid getLoadCentroid()
+    {
+        return this.loadCentroid;
+    }
+
+    /**
+     * @param loadCentroid set loadCentroid
+     */
+    public void setLoadCentroid(final Centroid loadCentroid)
+    {
+        this.loadCentroid = loadCentroid;
+    }
+
+    /**
+     * @return unloadCentroid
+     */
+    public Centroid getUnloadCentroid()
+    {
+        return this.unloadCentroid;
+    }
+
+    /**
+     * @param unloadCentroid set unloadCentroid
+     */
+    public void setUnloadCentroid(final Centroid unloadCentroid)
+    {
+        this.unloadCentroid = unloadCentroid;
     }
 
     /** @return the simulator. */
