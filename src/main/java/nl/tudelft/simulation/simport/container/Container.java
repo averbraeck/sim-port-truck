@@ -36,6 +36,12 @@ public class Container extends Shipment
     /** index of the current location. */
     private byte currentIndex = 0;
 
+    /** vessel in number. */
+    private int vesselInNr = -1;
+
+    /** vessel out number. */
+    private int vesselOutNr = -1;
+
     /**
      * Create a container for the model.
      * @param nr container number
@@ -78,6 +84,38 @@ public class Container extends Shipment
         for (int i = 0; i <= this.currentIndex; i++)
             ret.add(Location.of(this.locations[i]));
         return ret;
+    }
+
+    /**
+     * @return vesselInNr
+     */
+    public int getVesselInNr()
+    {
+        return this.vesselInNr;
+    }
+
+    /**
+     * @param vesselInNr set vesselInNr
+     */
+    public void setVesselInNr(final int vesselInNr)
+    {
+        this.vesselInNr = vesselInNr;
+    }
+
+    /**
+     * @return vesselOutNr
+     */
+    public int getVesselOutNr()
+    {
+        return this.vesselOutNr;
+    }
+
+    /**
+     * @param vesselOutNr set vesselOutNr
+     */
+    public void setVesselOutNr(final int vesselOutNr)
+    {
+        this.vesselOutNr = vesselOutNr;
     }
 
     @Override
