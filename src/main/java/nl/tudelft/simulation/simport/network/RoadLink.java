@@ -1,5 +1,8 @@
 package nl.tudelft.simulation.simport.network;
 
+import org.djunits.unit.SpeedUnit;
+import org.djunits.value.vdouble.scalar.Speed;
+import org.djutils.base.Identifiable;
 import org.djutils.draw.bounds.Bounds;
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point;
@@ -15,7 +18,7 @@ import nl.tudelft.simulation.dsol.animation.Locatable;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class RoadLink implements Locatable
+public class RoadLink implements Locatable, Identifiable
 {
     private final RoadNode nodeFrom;
 
@@ -25,15 +28,30 @@ public class RoadLink implements Locatable
 
     private final double dy;
 
+    private Speed maxSpeed = new Speed(80.0, SpeedUnit.KM_PER_HOUR);
+
+    private int nrLanes = 2;
+
+    private String name = "";
+
+    private final String id;
+
     /**
      *
      */
-    public RoadLink(final RoadNode nodeFrom, final RoadNode nodeTo)
+    public RoadLink(final String id, final RoadNode nodeFrom, final RoadNode nodeTo)
     {
+        this.id = id;
         this.nodeFrom = nodeFrom;
         this.nodeTo = nodeTo;
         this.dx = nodeTo.getX() - nodeFrom.getX();
         this.dy = nodeTo.getY() - nodeFrom.getY();
+    }
+
+    @Override
+    public String getId()
+    {
+        return this.id;
     }
 
     /**
@@ -66,6 +84,54 @@ public class RoadLink implements Locatable
     public double getDy()
     {
         return this.dy;
+    }
+
+    /**
+     * @return maxSpeed
+     */
+    public Speed getMaxSpeed()
+    {
+        return this.maxSpeed;
+    }
+
+    /**
+     * @param maxSpeed set maxSpeed
+     */
+    public void setMaxSpeed(final Speed maxSpeed)
+    {
+        this.maxSpeed = maxSpeed;
+    }
+
+    /**
+     * @return nrLanes
+     */
+    public int getNrLanes()
+    {
+        return this.nrLanes;
+    }
+
+    /**
+     * @param nrLanes set nrLanes
+     */
+    public void setNrLanes(final int nrLanes)
+    {
+        this.nrLanes = nrLanes;
+    }
+
+    /**
+     * @return name
+     */
+    public String getName()
+    {
+        return this.name;
+    }
+
+    /**
+     * @param name set name
+     */
+    public void setName(final String name)
+    {
+        this.name = name;
     }
 
     @Override

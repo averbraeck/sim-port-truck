@@ -4,11 +4,16 @@ import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.djunits.unit.SpeedUnit;
+import org.djunits.value.vdouble.scalar.Speed;
 
 import nl.tudelft.simulation.dsol.animation.gis.FeatureInterface;
 import nl.tudelft.simulation.dsol.animation.gis.LayerInterface;
@@ -22,6 +27,7 @@ import nl.tudelft.simulation.simport.animation.LinkAnimation;
 import nl.tudelft.simulation.simport.animation.NodeAnimation;
 import nl.tudelft.simulation.simport.animation.TurnAnimation;
 import nl.tudelft.simulation.simport.gis.CoordinateTransformRdNewToWgs84;
+import nl.tudelft.simulation.simport.gis.DbfReader;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 
@@ -117,6 +123,12 @@ public class RoadNetwork
         try
         {
             var shpReader = new ShapeFileReader(linksUrl, new CoordinateTransformRdNewToWgs84(0.0, 0.0), features);
+            var dbfReader = new DbfReader(new URL(linksUrl.toString().replace(".shp", ".dbf")));
+            List<String> colNames = List.of(dbfReader.getColumnNames());
+            int idCol = colNames.indexOf("id");
+            int nameCol = colNames.indexOf("name");
+            int nrLanesCol = colNames.indexOf("nblanesatt");
+            int speedCol = colNames.indexOf("speedatt");
             shpReader.readAllShapes(feature);
             for (int i = 0; i < feature.getNumShapes(); i++)
             {
@@ -132,7 +144,11 @@ public class RoadNetwork
                     nodeTo = this.roadNodeMap.get(nodeTo);
                 else
                     this.roadNodeMap.put(nodeTo, nodeTo);
-                RoadLink link = new RoadLink(nodeFrom, nodeTo);
+                String[] rec = dbfReader.getRow(i);
+                RoadLink link = new RoadLink(rec[idCol].strip(), nodeFrom, nodeTo);
+                link.setName(rec[nameCol].strip());
+                link.setMaxSpeed(new Speed(Double.parseDouble(rec[speedCol].strip()), SpeedUnit.KM_PER_HOUR));
+                link.setNrLanes(Integer.parseInt(rec[nrLanesCol].strip()));
                 this.roadLinkList.add(link);
                 if (animate)
                     new LinkAnimation(link, simulator);
@@ -205,15 +221,38 @@ public class RoadNetwork
         try
         {
             var shpReader = new ShapeFileReader(centroidsUrl, new CoordinateTransformRdNewToWgs84(0.0, 0.0), features);
+            var dbfReader = new DbfReader(new URL(centroidsUrl.toString().replace(".shp", ".dbf")));
+            List<String> colNames = List.of(dbfReader.getColumnNames());
+            int idCol = colNames.indexOf("id");
+            int nameCol = colNames.indexOf("name");
+            int eidCol = colNames.indexOf("eid");
+            int typeCol = colNames.indexOf("type");
             shpReader.readAllShapes(feature);
             for (int i = 0; i < feature.getNumPoints(); i++)
             {
                 Point2D p = feature.getPoint(i);
-                Centroid centroid = new Centroid(p.getX(), p.getY());
+                String[] rec = dbfReader.getRow(i);
+                Centroid centroid = new Centroid(rec[idCol].strip(), p.getX(), p.getY());
+                centroid.setName(rec[nameCol].strip());
+                centroid.setEid(rec[eidCol].strip());
+                centroid.setType(rec[typeCol].strip());
                 this.centroidList.add(centroid);
                 if (animate)
                     new CentroidAnimation(centroid, simulator);
             }
+        }
+        catch (Exception e)
+        {
+            throw new SimPortRuntimeException(e);
+        }
+    }
+
+    public void readOd(final Path csvPath)
+    {
+        try
+        {
+            var od = OdMatrix.fromCsv(csvPath, ',', StandardCharsets.UTF_8, false, true, true);
+
         }
         catch (Exception e)
         {

@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.network;
 
+import org.djunits.unit.SpeedUnit;
+import org.djunits.value.vdouble.scalar.Speed;
 import org.djutils.draw.bounds.Bounds;
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point;
@@ -24,6 +26,10 @@ public class RoadTurn implements Locatable
     private final double dx;
 
     private final double dy;
+
+    private Speed maxSpeed = new Speed(20.0, SpeedUnit.KM_PER_HOUR);
+
+    private int nrLanes = 1;
 
     /**
      *
@@ -66,6 +72,38 @@ public class RoadTurn implements Locatable
     public double getDy()
     {
         return this.dy;
+    }
+
+    /**
+     * @return maxSpeed
+     */
+    public Speed getMaxSpeed()
+    {
+        return this.maxSpeed;
+    }
+
+    /**
+     * @param maxSpeed set maxSpeed
+     */
+    public void setMaxSpeed(final Speed maxSpeed)
+    {
+        this.maxSpeed = maxSpeed;
+    }
+
+    /**
+     * @return nrLanes
+     */
+    public int getNrLanes()
+    {
+        return this.nrLanes;
+    }
+
+    /**
+     * @param nrLanes set nrLanes
+     */
+    public void setNrLanes(final int nrLanes)
+    {
+        this.nrLanes = nrLanes;
     }
 
     @Override
