@@ -6,6 +6,7 @@ import java.util.Map;
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.base.Identifiable;
+import org.djutils.event.Event;
 import org.djutils.event.LocalEventProducer;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
@@ -166,7 +167,13 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     {
         Truck truck = this.truckingCompany.getFleet().get(this.truckCounter++ % 5000);
         truck.loadContainer(container);
-        this.simulator.scheduleEventRel(new Duration(2.0, DurationUnit.HOUR), () -> terminal.getYard().dropoffContainer(truck));
+        this.simulator.scheduleEventRel(new Duration(2.0, DurationUnit.HOUR),
+                () -> unloadContainerTerminal(terminal, truck, container));
+    }
+
+    protected void unloadContainerTerminal(final Terminal terminal, final Truck truck, final Container container)
+    {
+        terminal.getYard().dropoffContainer(truck);
     }
 
     /**
@@ -204,7 +211,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     {
         var container = truck.unloadContainer();
         container.addLocation(Location.HINTERLAND);
-        // TODO statistics
+        getModel().fireEvent(new Event(PortModel.CONTAINER_EVENT, container));
     }
 
     ///////////////////////////////////////////////// BARGE /////////////////////////////////////////////////
@@ -280,7 +287,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     protected void dropoffContainerBargeHinterland(final Container container)
     {
         container.addLocation(Location.HINTERLAND);
-        // TODO: statistics
+        getModel().fireEvent(new Event(PortModel.CONTAINER_EVENT, container));
     }
 
     ///////////////////////////////////////////////// RAIL /////////////////////////////////////////////////
@@ -319,6 +326,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     protected void dropoffContainerRailTerminal(final Terminal terminal, final Container container)
     {
         terminal.getYard().addContainer(container);
+        getModel().fireEvent(new Event(PortModel.CONTAINER_EVENT, container));
     }
 
     /**
@@ -355,7 +363,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     protected void dropoffContainerRailHinterland(final Container container)
     {
         container.addLocation(Location.HINTERLAND);
-        // TODO: statistics
+        getModel().fireEvent(new Event(PortModel.CONTAINER_EVENT, container));
     }
 
     @Override
