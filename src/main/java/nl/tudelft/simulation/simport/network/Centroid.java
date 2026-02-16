@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.network;
 
+import org.djunits.value.vdouble.scalar.Area;
+import org.djutils.base.Identifiable;
 import org.djutils.draw.bounds.Bounds;
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point;
@@ -15,7 +17,7 @@ import nl.tudelft.simulation.dsol.animation.Locatable;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Centroid implements Locatable
+public class Centroid implements Locatable, Identifiable
 {
     /** x in WGS84. */
     private final double x;
@@ -23,13 +25,92 @@ public class Centroid implements Locatable
     /** y in WGS84. */
     private final double y;
 
+    private final String id;
+
+    private String name;
+
+    private String eid;
+
+    private String type;
+
     /**
      *
      */
-    public Centroid(final double x, final double y)
+    public Centroid(final String id, final double x, final double y)
     {
+        this.id = id;
         this.x = x;
         this.y = y;
+    }
+
+    @Override
+    public String getId()
+    {
+        return this.id;
+    }
+
+    /**
+     * @return name
+     */
+    public String getName()
+    {
+        return this.name;
+    }
+
+    /**
+     * @param name set name
+     */
+    public void setName(final String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * @return eid
+     */
+    public String getEid()
+    {
+        return this.eid;
+    }
+
+    /**
+     * @param eid set eid
+     */
+    public void setEid(final String eid)
+    {
+        this.eid = eid;
+    }
+
+    /**
+     * @return type
+     */
+    public String getType()
+    {
+        return this.type;
+    }
+
+    /**
+     * @param type set type
+     */
+    public void setType(final String type)
+    {
+        this.type = type;
+    }
+
+    /**
+     * @return x
+     */
+    public double getX()
+    {
+        return this.x;
+    }
+
+    /**
+     * @return y
+     */
+    public double getY()
+    {
+        return this.y;
     }
 
     @Override
