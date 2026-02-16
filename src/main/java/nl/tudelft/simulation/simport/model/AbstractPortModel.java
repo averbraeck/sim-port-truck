@@ -29,8 +29,8 @@ import nl.tudelft.simulation.jstats.distributions.DistUniform;
 import nl.tudelft.simulation.jstats.streams.MersenneTwister;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.network.Centroid;
-import nl.tudelft.simulation.simport.network.RoadLink;
 import nl.tudelft.simulation.simport.network.Node;
+import nl.tudelft.simulation.simport.network.RoadLink;
 import nl.tudelft.simulation.simport.network.RoadNetwork;
 import nl.tudelft.simulation.simport.network.RoadTurn;
 import nl.tudelft.simulation.simport.terminal.GateConstant;
@@ -116,6 +116,11 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     "%d", 7.0));
             genericMap.add(new InputParameterLong("Seed", "Seed for the RNG", "Seed for the Random Number Generator", 111L, 1,
                     Long.MAX_VALUE, "%d", 8.0));
+            genericMap.add(new InputParameterString("NodesFile", "Nodes file", "Nodes file (URL)", "", 20.0));
+            genericMap.add(new InputParameterString("SectionFile", "Section file", "Section file (URL)", "", 21.0));
+            genericMap.add(new InputParameterString("TurningFile", "Turning file", "Turning file (URL)", "", 22.0));
+            genericMap.add(new InputParameterString("CentroidsFile", "Centroids file", "Centroids file (URL)", "", 23.0));
+            genericMap.add(new InputParameterString("ODFile", "OD file", "OD file (path)", "", 23.0));
 
             InputParameterMap volumeMap = new InputParameterMap("volume", "Volume", "Volume parameters", 2.0);
             root.add(volumeMap);
@@ -343,10 +348,11 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         buildTruckingFirms();
 
         this.roadNetwork = new RoadNetwork(this);
-        this.roadNetwork.readNodes(ResourceResolver.resolve("file:///E:/por/HVM50/network2022/nodes.shp").asUrl());
-        this.roadNetwork.readCentroids(ResourceResolver.resolve("file:///E:/por/HVM50/centroids/centroids.shp").asUrl());
-        this.roadNetwork.readSections(ResourceResolver.resolve("file:///E:/por/HVM50/network2022/section.shp").asUrl());
-        this.roadNetwork.readTurns(ResourceResolver.resolve("file:///E:/por/HVM50/network2022/turning.shp").asUrl());
+        this.roadNetwork.readNodes(ResourceResolver.resolve(getInputParameterString("generic.NodesFile")).asUrl());
+        this.roadNetwork.readCentroids(ResourceResolver.resolve(getInputParameterString("generic.CentroidsFile")).asUrl());
+        this.roadNetwork.readSections(ResourceResolver.resolve(getInputParameterString("generic.SectionFile")).asUrl());
+        this.roadNetwork.readTurns(ResourceResolver.resolve(getInputParameterString("generic.TurningFile")).asUrl());
+        this.roadNetwork.readOd(ResourceResolver.resolve(getInputParameterString("generic.ODFile")).asPath());
     }
 
     /**
