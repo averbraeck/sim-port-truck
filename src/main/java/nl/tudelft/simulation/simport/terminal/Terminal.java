@@ -226,6 +226,7 @@ public class Terminal extends AbstractContainerFacility
     {
         Container container = new Container(getModel().uniqueContainerNr(), booking.getSize(), booking.isEmpty(),
                 booking.isReefer(), Location.HINTERLAND);
+        container.setVesselOutNr(vessel.getVesselNr());
         booking.setContainer(container);
         var freightForwarder = getModel().getFreightForwarder(this, vessel);
 
