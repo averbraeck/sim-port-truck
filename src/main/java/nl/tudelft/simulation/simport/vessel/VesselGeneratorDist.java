@@ -140,6 +140,7 @@ public class VesselGeneratorDist extends VesselGenerator
             boolean reefer = rng.nextDouble() < this.fractionReeferUnloading;
             Location loc = getVesselType().isDeepSea() ? Location.DEEPSEA : Location.FEEDER;
             Container container = new Container(getModel().uniqueContainerNr(), size, empty, reefer, loc);
+            container.setVesselInNr(vessel.getVesselNr());
             Booking booking = new Booking(vessel, true, getModel().uniqueBookingNr(), size, empty, reefer);
             booking.setContainer(container);
             bookingList.add(booking);
@@ -201,6 +202,7 @@ public class VesselGeneratorDist extends VesselGenerator
         var eta = new ClockTime(getSimulator().getSimulatorClockTime().plus(etaAdvance));
         var etd = new ClockTime(eta.plus(new Duration(1.0, DurationUnit.DAY)));
         var vessel = new Vessel(getVesselType(), getModel(), eta, etd, getTerminal());
+        getModel().addVessel(vessel);
         vessel.setLoadList(makeLoadList(vessel));
         getTerminal().addToUnallocatedExportMap(vessel);
         vessel.setUnloadList(makeUnloadList(vessel, vessel.getContainerList()));

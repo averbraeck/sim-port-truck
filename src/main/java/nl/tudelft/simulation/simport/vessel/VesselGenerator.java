@@ -52,7 +52,8 @@ public abstract class VesselGenerator implements Identifiable
      */
     public void generateVessel(final ClockTime eta, final ClockTime etd)
     {
-        new Vessel(this.vesselType, this.model, eta, etd, this.terminal);
+        Vessel vessel = new Vessel(this.vesselType, this.model, eta, etd, this.terminal);
+        getModel().addVessel(vessel);
     }
 
     /**

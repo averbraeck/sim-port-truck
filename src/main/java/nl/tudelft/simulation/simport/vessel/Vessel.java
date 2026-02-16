@@ -13,6 +13,7 @@ import nl.tudelft.simulation.dsol.formalisms.eventscheduling.SimEventInterface;
 import nl.tudelft.simulation.dsol.logger.Cat;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
+import nl.tudelft.simulation.simport.Location;
 import nl.tudelft.simulation.simport.container.Booking;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
@@ -185,7 +186,7 @@ public class Vessel extends LocalEventProducer implements Identifiable
         this.atd = atd;
         if (this.atdEvent != null)
             this.simulator.cancelEvent(this.atdEvent);
-        this.atdEvent = this.simulator.scheduleEventAbs(this.atd, this, "vesselDeparture", null);
+        this.atdEvent = this.simulator.scheduleEventAbs(this.atd, () -> vesselDeparture());
     }
 
     /**
@@ -251,7 +252,6 @@ public class Vessel extends LocalEventProducer implements Identifiable
         CategoryLogger.with(Cat.DSOL).debug("Vessel {} arrived at terminal {}", this.id, this.terminal);
         getSimulator().scheduleEventNow(() -> unloadContainers());
         getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.5), () -> loadContainers());
-        getSimulator().scheduleEventAbs(this.atd, () -> vesselDeparture());
     }
 
     /**
@@ -325,6 +325,7 @@ public class Vessel extends LocalEventProducer implements Identifiable
             else
             {
                 this.containerList.add(container);
+                container.addLocation(getVesselType().isDeepSea() ? Location.DEEPSEA : Location.FEEDER);
             }
         }
         else
@@ -339,8 +340,12 @@ public class Vessel extends LocalEventProducer implements Identifiable
 
     protected void vesselDeparture()
     {
+        for (Container container : getContainerList())
+        {
+            container.setVesselOutNr(getVesselNr());
+            getModel().fireEvent(PortModel.CONTAINER_EVENT, container);
+        }
         CategoryLogger.with(Cat.DSOL).debug("Vessel {} departed from terminal {}", this.id, this.terminal);
-        // TODO statistics
         this.loadList = null;
         this.unloadList = null;
         this.containerList = null;
