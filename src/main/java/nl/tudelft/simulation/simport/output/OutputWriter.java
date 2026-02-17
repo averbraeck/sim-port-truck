@@ -3,14 +3,19 @@ package nl.tudelft.simulation.simport.output;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 import org.djutils.event.Event;
 import org.djutils.event.EventListener;
 
+import nl.tudelft.simulation.dsol.experiment.Replication;
 import nl.tudelft.simulation.simport.TransportMode;
+import nl.tudelft.simulation.simport.container.Booking;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.terminal.ContainerFacility;
 import nl.tudelft.simulation.simport.terminal.TerminalStatistics;
+import nl.tudelft.simulation.simport.terminal.TerminalStatistics.TerminalData;
 import nl.tudelft.simulation.simport.truck.Truck;
 import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 import nl.tudelft.simulation.simport.vessel.Vessel;
@@ -28,14 +33,23 @@ public class OutputWriter implements EventListener
     /** the model. */
     private final PortModel model;
 
+    /** the vessel writer. */
+    private PrintWriter vesselWriter;
+
     /** the container writer. */
     private PrintWriter containerWriter;
+
+    /** the final container writer. */
+    private PrintWriter finalContainerWriter;
 
     /** the truck writer. */
     private PrintWriter truckWriter;
 
     /** the terminal writer. */
     private PrintWriter terminalWriter;
+
+    /** the total terminal writer. */
+    private PrintWriter totalTerminalWriter;
 
     /** the loop detector writer. */
     private PrintWriter loopDetectorWriter;
@@ -61,6 +75,10 @@ public class OutputWriter implements EventListener
 
         try
         {
+            this.vesselWriter = new PrintWriter(outputPath + "/vessel.csv");
+            writeVesselHeader();
+            model.addListener(this, PortModel.VESSEL_EVENT);
+
             this.containerWriter = new PrintWriter(outputPath + "/container.csv");
             writeContainerHeader();
             model.addListener(this, PortModel.CONTAINER_EVENT);
@@ -72,6 +90,15 @@ public class OutputWriter implements EventListener
             this.terminalWriter = new PrintWriter(outputPath + "/terminal.csv");
             writeTerminalHeader();
             model.addListener(this, PortModel.DAILY_TERMINAL_EVENT);
+
+            this.totalTerminalWriter = new PrintWriter(outputPath + "/terminal_total.csv");
+            writeTotalTerminalHeader();
+            model.addListener(this, PortModel.TOTAL_TERMINAL_EVENT);
+
+            this.finalContainerWriter = new PrintWriter(outputPath + "/container_final.csv");
+            writeFinalContainerHeader();
+
+            model.getSimulator().addListener(this, Replication.END_REPLICATION_EVENT);
         }
         catch (IOException ioe)
         {
@@ -102,6 +129,94 @@ public class OutputWriter implements EventListener
                 return;
             }
         }
+    }
+
+    private void writeVesselHeader()
+    {
+        this.vesselWriter.print("\"date\"");
+        this.vesselWriter.print(",\"vessel_id\"");
+        this.vesselWriter.print(",\"terminal_id\"");
+        this.vesselWriter.print(",\"vessel_type\"");
+        this.vesselWriter.print(",\"eta\"");
+        this.vesselWriter.print(",\"ata\"");
+        this.vesselWriter.print(",\"etd\"");
+        this.vesselWriter.print(",\"atd\"");
+        this.vesselWriter.print(",\"containers_loaded\"");
+        this.vesselWriter.print(",\"containers_loaded_full\"");
+        this.vesselWriter.print(",\"containers_loaded_empty\"");
+        this.vesselWriter.print(",\"containers_loaded_general\"");
+        this.vesselWriter.print(",\"containers_loaded_reefer\"");
+        this.vesselWriter.print(",\"containers_loaded_20ft\"");
+        this.vesselWriter.print(",\"containers_loaded_40ft\"");
+        this.vesselWriter.print(",\"teu_loaded\"");
+        this.vesselWriter.print(",\"contains_unloaded\"");
+        this.vesselWriter.print(",\"containers_unloaded_full\"");
+        this.vesselWriter.print(",\"containers_unloaded_empty\"");
+        this.vesselWriter.print(",\"containers_unloaded_general\"");
+        this.vesselWriter.print(",\"containers_unloaded_reefer\"");
+        this.vesselWriter.print(",\"containers_unloaded_20ft\"");
+        this.vesselWriter.print(",\"containers_unloaded_40ft\"");
+        this.vesselWriter.print(",\"teu_unloaded\"");
+        this.vesselWriter.print(",\"containers_present\"");
+        this.vesselWriter.print(",\"teu_present\"");
+        this.vesselWriter.print(",\"containers_transshipped_loaded\"");
+        this.vesselWriter.print(",\"containers_transshipped_unloaded\"");
+        this.vesselWriter.println();
+        this.vesselWriter.flush();
+    }
+
+    private void writeVesselLine(final Vessel vessel)
+    {
+        this.vesselWriter.print("\"" + getModel().getSimulator().getSimulatorClockTime().ymdhm() + "\"");
+        this.vesselWriter.print(",\"" + vessel.getId() + "\"");
+        this.vesselWriter.print(",\"" + vessel.getTerminal().getId() + "\"");
+        this.vesselWriter.print(",\"" + vessel.getVesselType().toString() + "\"");
+        this.vesselWriter.print(",\"" + vessel.getEta().ymdhm() + "\"");
+        this.vesselWriter.print(",\"" + vessel.getAta().ymdhm() + "\"");
+        this.vesselWriter.print(",\"" + vessel.getEtd().ymdhm() + "\"");
+        this.vesselWriter.print(",\"" + vessel.getAtd().ymdhm() + "\"");
+        this.vesselWriter.print("," + vessel.getLoadList().size());
+        int[] fegr24Loaded = calcFEGR24(vessel.getLoadList());
+        for (int i = 0; i < 6; i++)
+            this.vesselWriter.print("," + fegr24Loaded[i]);
+        this.vesselWriter.print("," + (fegr24Loaded[4] + 2 * fegr24Loaded[5]));
+        this.vesselWriter.print("," + vessel.getUnloadList().size());
+        int[] fegr24Unloaded = calcFEGR24(vessel.getUnloadList());
+        for (int i = 0; i < 6; i++)
+            this.vesselWriter.print("," + fegr24Unloaded[i]);
+        this.vesselWriter.print("," + (fegr24Unloaded[4] + 2 * fegr24Unloaded[5]));
+        this.vesselWriter.print("," + vessel.getContainerList().size());
+        int teu = 0;
+        for (Container c : vessel.getContainerList())
+            teu += c.is20ft() ? 1 : 2;
+        this.vesselWriter.print("," + teu);
+        this.vesselWriter.print("," + vessel.getNrContainersTransshippedLoaded());
+        this.vesselWriter.print("," + vessel.getNrContainersTransshippedUnloaded());
+        this.vesselWriter.println();
+        this.vesselWriter.flush();
+    }
+
+    int[] calcFEGR24(final List<Booking> bookings)
+    {
+        int[] fegr24 = new int[6];
+        for (Booking booking : bookings)
+        {
+            if (booking.isFull())
+                fegr24[0]++;
+            else
+                fegr24[1]++;
+
+            if (booking.isGeneral())
+                fegr24[2]++;
+            else
+                fegr24[3]++;
+
+            if (booking.is20ft())
+                fegr24[4]++;
+            else
+                fegr24[5]++;
+        }
+        return fegr24;
     }
 
     private void writeContainerHeader()
@@ -182,8 +297,8 @@ public class OutputWriter implements EventListener
     private void writeTruckTripLine(final Truck truck)
     {
         this.truckWriter.print("\"" + truck.getTruckingCompany().getId() + "\"");
-        this.truckWriter.print("\"" + truck.getId() + "\"");
-        this.truckWriter.print("\"" + (truck.getContainer() == null ? "" : truck.getContainer().getId()) + "\"");
+        this.truckWriter.print(",\"" + truck.getId() + "\"");
+        this.truckWriter.print(",\"" + (truck.getContainer() == null ? "" : truck.getContainer().getId()) + "\"");
         this.truckWriter.print(",\"" + "" + "\"");
         this.truckWriter.print(",\"" + (truck.getPickupTime() == null ? "" : truck.getPickupTime().ymdhm()) + "\"");
         this.truckWriter.print(",\"" + (truck.getLoadCentroid() == null ? "" : truck.getLoadCentroid()) + "\"");
@@ -201,85 +316,183 @@ public class OutputWriter implements EventListener
 
     private void writeTerminalHeader()
     {
-        this.terminalWriter.print("\"date\"");
-        this.terminalWriter.print(",\"terminal\"");
-        this.terminalWriter.print(",\"nr_vessel_arrivals\"");
-        this.terminalWriter.print(",\"nr_vessel_departures\"");
-        this.terminalWriter.print(",\"nr_containers_yard\"");
-        this.terminalWriter.print(",\"nr_containers_full_yard\"");
-        this.terminalWriter.print(",\"nr_containers_empty_yard\"");
-        this.terminalWriter.print(",\"nr_containers_general_yard\"");
-        this.terminalWriter.print(",\"nr_containers_reefer_yard\"");
-        this.terminalWriter.print(",\"nr_containers_20ft_yard\"");
-        this.terminalWriter.print(",\"nr_containers_40ft_yard\"");
-        this.terminalWriter.print(",\"nr_teu_yard\"");
-        this.terminalWriter.print(",\"nr_teu_full_yard\"");
-        this.terminalWriter.print(",\"nr_teu_empty_yard\"");
-        this.terminalWriter.print(",\"nr_teu_general_yard\"");
-        this.terminalWriter.print(",\"nr_teu_reefer_yard\"");
-        this.terminalWriter.print(",\"nr_teu_20ft_yard\"");
-        this.terminalWriter.print(",\"nr_teu_40ft_yard\"");
-        this.terminalWriter.print(",\"nr_truck_visits_pickup\"");
-        this.terminalWriter.print(",\"nr_truck_visits_delivery\"");
-        this.terminalWriter.print(",\"nr_truck_visits_dual\"");
-        this.terminalWriter.print(",\"nr_container_arrivals_deepsea\"");
-        this.terminalWriter.print(",\"nr_container_departures_deepsea\"");
-        this.terminalWriter.print(",\"nr_teu_arrivals_deepsea\"");
-        this.terminalWriter.print(",\"nr_teu_departures_deepsea\"");
-        this.terminalWriter.print(",\"nr_container_arrivals_feeder\"");
-        this.terminalWriter.print(",\"nr_container_departures_feeder\"");
-        this.terminalWriter.print(",\"nr_teu_arrivals_feeder\"");
-        this.terminalWriter.print(",\"nr_teu_departures_feeder\"");
-        this.terminalWriter.print(",\"nr_container_arrivals_truck\"");
-        this.terminalWriter.print(",\"nr_container_departures_truck\"");
-        this.terminalWriter.print(",\"nr_teu_arrivals_truck\"");
-        this.terminalWriter.print(",\"nr_teu_departures_truck\"");
-        this.terminalWriter.print(",\"nr_container_arrivals_barge\"");
-        this.terminalWriter.print(",\"nr_container_departures_barge\"");
-        this.terminalWriter.print(",\"nr_teu_arrivals_barge\"");
-        this.terminalWriter.print(",\"nr_teu_departures_barge\"");
-        this.terminalWriter.print(",\"nr_container_arrivals_rail\"");
-        this.terminalWriter.print(",\"nr_container_departures_rail\"");
-        this.terminalWriter.print(",\"nr_teu_arrivals_rail\"");
-        this.terminalWriter.print(",\"nr_teu_departures_rail\"");
-        this.terminalWriter.println();
-        this.terminalWriter.flush();
+        writeTerminalHeader(this.terminalWriter);
+    }
+
+    private void writeTotalTerminalHeader()
+    {
+        writeTerminalHeader(this.totalTerminalWriter);
+    }
+
+    private void writeTerminalHeader(final PrintWriter writer)
+    {
+        writer.print("\"date\"");
+        writer.print(",\"terminal\"");
+        writer.print(",\"nr_vessel_arrivals\"");
+        writer.print(",\"nr_vessel_departures\"");
+        writer.print(",\"nr_deepsea_arrivals\"");
+        writer.print(",\"nr_deepsea_departures\"");
+        writer.print(",\"nr_feeder_arrivals\"");
+        writer.print(",\"nr_feeder_departures\"");
+        for (String yad : new String[] {"yard", "arrivals", "departures"})
+        {
+            for (String ct : new String[] {"containers", "teu"})
+            {
+                for (String type : new String[] {"total", "full", "empty", "general", "reefer", "20ft", "40ft"})
+                {
+                    writer.print(",\"nr_" + ct + "_" + type + "_" + yad + "\"");
+                }
+            }
+        }
+        writer.print(",\"nr_truck_visits_pickup\"");
+        writer.print(",\"nr_truck_visits_delivery\"");
+        writer.print(",\"nr_truck_visits_dual\"");
+        writer.print(",\"nr_container_arrivals_deepsea\"");
+        writer.print(",\"nr_container_departures_deepsea\"");
+        writer.print(",\"nr_teu_arrivals_deepsea\"");
+        writer.print(",\"nr_teu_departures_deepsea\"");
+        writer.print(",\"nr_container_arrivals_feeder\"");
+        writer.print(",\"nr_container_departures_feeder\"");
+        writer.print(",\"nr_teu_arrivals_feeder\"");
+        writer.print(",\"nr_teu_departures_feeder\"");
+        writer.print(",\"nr_container_arrivals_truck\"");
+        writer.print(",\"nr_container_departures_truck\"");
+        writer.print(",\"nr_teu_arrivals_truck\"");
+        writer.print(",\"nr_teu_departures_truck\"");
+        writer.print(",\"nr_container_arrivals_barge\"");
+        writer.print(",\"nr_container_departures_barge\"");
+        writer.print(",\"nr_teu_arrivals_barge\"");
+        writer.print(",\"nr_teu_departures_barge\"");
+        writer.print(",\"nr_container_arrivals_rail\"");
+        writer.print(",\"nr_container_departures_rail\"");
+        writer.print(",\"nr_teu_arrivals_rail\"");
+        writer.print(",\"nr_teu_departures_rail\"");
+        writer.println();
+        writer.flush();
     }
 
     private void writeTerminalLine(final TerminalStatistics terminalStatistics)
     {
         var stat = terminalStatistics.getPeriodic();
-        this.terminalWriter.print("\"" + stat.getStartTime().ymdhm() + "\"");
-        this.terminalWriter.print("\"" + terminalStatistics.getFacility().getId() + "\"");
-        this.terminalWriter.print("," + stat.getNrVesselArrivals());
-        this.terminalWriter.print("," + stat.getNrVesselDepartures());
-        this.terminalWriter.print("," + stat.getNrContainersTotal());
-        this.terminalWriter.print("," + stat.getNrContainersFull());
-        this.terminalWriter.print("," + stat.getNrContainersEmpty());
-        this.terminalWriter.print("," + stat.getNrContainersGeneral());
-        this.terminalWriter.print("," + stat.getNrContainersReefer());
-        this.terminalWriter.print("," + stat.getNrContainers20Ft());
-        this.terminalWriter.print("," + stat.getNrContainers40Ft());
-        this.terminalWriter.print("," + stat.getNrTeuTotal());
-        this.terminalWriter.print("," + stat.getNrTeuFull());
-        this.terminalWriter.print("," + stat.getNrTeuEmpty());
-        this.terminalWriter.print("," + stat.getNrTeuGeneral());
-        this.terminalWriter.print("," + stat.getNrTeuReefer());
-        this.terminalWriter.print("," + stat.getNrTeu20Ft());
-        this.terminalWriter.print("," + stat.getNrTeu40Ft());
-        this.terminalWriter.print("," + stat.getNrTruckVisitsPickup());
-        this.terminalWriter.print("," + stat.getNrTruckVisitsDelivery());
-        this.terminalWriter.print("," + stat.getNrTruckVisitsDual());
+        writeTerminalLine(this.terminalWriter, stat, terminalStatistics.getFacility());
+    }
+
+    private void writeTotalTerminalLine(final TerminalStatistics terminalStatistics)
+    {
+        var stat = terminalStatistics.getTotal();
+        writeTerminalLine(this.totalTerminalWriter, stat, terminalStatistics.getFacility());
+    }
+
+    private void writeTerminalLine(final PrintWriter writer, final TerminalData stat, final ContainerFacility facility)
+    {
+        writer.print("\"" + stat.getStartTime().ymdhm() + "\"");
+        writer.print(",\"" + facility.getId() + "\"");
+        writer.print("," + stat.getNrVesselArrivals());
+        writer.print("," + stat.getNrVesselDepartures());
+        writer.print("," + stat.getNrDeepseaArrivals());
+        writer.print("," + stat.getNrDeepseaDepartures());
+        writer.print("," + stat.getNrFeederArrivals());
+        writer.print("," + stat.getNrFeederDepartures());
+
+        writer.print("," + stat.getNrContainersTotal());
+        writer.print("," + stat.getNrContainersFull());
+        writer.print("," + stat.getNrContainersEmpty());
+        writer.print("," + stat.getNrContainersGeneral());
+        writer.print("," + stat.getNrContainersReefer());
+        writer.print("," + stat.getNrContainers20Ft());
+        writer.print("," + stat.getNrContainers40Ft());
+
+        writer.print("," + stat.getNrTeuTotal());
+        writer.print("," + stat.getNrTeuFull());
+        writer.print("," + stat.getNrTeuEmpty());
+        writer.print("," + stat.getNrTeuGeneral());
+        writer.print("," + stat.getNrTeuReefer());
+        writer.print("," + stat.getNrTeu20Ft());
+        writer.print("," + stat.getNrTeu40Ft());
+
+        writer.print("," + stat.getNrContainersArrTotal());
+        writer.print("," + stat.getNrContainersArrFull());
+        writer.print("," + stat.getNrContainersArrEmpty());
+        writer.print("," + stat.getNrContainersArrGeneral());
+        writer.print("," + stat.getNrContainersArrReefer());
+        writer.print("," + stat.getNrContainersArr20Ft());
+        writer.print("," + stat.getNrContainersArr40Ft());
+
+        writer.print("," + stat.getNrTeuArrTotal());
+        writer.print("," + stat.getNrTeuArrFull());
+        writer.print("," + stat.getNrTeuArrEmpty());
+        writer.print("," + stat.getNrTeuArrGeneral());
+        writer.print("," + stat.getNrTeuArrReefer());
+        writer.print("," + stat.getNrTeuArr20Ft());
+        writer.print("," + stat.getNrTeuArr40Ft());
+
+        writer.print("," + stat.getNrContainersDepTotal());
+        writer.print("," + stat.getNrContainersDepFull());
+        writer.print("," + stat.getNrContainersDepEmpty());
+        writer.print("," + stat.getNrContainersDepGeneral());
+        writer.print("," + stat.getNrContainersDepReefer());
+        writer.print("," + stat.getNrContainersDep20Ft());
+        writer.print("," + stat.getNrContainersDep40Ft());
+
+        writer.print("," + stat.getNrTeuDepTotal());
+        writer.print("," + stat.getNrTeuDepFull());
+        writer.print("," + stat.getNrTeuDepEmpty());
+        writer.print("," + stat.getNrTeuDepGeneral());
+        writer.print("," + stat.getNrTeuDepReefer());
+        writer.print("," + stat.getNrTeuDep20Ft());
+        writer.print("," + stat.getNrTeuDep40Ft());
+
+        writer.print("," + stat.getNrTruckVisitsPickup());
+        writer.print("," + stat.getNrTruckVisitsDelivery());
+        writer.print("," + stat.getNrTruckVisitsDual());
+
         for (TransportMode tm : new TransportMode[] {TransportMode.DEEPSEA, TransportMode.FEEDER, TransportMode.TRUCK,
                 TransportMode.BARGE, TransportMode.RAIL})
         {
-            this.terminalWriter.print("," + stat.getNrContainerArrivals(tm));
-            this.terminalWriter.print("," + stat.getNrContainerDepartures(tm));
-            this.terminalWriter.print("," + stat.getNrTeuArrivals(tm));
-            this.terminalWriter.print("," + stat.getNrTeuDepartures(tm));
+            writer.print("," + stat.getNrContainerArrivals(tm));
+            writer.print("," + stat.getNrContainerDepartures(tm));
+            writer.print("," + stat.getNrTeuArrivals(tm));
+            writer.print("," + stat.getNrTeuDepartures(tm));
         }
-        this.terminalWriter.println();
-        this.terminalWriter.flush();
+        writer.println();
+        writer.flush();
+    }
+
+    private void writeFinalContainerHeader()
+    {
+        this.finalContainerWriter.print("\"terminal_id\"");
+        this.finalContainerWriter.print(",\"container_nr\"");
+        this.finalContainerWriter.print(",\"vessel_in_nr\"");
+        this.finalContainerWriter.print(",\"vessel_out_nr\"");
+        this.finalContainerWriter.print(",\"locations\"");
+        this.finalContainerWriter.println();
+        this.finalContainerWriter.flush();
+    }
+
+    private void writeFinalContainerLines(final ContainerFacility facility)
+    {
+        String id = facility.getId();
+        for (Container container : facility.getYard().getContainerMap().values())
+        {
+            this.finalContainerWriter.print("\"" + id + "\"");
+            this.finalContainerWriter.print(",\"" + container.getId() + "\"");
+            this.finalContainerWriter.print("," + container.getVesselInNr());
+            this.finalContainerWriter.print("," + container.getVesselOutNr());
+            this.finalContainerWriter.print("," + container.getLocations().toString());
+            this.finalContainerWriter.println();
+        }
+        this.finalContainerWriter.flush();
+    }
+
+    /** close the files. */
+    protected void closeFiles()
+    {
+        this.vesselWriter.close();
+        this.containerWriter.close();
+        this.truckWriter.close();
+        this.terminalWriter.close();
+        this.totalTerminalWriter.close();
+        this.finalContainerWriter.close();
     }
 
     /**
@@ -296,7 +509,11 @@ public class OutputWriter implements EventListener
     @Override
     public void notify(final Event event)
     {
-        if (event.getType().equals(PortModel.CONTAINER_EVENT))
+        if (event.getType().equals(PortModel.VESSEL_EVENT))
+        {
+            writeVesselLine((Vessel) event.getContent());
+        }
+        else if (event.getType().equals(PortModel.CONTAINER_EVENT))
         {
             writeContainerLine((Container) event.getContent());
         }
@@ -307,6 +524,15 @@ public class OutputWriter implements EventListener
         else if (event.getType().equals(PortModel.DAILY_TERMINAL_EVENT))
         {
             writeTerminalLine((TerminalStatistics) event.getContent());
+        }
+        else if (event.getType().equals(PortModel.TOTAL_TERMINAL_EVENT))
+        {
+            writeTotalTerminalLine((TerminalStatistics) event.getContent());
+            writeFinalContainerLines((((TerminalStatistics) event.getContent()).getFacility()));
+        }
+        else if (event.getType().equals(Replication.END_REPLICATION_EVENT))
+        {
+            closeFiles();
         }
     }
 }
