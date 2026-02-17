@@ -12,6 +12,7 @@ import org.djutils.event.LocalEventProducer;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
+import nl.tudelft.simulation.simport.HinterlandMode;
 import nl.tudelft.simulation.simport.Location;
 import nl.tudelft.simulation.simport.TransportMode;
 import nl.tudelft.simulation.simport.container.Container;
@@ -93,7 +94,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
      * @param empty true is empty, false if full
      * @param leadTimeDist the lead time distribution
      */
-    public void setLeadTimeImport(final Terminal terminal, final TransportMode transportMode, final boolean reefer,
+    public void setLeadTimeImport(final Terminal terminal, final HinterlandMode transportMode, final boolean reefer,
             final boolean empty, final DistContinuousDuration leadTimeDist)
     {
         switch (transportMode)
@@ -121,7 +122,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
      * @param empty true is empty, false if full
      * @param leadTimeDist the lead time distribution
      */
-    public void setLeadTimeExport(final Terminal terminal, final TransportMode transportMode, final boolean reefer,
+    public void setLeadTimeExport(final Terminal terminal, final HinterlandMode transportMode, final boolean reefer,
             final boolean empty, final DistContinuousDuration leadTimeDist)
     {
         switch (transportMode)
@@ -173,6 +174,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
 
     protected void unloadContainerTerminal(final Terminal terminal, final Truck truck, final Container container)
     {
+        getModel().fireEvent(new Event(PortModel.TRUCK_EVENT, truck));
         terminal.getYard().dropoffContainer(truck);
     }
 
@@ -209,6 +211,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
      */
     protected void unloadContainerHinterland(final Truck truck)
     {
+        getModel().fireEvent(new Event(PortModel.TRUCK_EVENT, truck));
         var container = truck.unloadContainer();
         container.addLocation(Location.HINTERLAND);
         getModel().fireEvent(new Event(PortModel.CONTAINER_EVENT, container));
@@ -249,7 +252,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
      */
     protected void dropoffContainerBargeTerminal(final Terminal terminal, final Container container)
     {
-        terminal.getYard().addContainer(container);
+        terminal.getYard().addContainer(container, TransportMode.BARGE);
     }
 
     /**
@@ -274,7 +277,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     protected void bargeDepartureFromTerminal(final Terminal terminal, final Container container)
     {
         container.addLocation(Location.BARGE);
-        terminal.getYard().removeContainer(container);
+        terminal.getYard().removeContainer(container, TransportMode.BARGE);
         this.simulator.scheduleEventRel(new Duration(16.0, DurationUnit.HOUR),
                 () -> dropoffContainerBargeHinterland(container));
     }
@@ -325,7 +328,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
      */
     protected void dropoffContainerRailTerminal(final Terminal terminal, final Container container)
     {
-        terminal.getYard().addContainer(container);
+        terminal.getYard().addContainer(container, TransportMode.RAIL);
         getModel().fireEvent(new Event(PortModel.CONTAINER_EVENT, container));
     }
 
@@ -351,7 +354,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     protected void railDepartureFromTerminal(final Terminal terminal, final Container container)
     {
         container.addLocation(Location.RAIL);
-        terminal.getYard().removeContainer(container);
+        terminal.getYard().removeContainer(container, TransportMode.RAIL);
         this.simulator.scheduleEventRel(new Duration(16.0, DurationUnit.HOUR), () -> dropoffContainerRailHinterland(container));
     }
 
