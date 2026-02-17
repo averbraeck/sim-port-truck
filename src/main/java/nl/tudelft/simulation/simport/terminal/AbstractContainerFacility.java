@@ -71,6 +71,7 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     protected void reportStatistics()
     {
         getModel().fireEvent(PortModel.DAILY_TERMINAL_EVENT, this.statistics);
+        this.statistics.resetPeriodicStatistics();
         getSimulator().scheduleEventRel(new Duration(1.0, DurationUnit.DAY), () -> reportStatistics());
     }
 

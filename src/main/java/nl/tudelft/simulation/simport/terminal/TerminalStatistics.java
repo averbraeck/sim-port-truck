@@ -41,8 +41,8 @@ public class TerminalStatistics implements EventListener
         this.facility = facility;
         this.simulator = simulator;
         simulator.addListener(this, Replication.WARMUP_EVENT);
-        resetPeriodicStatistics();
         resetTotalStatistics();
+        resetPeriodicStatistics();
     }
 
     /** @return the container facility (terminal or depot) */
@@ -55,6 +55,8 @@ public class TerminalStatistics implements EventListener
     public void resetPeriodicStatistics()
     {
         this.periodic = new TerminalData();
+        this.periodic.nrContainers = this.total.nrContainers.copy();
+        this.periodic.nrTeu = this.total.nrTeu.copy();
         this.periodic.setStartTime(this.simulator.getSimulatorClockTime());
     }
 
@@ -70,8 +72,8 @@ public class TerminalStatistics implements EventListener
     {
         if (event.getType().equals(Replication.WARMUP_EVENT))
         {
-            System.out.println("WARMUP");
             resetTotalStatistics();
+            resetPeriodicStatistics();
         }
     }
 
@@ -94,23 +96,33 @@ public class TerminalStatistics implements EventListener
     {
         this.total.nrContainers.total++;
         this.total.nrTeu.total += container.is40ft() ? 2 : 1;
+        this.periodic.nrContainers.total++;
+        this.periodic.nrTeu.total += container.is40ft() ? 2 : 1;
         if (container.isFull())
         {
             this.total.nrContainers.full++;
             this.total.nrTeu.full += container.is40ft() ? 2 : 1;
+            this.periodic.nrContainers.full++;
+            this.periodic.nrTeu.full += container.is40ft() ? 2 : 1;
         }
         if (container.isGeneral())
         {
             this.total.nrContainers.general++;
             this.total.nrTeu.general += container.is40ft() ? 2 : 1;
+            this.periodic.nrContainers.general++;
+            this.periodic.nrTeu.general += container.is40ft() ? 2 : 1;
         }
         if (container.is40ft())
         {
             this.total.nrContainers.ft40++;
             this.total.nrTeu.ft40++;
+            this.periodic.nrContainers.ft40++;
+            this.periodic.nrTeu.ft40++;
         }
         this.total.nrContainerArrivals[mode.ordinal()]++;
         this.total.nrTeuArrivals[mode.ordinal()] += container.is40ft() ? 2 : 1;
+        this.periodic.nrContainerArrivals[mode.ordinal()]++;
+        this.periodic.nrTeuArrivals[mode.ordinal()] += container.is40ft() ? 2 : 1;
     }
 
     /** Remove container from yard. */
@@ -118,23 +130,33 @@ public class TerminalStatistics implements EventListener
     {
         this.total.nrContainers.total++;
         this.total.nrTeu.total -= container.is40ft() ? 2 : 1;
+        this.periodic.nrContainers.total++;
+        this.periodic.nrTeu.total -= container.is40ft() ? 2 : 1;
         if (container.isFull())
         {
             this.total.nrContainers.full--;
             this.total.nrTeu.full -= container.is40ft() ? 2 : 1;
+            this.periodic.nrContainers.full--;
+            this.periodic.nrTeu.full -= container.is40ft() ? 2 : 1;
         }
         if (container.isGeneral())
         {
             this.total.nrContainers.general--;
             this.total.nrTeu.general -= container.is40ft() ? 2 : 1;
+            this.periodic.nrContainers.general--;
+            this.periodic.nrTeu.general -= container.is40ft() ? 2 : 1;
         }
         if (container.is40ft())
         {
             this.total.nrContainers.ft40--;
             this.total.nrTeu.ft40--;
+            this.periodic.nrContainers.ft40--;
+            this.periodic.nrTeu.ft40--;
         }
         this.total.nrContainerDepartures[mode.ordinal()]++;
         this.total.nrTeuDepartures[mode.ordinal()] += container.is40ft() ? 2 : 1;
+        this.periodic.nrContainerDepartures[mode.ordinal()]++;
+        this.periodic.nrTeuDepartures[mode.ordinal()] += container.is40ft() ? 2 : 1;
     }
 
     public void incTruckVisitPickup()
@@ -258,5 +280,15 @@ public class TerminalStatistics implements EventListener
         int general;
         int ft40;
         // @formatter:on
+
+        public ContainerTypeRecord copy()
+        {
+            ContainerTypeRecord copy = new ContainerTypeRecord();
+            copy.total = this.total;
+            copy.full = this.full;
+            copy.general = this.general;
+            copy.ft40 = this.ft40;
+            return copy;
+        }
     }
 }
