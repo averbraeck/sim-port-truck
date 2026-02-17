@@ -14,6 +14,7 @@ import nl.tudelft.simulation.dsol.logger.Cat;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.simport.Location;
+import nl.tudelft.simulation.simport.TransportMode;
 import nl.tudelft.simulation.simport.container.Booking;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
@@ -252,6 +253,7 @@ public class Vessel extends LocalEventProducer implements Identifiable
         CategoryLogger.with(Cat.DSOL).debug("Vessel {} arrived at terminal {}", this.id, this.terminal);
         getSimulator().scheduleEventNow(() -> unloadContainers());
         getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.5), () -> loadContainers());
+        getTerminal().getStatistics().vesselArrival(this);
     }
 
     /**
@@ -277,7 +279,8 @@ public class Vessel extends LocalEventProducer implements Identifiable
         Container container = this.unloadList.get(index).getContainer();
         if (container != null)
         {
-            getTerminal().getYard().addContainer(container);
+            getTerminal().getYard().addContainer(container,
+                    getVesselType().isDeepSea() ? TransportMode.DEEPSEA : TransportMode.FEEDER);
             if (!this.containerList.remove(container))
             {
                 CategoryLogger.with(Cat.DSOL).trace("Container {} not on vessel {} for booking {}", container, this,
@@ -317,7 +320,8 @@ public class Vessel extends LocalEventProducer implements Identifiable
         Container container = this.loadList.get(index).getContainer();
         if (container != null)
         {
-            if (!getTerminal().getYard().removeContainer(container))
+            if (!getTerminal().getYard().removeContainer(container,
+                    getVesselType().isDeepSea() ? TransportMode.DEEPSEA : TransportMode.FEEDER))
             {
                 CategoryLogger.with(Cat.DSOL).trace("Container {} not in the yard for booking {}", container,
                         this.loadList.get(index));
@@ -345,6 +349,7 @@ public class Vessel extends LocalEventProducer implements Identifiable
             container.setVesselOutNr(getVesselNr());
             getModel().fireEvent(PortModel.CONTAINER_EVENT, container);
         }
+        getTerminal().getStatistics().vesselDeparture(this);
         CategoryLogger.with(Cat.DSOL).debug("Vessel {} departed from terminal {}", this.id, this.terminal);
         this.loadList = null;
         this.unloadList = null;
