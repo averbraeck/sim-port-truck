@@ -27,6 +27,12 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
     /** A container has been delivered and is about to leave the model. */
     static EventType CONTAINER_EVENT = new EventType("CONTAINER_EVENT");
 
+    /** A truck has been completed a trip and is about to dropoff the container. */
+    static EventType TRUCK_EVENT = new EventType("TRUCK_EVENT");
+
+    /** A daily terminal update event. */
+    static EventType DAILY_TERMINAL_EVENT = new EventType("DAILY_TERMINAL_EVENT");
+
     /**
      * Return the standard random stream of the model.
      * @return the standard random stream of the model
