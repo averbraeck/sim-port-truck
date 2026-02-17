@@ -1,5 +1,6 @@
 package nl.tudelft.simulation.simport.model;
 
+import java.awt.Font;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,10 +10,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.io.ResourceResolver;
+import org.knowm.xchart.style.AxesChartStyler.TextAlignment;
+import org.knowm.xchart.style.markers.SeriesMarkers;
 
 import nl.tudelft.simulation.dsol.SimRuntimeException;
 import nl.tudelft.simulation.dsol.model.AbstractDsolModel;
@@ -25,10 +29,13 @@ import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterLong;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterMap;
 import nl.tudelft.simulation.dsol.model.inputparameters.InputParameterString;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.dsol.swing.gui.DsolPanel;
+import nl.tudelft.simulation.dsol.swing.gui.TablePanel;
 import nl.tudelft.simulation.dsol.swing.gui.animation.DsolAnimationTab;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
 import nl.tudelft.simulation.jstats.streams.MersenneTwister;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
+import nl.tudelft.simulation.simport.chart.LineChart;
 import nl.tudelft.simulation.simport.network.Centroid;
 import nl.tudelft.simulation.simport.network.Node;
 import nl.tudelft.simulation.simport.network.RoadLink;
@@ -331,6 +338,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         if (this.interactive)
         {
             drawMaps();
+
             this.animationTab.addToggleText("");
             this.animationTab.addToggleText("NETWORK");
             this.animationTab.addToggleAnimationButtonText("Centroids", Centroid.class, "centroids", true);
@@ -432,6 +440,62 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
      * Construct the trucking companies.
      */
     protected abstract void buildTruckingFirms();
+
+    /* ***************************************************************************************************************** */
+    /* *********************************************** GRAPHS AND CHARTS *********************************************** */
+    /* ***************************************************************************************************************** */
+
+    public void addTabs(final DsolPanel panel)
+    {
+        addYardVolumeTab(panel);
+    }
+
+    protected void addYardVolumeTab(final DsolPanel panel)
+    {
+        int rows = (int) Math.ceil(1.0 * this.terminalMap.size() / 3.0);
+        TablePanel yardCharts = new TablePanel(3, rows);
+        panel.getTabbedPane().addTab("yard", yardCharts);
+
+        int row = 0;
+        int col = 0;
+        for (Terminal terminal : this.terminalMap.values())
+        {
+            try
+            {
+                LineChart chart = new LineChart(terminal.getId() + " (TEU)", "time (d)", "");
+                chart.listenTo(terminal, terminal.getDailyYardTeuEventType());
+                chart.setXMin(0).setYMin(0).setXMax(365);
+                chart.getChart().getStyler().setPlotMargin(0).setXAxisDecimalPattern("###0").setYAxisDecimalPattern("#####0")
+                        .setYAxisLabelAlignment(TextAlignment.Right)
+                        .setAxisTickLabelsFont(new Font(Font.SANS_SERIF, Font.PLAIN, 8));
+                chart.getChart().getStyler().setxAxisTickLabelsFormattingFunction(new Function<Double, String>()
+                {
+                    @Override
+                    public String apply(final Double t)
+                    {
+                        if (t.doubleValue() == 0.0)
+                            return "\u030D   0     \u030D";
+                        return String.format("%d", t.intValue());
+                    }
+
+                });
+                chart.getSeries().setLineWidth(0.75f);
+                chart.getSeries().setMarker(SeriesMarkers.NONE);
+                yardCharts.setCell(chart.getSwingPanel(), col, row);
+            }
+            catch (Exception exception)
+            {
+                exception.printStackTrace();
+            }
+
+            col++;
+            if (col >= 3)
+            {
+                row++;
+                col = 0;
+            }
+        }
+    }
 
     /* ***************************************************************************************************************** */
     /* ********************************************** GETTERS AND SETTERS ********************************************** */

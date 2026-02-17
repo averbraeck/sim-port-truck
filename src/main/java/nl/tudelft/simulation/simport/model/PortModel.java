@@ -24,6 +24,9 @@ import nl.tudelft.simulation.simport.vessel.Vessel;
  */
 public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterface>, EventProducer
 {
+    /** A vessel has been loaded and is about to leave the model. */
+    static EventType VESSEL_EVENT = new EventType("VESSEL_EVENT");
+
     /** A container has been delivered and is about to leave the model. */
     static EventType CONTAINER_EVENT = new EventType("CONTAINER_EVENT");
 
@@ -32,6 +35,9 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
 
     /** A daily terminal update event. */
     static EventType DAILY_TERMINAL_EVENT = new EventType("DAILY_TERMINAL_EVENT");
+
+    /** A final terminal update event with totals. */
+    static EventType TOTAL_TERMINAL_EVENT = new EventType("TOTAL_TERMINAL_EVENT");
 
     /**
      * Return the standard random stream of the model.
