@@ -1,5 +1,9 @@
 package nl.tudelft.simulation.simport.terminal;
 
+import org.djutils.event.Event;
+import org.djutils.event.EventListener;
+
+import nl.tudelft.simulation.dsol.experiment.Replication;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.simport.TransportMode;
@@ -15,8 +19,11 @@ import nl.tudelft.simulation.simport.vessel.VesselType;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class TerminalStatistics
+public class TerminalStatistics implements EventListener
 {
+    /** The terminal or depot. */
+    private final ContainerFacility facility;
+
     /** The simulator. */
     private final ClockDevsSimulatorInterface simulator;
 
@@ -29,9 +36,19 @@ public class TerminalStatistics
     /**
      * @param simulator
      */
-    public TerminalStatistics(final ClockDevsSimulatorInterface simulator)
+    public TerminalStatistics(final ContainerFacility facility, final ClockDevsSimulatorInterface simulator)
     {
+        this.facility = facility;
         this.simulator = simulator;
+        simulator.addListener(this, Replication.WARMUP_EVENT);
+        resetPeriodicStatistics();
+        resetTotalStatistics();
+    }
+
+    /** @return the container facility (terminal or depot) */
+    public ContainerFacility getFacility()
+    {
+        return this.facility;
     }
 
     /** Reset the periodic statistics, e.g., at the end of a day. */
@@ -46,6 +63,16 @@ public class TerminalStatistics
     {
         this.total = new TerminalData();
         this.total.setStartTime(this.simulator.getSimulatorClockTime());
+    }
+
+    @Override
+    public void notify(final Event event)
+    {
+        if (event.getType().equals(Replication.WARMUP_EVENT))
+        {
+            System.out.println("WARMUP");
+            resetTotalStatistics();
+        }
     }
 
     /** Vessel arrival. */
@@ -147,7 +174,7 @@ public class TerminalStatistics
     }
 
     /** Terminal data collector. */
-    protected class TerminalData
+    public class TerminalData
     {
         // @formatter:off
         private ClockTime startTime;

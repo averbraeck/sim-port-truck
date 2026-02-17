@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.terminal;
 
+import org.djunits.unit.DurationUnit;
+import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point3d;
 import org.djutils.event.LocalEventProducer;
@@ -41,6 +43,9 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     /** Terminal yard for handling. */
     private Yard yard;
 
+    /** Terminal statistics. */
+    protected TerminalStatistics statistics;
+
     /**
      * Create a new container facility for the port model.
      * @param name the name of the facility
@@ -57,6 +62,16 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
         this.model = model;
         this.lat = lat;
         this.lon = lon;
+        this.statistics = new TerminalStatistics(this, model.getSimulator());
+
+        // schedule statistics reporting once a day.
+        model.getSimulator().scheduleEventNow(() -> reportStatistics());
+    }
+
+    protected void reportStatistics()
+    {
+        getModel().fireEvent(PortModel.DAILY_TERMINAL_EVENT, this.statistics);
+        getSimulator().scheduleEventRel(new Duration(1.0, DurationUnit.DAY), () -> reportStatistics());
     }
 
     @Override
@@ -69,6 +84,12 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     public String getName()
     {
         return this.name;
+    }
+
+    @Override
+    public TerminalStatistics getStatistics()
+    {
+        return this.statistics;
     }
 
     @Override

@@ -47,4 +47,6 @@ public interface ContainerFacility extends Facility, EventProducer
     /** @return the capacity in TEU. */
     int getCapacityTeu();
 
+    /** @return the statistics object. */
+    TerminalStatistics getStatistics();
 }

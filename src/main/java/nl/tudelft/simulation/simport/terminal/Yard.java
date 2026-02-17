@@ -10,6 +10,7 @@ import org.djutils.logger.CategoryLogger;
 
 import nl.tudelft.simulation.dsol.logger.Cat;
 import nl.tudelft.simulation.simport.Location;
+import nl.tudelft.simulation.simport.TransportMode;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.truck.Truck;
 import nl.tudelft.simulation.simport.vessel.Vessel;
@@ -64,19 +65,23 @@ public interface Yard extends Identifiable
     /**
      * Add a container to the yard.
      * @param container the container to add
+     * @param mode the mode that brings the container
      */
-    default void addContainer(final Container container)
+    default void addContainer(final Container container, final TransportMode mode)
     {
         getContainerMap().put(container.getNr(), container);
         container.addLocation(Location.TERMINAL);
+        getContainerFacility().getStatistics().addContainerYard(container, mode);
     }
 
     /**
      * Remove a container from the yard.
      * @param container the container to remove
+     * @param mode the mode that picks up the container
      */
-    default boolean removeContainer(final Container container)
+    default boolean removeContainer(final Container container, final TransportMode mode)
     {
+        getContainerFacility().getStatistics().removeContainerYard(container, mode);
         return getContainerMap().remove(container.getNr()) != null;
     }
 
@@ -93,7 +98,8 @@ public interface Yard extends Identifiable
             CategoryLogger.with(Cat.DSOL).warn("Container {} not found on yard of facility {}", container,
                     getContainerFacility());
         truck.loadContainer(container);
-        getContainerMap().remove(container.getNr());
+        removeContainer(container, TransportMode.TRUCK);
+        getContainerFacility().getStatistics().incTruckVisitPickup(); // TODO: when to update dual?
     }
 
     /**
@@ -106,8 +112,9 @@ public interface Yard extends Identifiable
         if (truck.isEmpty())
             CategoryLogger.with(Cat.DSOL).warn("Truck {} is empty: it does not carry a container", truck);
         Container container = truck.unloadContainer();
-        getContainerMap().put(container.getNr(), container);
+        addContainer(container, TransportMode.TRUCK);
         container.addLocation(Location.TERMINAL);
+        getContainerFacility().getStatistics().incTruckVisitDelivery(); // TODO: when to update dual?
     }
 
 }
