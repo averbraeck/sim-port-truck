@@ -2,9 +2,11 @@ package nl.tudelft.simulation.simport.vessel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.base.Identifiable;
+import org.djutils.event.EventType;
 import org.djutils.event.LocalEventProducer;
 import org.djutils.exceptions.Throw;
 import org.djutils.logger.CategoryLogger;
@@ -30,6 +32,9 @@ import nl.tudelft.simulation.simport.terminal.Terminal;
  */
 public class Vessel extends LocalEventProducer implements Identifiable
 {
+    /** The vessel event. */
+    public static EventType VESSEL_EVENT = new EventType("VESSEL_EVENT");
+
     /** the id of the ship. */
     private final String id;
 
@@ -250,7 +255,7 @@ public class Vessel extends LocalEventProducer implements Identifiable
      */
     protected void vesselArrival()
     {
-        CategoryLogger.with(Cat.DSOL).debug("Vessel {} arrived at terminal {}", this.id, this.terminal);
+        CategoryLogger.with(Cat.DSOL).info("Vessel {} arrived at terminal {}", this.id, this.terminal);
         getSimulator().scheduleEventNow(() -> unloadContainers());
         getSimulator().scheduleEventRel(this.etd.minus(this.ata).times(0.5), () -> loadContainers());
         getTerminal().getStatistics().vesselArrival(this);
@@ -283,13 +288,14 @@ public class Vessel extends LocalEventProducer implements Identifiable
                     getVesselType().isDeepSea() ? TransportMode.DEEPSEA : TransportMode.FEEDER);
             if (!this.containerList.remove(container))
             {
-                CategoryLogger.with(Cat.DSOL).trace("Container {} not on vessel {} for booking {}", container, this,
+                CategoryLogger.with(Cat.DSOL).debug("Container {} not on vessel {} for booking {}", container, this,
                         this.unloadList.get(index));
             }
         }
         else
         {
-            CategoryLogger.with(Cat.DSOL).trace("Container not found for booking " + this.unloadList.get(index));
+            CategoryLogger.with(Cat.DSOL).debug("Container not found for booking {}, vessel {}", this.unloadList.get(index),
+                    this);
         }
         if (index < this.unloadList.size() - 1)
         {
@@ -323,8 +329,8 @@ public class Vessel extends LocalEventProducer implements Identifiable
             if (!getTerminal().getYard().removeContainer(container,
                     getVesselType().isDeepSea() ? TransportMode.DEEPSEA : TransportMode.FEEDER))
             {
-                CategoryLogger.with(Cat.DSOL).trace("Container {} not in the yard for booking {}", container,
-                        this.loadList.get(index));
+                CategoryLogger.with(Cat.DSOL).debug("Container {} not in the yard for booking {}, vessel {}", container,
+                        this.loadList.get(index), this);
             }
             else
             {
@@ -334,7 +340,8 @@ public class Vessel extends LocalEventProducer implements Identifiable
         }
         else
         {
-            CategoryLogger.with(Cat.DSOL).trace("Container not allocated for booking " + this.loadList.get(index));
+            CategoryLogger.with(Cat.DSOL).debug("Container not allocated for booking {}, vessel {}", this.loadList.get(index),
+                    this);
         }
         if (index < this.loadList.size() - 1)
         {
@@ -350,7 +357,8 @@ public class Vessel extends LocalEventProducer implements Identifiable
             getModel().fireEvent(PortModel.CONTAINER_EVENT, container);
         }
         getTerminal().getStatistics().vesselDeparture(this);
-        CategoryLogger.with(Cat.DSOL).debug("Vessel {} departed from terminal {}", this.id, this.terminal);
+        getModel().fireEvent(PortModel.VESSEL_EVENT, this);
+        CategoryLogger.with(Cat.DSOL).info("Vessel {} departed from terminal {}", this.id, this.terminal);
         this.loadList = null;
         this.unloadList = null;
         this.containerList = null;
@@ -426,6 +434,33 @@ public class Vessel extends LocalEventProducer implements Identifiable
     public void incNrContainersTransshippedUnloaded(final int increment)
     {
         this.nrContainersTransshippedUnloaded += increment;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.id, this.terminal, this.vesselNr, this.vesselType);
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Vessel other = (Vessel) obj;
+        return Objects.equals(this.id, other.id) && Objects.equals(this.terminal, other.terminal)
+                && this.vesselNr == other.vesselNr && this.vesselType == other.vesselType;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Vessel [id=" + this.id + ", vesselType=" + this.vesselType + ", loadList=" + this.loadList.size()
+                + ", unloadList=" + this.unloadList.size() + ", containerList=" + this.containerList.size() + "]";
     }
 
 }

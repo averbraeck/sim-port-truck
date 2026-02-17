@@ -166,7 +166,8 @@ public class VesselGeneratorDist extends VesselGenerator
             byte size = rng.nextDouble() < this.fraction20ftLoading ? (byte) 20 : (byte) 40;
             boolean empty = rng.nextDouble() < this.fractionEmptyLoading;
             boolean reefer = rng.nextDouble() < this.fractionReeferLoading;
-            bookingList.add(new Booking(vessel, true, getModel().uniqueBookingNr(), size, empty, reefer));
+            Booking booking = new Booking(vessel, true, getModel().uniqueBookingNr(), size, empty, reefer);
+            bookingList.add(booking);
         }
         return bookingList;
     }
