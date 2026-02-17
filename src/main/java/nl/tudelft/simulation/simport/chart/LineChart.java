@@ -132,9 +132,8 @@ public class LineChart extends DynamicChart<XYChart>
      * Start listening to a certain event from an eventProducer.
      * @param eventProducer EventProducerInterface; the event producer to listen to
      * @param eventType EventType; the event to listen to
-     * @throws RemoteException on networking error for remote events
      */
-    public void listenTo(final EventProducer eventProducer, final EventType eventType) throws RemoteException
+    public void listenTo(final EventProducer eventProducer, final EventType eventType)
     {
         Throw.when(this.listenerEventType != null, RuntimeException.class,
                 "eventType " + this.listenerEventType + " already registered");
