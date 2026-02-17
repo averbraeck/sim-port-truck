@@ -41,10 +41,10 @@ public class Truck implements Identifiable, Locatable
     /** The state of the truck. */
     private TruckState state;
 
-    /** The origin when driving (null when not driving). */
+    /** The origin when driving (same as destination when not driving). */
     private Point2d origin;
 
-    /** The destination when driving (null when not driving). */
+    /** The destination when driving (same as origin when not driving). */
     private Point2d destination;
 
     /** the load centroid. */
@@ -59,11 +59,11 @@ public class Truck implements Identifiable, Locatable
     /** The container on board or null if none. */
     private Container container;
 
-    /** Departure time. */
-    private ClockTime departureTime;
+    /** Pickup time. */
+    private ClockTime pickupTime;
 
-    /** Arrival time, given gongestion. */
-    private ClockTime arrivalTime;
+    /** Delivery time, given congestion. */
+    private ClockTime deliveryTime;
 
     public Truck(final int id, final TruckingCompany truckingCompany, final int idWithinCompany)
     {
@@ -133,8 +133,8 @@ public class Truck implements Identifiable, Locatable
      */
     public double interpolateFraction()
     {
-        return (getSimulator().getSimulatorClockTime().si - this.departureTime.si)
-                / (this.arrivalTime.si - this.departureTime.si);
+        return (getSimulator().getSimulatorClockTime().si - this.pickupTime.si)
+                / (this.deliveryTime.si - this.pickupTime.si);
     }
 
     @Override
@@ -158,35 +158,35 @@ public class Truck implements Identifiable, Locatable
     }
 
     /**
-     * @return departureTime
+     * @return pickupTime
      */
-    public ClockTime getDepartureTime()
+    public ClockTime getPickupTime()
     {
-        return this.departureTime;
+        return this.pickupTime;
     }
 
     /**
-     * @param departureTime set departureTime
+     * @param pickupTime set pickupTime
      */
-    public void setDepartureTime(final ClockTime departureTime)
+    public void setPickupTime(final ClockTime pickupTime)
     {
-        this.departureTime = departureTime;
+        this.pickupTime = pickupTime;
     }
 
     /**
-     * @return arrivalTime
+     * @return deliveryTime
      */
-    public ClockTime getArrivalTime()
+    public ClockTime getDeliveryTime()
     {
-        return this.arrivalTime;
+        return this.deliveryTime;
     }
 
     /**
-     * @param arrivalTime set arrivalTime
+     * @param deliveryTime set deliveryTime
      */
-    public void setArrivalTime(final ClockTime arrivalTime)
+    public void setDeliveryTime(final ClockTime deliveryTime)
     {
-        this.arrivalTime = arrivalTime;
+        this.deliveryTime = deliveryTime;
     }
 
     /**
