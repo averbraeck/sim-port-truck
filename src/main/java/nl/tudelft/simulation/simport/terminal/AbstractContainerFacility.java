@@ -4,6 +4,7 @@ import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point3d;
+import org.djutils.event.EventType;
 import org.djutils.event.LocalEventProducer;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
@@ -46,6 +47,9 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     /** Terminal statistics. */
     protected TerminalStatistics statistics;
 
+    /** Event type for daily TEU statistics. */
+    private final EventType dailyYardTeuEventType;
+
     /**
      * Create a new container facility for the port model.
      * @param name the name of the facility
@@ -63,14 +67,25 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
         this.lat = lat;
         this.lon = lon;
         this.statistics = new TerminalStatistics(this, model.getSimulator());
+        this.dailyYardTeuEventType = new EventType("DAILY_YARD_TEU_EVENT_TYPE_" + id);
 
         // schedule statistics reporting once a day.
         model.getSimulator().scheduleEventNow(() -> reportStatistics());
+
+        // totals 1 second before end of simulation
+        model.getSimulator().scheduleEventRel(model.getSimulator().getReplication().getEndTime().minus(Duration.ofSI(1.0)),
+                () -> getModel().fireEvent(PortModel.TOTAL_TERMINAL_EVENT, this.statistics));
     }
 
     protected void reportStatistics()
     {
-        getModel().fireEvent(PortModel.DAILY_TERMINAL_EVENT, this.statistics);
+        if (this.statistics.getWarmupTime() != null)
+        {
+            getModel().fireEvent(PortModel.DAILY_TERMINAL_EVENT, this.statistics);
+            double day = Math.round(
+                    getSimulator().getSimulatorClockTime().minus(this.statistics.getWarmupTime()).getInUnit(DurationUnit.DAY));
+            fireEvent(getDailyYardTeuEventType(), new double[] {day, this.statistics.getTotal().getNrTeuTotal()});
+        }
         this.statistics.resetPeriodicStatistics();
         getSimulator().scheduleEventRel(new Duration(1.0, DurationUnit.DAY), () -> reportStatistics());
     }
@@ -85,6 +100,12 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     public String getName()
     {
         return this.name;
+    }
+
+    @Override
+    public EventType getDailyYardTeuEventType()
+    {
+        return this.dailyYardTeuEventType;
     }
 
     @Override

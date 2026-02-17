@@ -113,7 +113,6 @@ public interface Yard extends Identifiable
             CategoryLogger.with(Cat.DSOL).warn("Truck {} is empty: it does not carry a container", truck);
         Container container = truck.unloadContainer();
         addContainer(container, TransportMode.TRUCK);
-        container.addLocation(Location.TERMINAL);
         getContainerFacility().getStatistics().incTruckVisitDelivery(); // TODO: when to update dual?
     }
 

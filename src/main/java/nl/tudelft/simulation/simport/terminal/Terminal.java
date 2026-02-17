@@ -153,7 +153,7 @@ public class Terminal extends AbstractContainerFacility
     }
 
     /**
-     * Add import containers and plan to allocate mode of transport. For a feeder, the transport mode can de decided directly.
+     * Add import containers and plan to allocate mode of transport. For a feeder, the transport mode can be decided directly.
      * For a deepsea vessel we have to wait to see how much transloading has to take place with feeder vessels that have not yet
      * been generated.
      * @param vessel the vessel to add the unallocated import containers for
@@ -185,7 +185,7 @@ public class Terminal extends AbstractContainerFacility
     }
 
     /**
-     * Add export containers and plan to allocate mode of transport. For a feeder, the transport mode can de decided directly.
+     * Add export containers and plan to allocate mode of transport. For a feeder, the transport mode can be decided directly.
      * For a deepsea vessel we have to wait to see how much transloading has to take place with feeder vessels that have not yet
      * been generated.
      * @param vessel the vessel to add the unallocated export containers for
@@ -307,9 +307,13 @@ public class Terminal extends AbstractContainerFacility
                 {
                     if (this.unallocatedImportMap.get(feeder).size() == 0)
                         break;
-                    var booking = this.unallocatedImportMap.get(feeder).remove(0);
-                    this.allocatedImportTransshipMap.get(feeder).add(booking);
-                    this.allocatedExportTransshipMap.get(deepsea).add(booking);
+                    var bookingFeeder = this.unallocatedImportMap.get(feeder).remove(0);
+                    var bookingDeepsea = this.unallocatedExportMap.get(deepsea).remove(0);
+                    Container container = bookingFeeder.getContainer();
+                    container.setVesselOutNr(deepsea.getVesselNr());
+                    bookingDeepsea.setContainer(container);
+                    this.allocatedImportTransshipMap.get(feeder).add(bookingFeeder);
+                    this.allocatedExportTransshipMap.get(deepsea).add(bookingDeepsea);
                     feeder.incNrContainersTransshippedUnloaded(1);
                     deepsea.incNrContainersTransshippedLoaded(1);
                 }
@@ -333,9 +337,13 @@ public class Terminal extends AbstractContainerFacility
                 {
                     if (this.unallocatedExportMap.get(feeder).size() == 0)
                         break;
-                    var booking = this.unallocatedExportMap.get(feeder).remove(0);
-                    this.allocatedExportTransshipMap.get(feeder).add(booking);
-                    this.allocatedImportTransshipMap.get(deepsea).add(booking);
+                    var bookingDeepsea = this.unallocatedImportMap.get(deepsea).remove(0);
+                    var bookingFeeder = this.unallocatedExportMap.get(feeder).remove(0);
+                    Container container = bookingDeepsea.getContainer();
+                    container.setVesselOutNr(feeder.getVesselNr());
+                    bookingFeeder.setContainer(container);
+                    this.allocatedImportTransshipMap.get(deepsea).add(bookingDeepsea);
+                    this.allocatedExportTransshipMap.get(feeder).add(bookingFeeder);
                     feeder.incNrContainersTransshippedLoaded(1);
                     deepsea.incNrContainersTransshippedUnloaded(1);
                 }

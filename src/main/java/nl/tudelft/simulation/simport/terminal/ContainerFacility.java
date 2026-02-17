@@ -1,6 +1,7 @@
 package nl.tudelft.simulation.simport.terminal;
 
 import org.djutils.event.EventProducer;
+import org.djutils.event.EventType;
 
 import nl.tudelft.simulation.simport.Facility;
 
@@ -14,6 +15,9 @@ import nl.tudelft.simulation.simport.Facility;
  */
 public interface ContainerFacility extends Facility, EventProducer
 {
+    /** A daily terminal update event with the number of TEU as (day, number). */
+    EventType getDailyYardTeuEventType();
+
     /** @return the name */
     String getName();
 

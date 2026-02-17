@@ -33,6 +33,9 @@ public class TerminalStatistics implements EventListener
     /** The total over the runtime of the simulation. */
     private TerminalData total;
 
+    /** The warmup time, null before warmup. */
+    private ClockTime warmupTime = null;
+
     /**
      * @param simulator
      */
@@ -74,7 +77,14 @@ public class TerminalStatistics implements EventListener
         {
             resetTotalStatistics();
             resetPeriodicStatistics();
+            this.warmupTime = getSimulator().getSimulatorClockTime();
         }
+    }
+
+    /** @return warmupTime, null before warmup. */
+    public ClockTime getWarmupTime()
+    {
+        return this.warmupTime;
     }
 
     /** Vessel arrival. */
@@ -98,12 +108,23 @@ public class TerminalStatistics implements EventListener
         this.total.nrTeu.total += container.is40ft() ? 2 : 1;
         this.periodic.nrContainers.total++;
         this.periodic.nrTeu.total += container.is40ft() ? 2 : 1;
+
+        this.total.nrContainersArr.total++;
+        this.total.nrTeuArr.total += container.is40ft() ? 2 : 1;
+        this.periodic.nrContainersArr.total++;
+        this.periodic.nrTeuArr.total += container.is40ft() ? 2 : 1;
+
         if (container.isFull())
         {
             this.total.nrContainers.full++;
             this.total.nrTeu.full += container.is40ft() ? 2 : 1;
             this.periodic.nrContainers.full++;
             this.periodic.nrTeu.full += container.is40ft() ? 2 : 1;
+
+            this.total.nrContainersArr.full++;
+            this.total.nrTeuArr.full += container.is40ft() ? 2 : 1;
+            this.periodic.nrContainersArr.full++;
+            this.periodic.nrTeuArr.full += container.is40ft() ? 2 : 1;
         }
         if (container.isGeneral())
         {
@@ -111,13 +132,23 @@ public class TerminalStatistics implements EventListener
             this.total.nrTeu.general += container.is40ft() ? 2 : 1;
             this.periodic.nrContainers.general++;
             this.periodic.nrTeu.general += container.is40ft() ? 2 : 1;
+
+            this.total.nrContainersArr.general++;
+            this.total.nrTeuArr.general += container.is40ft() ? 2 : 1;
+            this.periodic.nrContainersArr.general++;
+            this.periodic.nrTeuArr.general += container.is40ft() ? 2 : 1;
         }
         if (container.is40ft())
         {
             this.total.nrContainers.ft40++;
-            this.total.nrTeu.ft40++;
+            this.total.nrTeu.ft40 += 2;
             this.periodic.nrContainers.ft40++;
-            this.periodic.nrTeu.ft40++;
+            this.periodic.nrTeu.ft40 += 2;
+
+            this.total.nrContainersArr.ft40++;
+            this.total.nrTeuArr.ft40 += 2;
+            this.periodic.nrContainersArr.ft40++;
+            this.periodic.nrTeuArr.ft40 += 2;
         }
         this.total.nrContainerArrivals[mode.ordinal()]++;
         this.total.nrTeuArrivals[mode.ordinal()] += container.is40ft() ? 2 : 1;
@@ -128,16 +159,27 @@ public class TerminalStatistics implements EventListener
     /** Remove container from yard. */
     public void removeContainerYard(final Container container, final TransportMode mode)
     {
-        this.total.nrContainers.total++;
+        this.total.nrContainers.total--;
         this.total.nrTeu.total -= container.is40ft() ? 2 : 1;
         this.periodic.nrContainers.total++;
         this.periodic.nrTeu.total -= container.is40ft() ? 2 : 1;
+
+        this.total.nrContainersDep.total++;
+        this.total.nrTeuDep.total += container.is40ft() ? 2 : 1;
+        this.periodic.nrContainersDep.total++;
+        this.periodic.nrTeuDep.total += container.is40ft() ? 2 : 1;
+
         if (container.isFull())
         {
             this.total.nrContainers.full--;
             this.total.nrTeu.full -= container.is40ft() ? 2 : 1;
             this.periodic.nrContainers.full--;
             this.periodic.nrTeu.full -= container.is40ft() ? 2 : 1;
+
+            this.total.nrContainersDep.full++;
+            this.total.nrTeuDep.full += container.is40ft() ? 2 : 1;
+            this.periodic.nrContainersDep.full++;
+            this.periodic.nrTeuDep.full += container.is40ft() ? 2 : 1;
         }
         if (container.isGeneral())
         {
@@ -145,13 +187,23 @@ public class TerminalStatistics implements EventListener
             this.total.nrTeu.general -= container.is40ft() ? 2 : 1;
             this.periodic.nrContainers.general--;
             this.periodic.nrTeu.general -= container.is40ft() ? 2 : 1;
+
+            this.total.nrContainersDep.general++;
+            this.total.nrTeuDep.general += container.is40ft() ? 2 : 1;
+            this.periodic.nrContainersDep.general++;
+            this.periodic.nrTeuDep.general += container.is40ft() ? 2 : 1;
         }
         if (container.is40ft())
         {
             this.total.nrContainers.ft40--;
-            this.total.nrTeu.ft40--;
+            this.total.nrTeu.ft40 -= 2;
             this.periodic.nrContainers.ft40--;
-            this.periodic.nrTeu.ft40--;
+            this.periodic.nrTeu.ft40 -= 2;
+
+            this.total.nrContainersDep.ft40++;
+            this.total.nrTeuDep.ft40 += 2;
+            this.periodic.nrContainersDep.ft40++;
+            this.periodic.nrTeuDep.ft40 += 2;
         }
         this.total.nrContainerDepartures[mode.ordinal()]++;
         this.total.nrTeuDepartures[mode.ordinal()] += container.is40ft() ? 2 : 1;
@@ -244,6 +296,42 @@ public class TerminalStatistics implements EventListener
           public int getNrTeuReefer()  { return this.nrTeu.total - this.nrTeu.general; }
           public int getNrTeu40Ft()    { return this.nrTeu.ft40; }
           public int getNrTeu20Ft()    { return this.nrTeu.total - this.nrTeu.ft40; }
+
+        private ContainerTypeRecord nrContainersArr = new ContainerTypeRecord();
+          public int getNrContainersArrTotal()   { return this.nrContainersArr.total; }
+          public int getNrContainersArrFull()    { return this.nrContainersArr.full; }
+          public int getNrContainersArrEmpty()   { return this.nrContainersArr.total - this.nrContainersArr.full; }
+          public int getNrContainersArrGeneral() { return this.nrContainersArr.general; }
+          public int getNrContainersArrReefer()  { return this.nrContainersArr.total - this.nrContainersArr.general; }
+          public int getNrContainersArr40Ft()    { return this.nrContainersArr.ft40; }
+          public int getNrContainersArr20Ft()    { return this.nrContainersArr.total - this.nrContainersArr.ft40; }
+
+        private ContainerTypeRecord nrTeuArr = new ContainerTypeRecord();
+          public int getNrTeuArrTotal()   { return this.nrTeuArr.total; }
+          public int getNrTeuArrFull()    { return this.nrTeuArr.full; }
+          public int getNrTeuArrEmpty()   { return this.nrTeuArr.total - this.nrTeuArr.full; }
+          public int getNrTeuArrGeneral() { return this.nrTeuArr.general; }
+          public int getNrTeuArrReefer()  { return this.nrTeuArr.total - this.nrTeuArr.general; }
+          public int getNrTeuArr40Ft()    { return this.nrTeuArr.ft40; }
+          public int getNrTeuArr20Ft()    { return this.nrTeuArr.total - this.nrTeuArr.ft40; }
+
+        private ContainerTypeRecord nrContainersDep = new ContainerTypeRecord();
+          public int getNrContainersDepTotal()   { return this.nrContainersDep.total; }
+          public int getNrContainersDepFull()    { return this.nrContainersDep.full; }
+          public int getNrContainersDepEmpty()   { return this.nrContainersDep.total - this.nrContainersDep.full; }
+          public int getNrContainersDepGeneral() { return this.nrContainersDep.general; }
+          public int getNrContainersDepReefer()  { return this.nrContainersDep.total - this.nrContainersDep.general; }
+          public int getNrContainersDep40Ft()    { return this.nrContainersDep.ft40; }
+          public int getNrContainersDep20Ft()    { return this.nrContainersDep.total - this.nrContainersDep.ft40; }
+
+        private ContainerTypeRecord nrTeuDep = new ContainerTypeRecord();
+          public int getNrTeuDepTotal()   { return this.nrTeuDep.total; }
+          public int getNrTeuDepFull()    { return this.nrTeuDep.full; }
+          public int getNrTeuDepEmpty()   { return this.nrTeuDep.total - this.nrTeuDep.full; }
+          public int getNrTeuDepGeneral() { return this.nrTeuDep.general; }
+          public int getNrTeuDepReefer()  { return this.nrTeuDep.total - this.nrTeuDep.general; }
+          public int getNrTeuDep40Ft()    { return this.nrTeuDep.ft40; }
+          public int getNrTeuDep20Ft()    { return this.nrTeuDep.total - this.nrTeuDep.ft40; }
 
         private int nrTruckVisitsPickup;
           public int getNrTruckVisitsPickup() { return this.nrTruckVisitsPickup; }
