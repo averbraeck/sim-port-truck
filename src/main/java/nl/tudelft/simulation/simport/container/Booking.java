@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.container;
 
+import org.djutils.exceptions.Throw;
+
 import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
@@ -22,10 +24,10 @@ public class Booking extends Shipment
     private final boolean loading;
 
     /**
-     * Create a booking for the model.
+     * Create a booking for the model, and create an associated container.
      * @param vessel the vessel for which this is a booking
      * @param loading whether the container id unloaded from the ship (false) or is loaded onto the ship (true)
-     * @param nr container number
+     * @param nr booking number
      * @param size size in ft (20/40/45)
      * @param empty true if empty; false if full
      * @param reefer true if reefer; false if normal container
@@ -47,16 +49,18 @@ public class Booking extends Shipment
     }
 
     /**
-     * Set the container for this booking.
-     * @param container the container for this booking
+     * @param container set the container for the booking
      */
     public void setContainer(final Container container)
     {
+        Throw.whenNull(container, "container cannot be null for booking %s", this);
+        Throw.when(this.container != null, IllegalStateException.class, "%s already has %s, cannot add %s", this,
+                this.container, container);
         this.container = container;
     }
 
     /**
-     * @return the container for this booking, can be null when it still has to be allocated
+     * @return the container for this booking, can be null when still to be allocated.
      */
     public Container getContainer()
     {

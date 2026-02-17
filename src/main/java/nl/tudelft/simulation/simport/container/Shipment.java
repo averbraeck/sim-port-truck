@@ -112,7 +112,7 @@ public abstract class Shipment implements Identifiable
     /** @return true if reefer; false if normal container */
     public boolean isReefer()
     {
-        return (this.status & 0x08) == 0;
+        return (this.status & 0x08) != 0;
     }
 
     /** @return true if general container; false if reefer */
