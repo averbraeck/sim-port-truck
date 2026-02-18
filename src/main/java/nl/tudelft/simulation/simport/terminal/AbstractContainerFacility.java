@@ -1,14 +1,22 @@
 package nl.tudelft.simulation.simport.terminal;
 
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.draw.bounds.Bounds2d;
 import org.djutils.draw.point.Point3d;
 import org.djutils.event.EventType;
 import org.djutils.event.LocalEventProducer;
+import org.djutils.exceptions.Throw;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.network.Centroid;
+import nl.tudelft.simulation.simport.network.RoadLink;
+import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 
 /**
  * AbstractContainerFacility.java.
@@ -35,6 +43,15 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     /** Facility longitude (s). */
     private final double lon;
 
+    /** Centroid associated with the terminal. */
+    private Centroid centroid;
+
+    /** RoadLink closest to the gate-in. */
+    private RoadLink roadLinkGateIn;
+
+    /** RoadLink closest to the gate-out. */
+    private RoadLink roadLinkGateOut;
+
     /** TEU capacity. */
     private int capacityTeu;
 
@@ -45,10 +62,22 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     private Yard yard;
 
     /** Terminal statistics. */
-    protected TerminalStatistics statistics;
+    protected final TerminalStatistics statistics;
 
     /** Event type for daily TEU statistics. */
     private final EventType dailyYardTeuEventType;
+
+    /** The centroids of the destinations and weight for this container facility. */
+    private Map<String, Double> terminalDestinations;
+
+    /** The cumulative probabilities for destination centroids. */
+    private NavigableMap<Double, Centroid> destinationProbabilities = new TreeMap<>();
+
+    /** The centroids of the origins and weight for this container facility. */
+    private Map<String, Double> terminalOrigins;
+
+    /** The cumulative probabilities for origin centroids. */
+    private NavigableMap<Double, Centroid> originProbabilities = new TreeMap<>();
 
     /**
      * Create a new container facility for the port model.
@@ -88,6 +117,52 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
         }
         this.statistics.resetPeriodicStatistics();
         getSimulator().scheduleEventRel(new Duration(1.0, DurationUnit.DAY), () -> reportStatistics());
+    }
+
+    /**
+     * Set the O/D matrix for this terminal. The method should be called AFTER the network has been read and the centroids have
+     * been set for the terminal.
+     */
+    public void setTerminalOD()
+    {
+        // get the row (origins) and column (destinations) for the terminal centroids
+        var od = getModel().getRoadNetwork().getOdMatrix();
+        var centroid = getCentroid();
+        Throw.when(!od.containsOrigin(centroid.getEid()), SimPortRuntimeException.class,
+                "OD does not containn terminal origin %s for %s", centroid.getEid(), this);
+        Throw.when(!od.containsDestination(centroid.getEid()), SimPortRuntimeException.class,
+                "OD does not containn terminal destination %s for %s", centroid.getEid(), this);
+        Map<String, Double> terminalDestinations = od.getAllDestinationsForOrigin(centroid.getEid());
+        Map<String, Double> terminalOrigins = od.getAllOriginsForDestination(centroid.getEid());
+        setTerminalDestinations(terminalDestinations);
+        setTerminalOrigins(terminalOrigins);
+    }
+
+    protected void makeCumulativeProbabilities(final NavigableMap<Double, Centroid> probabilities,
+            final Map<String, Double> weights)
+    {
+        var centroidMap = getModel().getRoadNetwork().getCentroidMap();
+        probabilities.clear();
+        probabilities.put(0.0, null);
+
+        double sum = 0.0;
+        for (var centroidName : weights.keySet())
+        {
+            if (centroidMap.containsKey(centroidName))
+                sum += weights.get(centroidName);
+        }
+
+        double cumulative = 0.0;
+        for (var centroidName : weights.keySet())
+        {
+            if (!centroidMap.containsKey(centroidName))
+                continue;
+            double weight = weights.get(centroidName);
+            if (weight == 0.0)
+                continue;
+            cumulative += weight;
+            probabilities.put(cumulative / sum, centroidMap.get(centroidName));
+        }
     }
 
     @Override
@@ -153,6 +228,7 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     @Override
     public ContainerFacility setGate(final Gate gate)
     {
+        Throw.whenNull(gate, "gate");
         this.gate = gate;
         return this;
     }
@@ -166,6 +242,7 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     @Override
     public ContainerFacility setYard(final Yard yard)
     {
+        Throw.whenNull(yard, "yard");
         this.yard = yard;
         return this;
     }
@@ -187,6 +264,91 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     public int getCapacityTeu()
     {
         return this.capacityTeu;
+    }
+
+    /**
+     * @return centroid
+     */
+    public Centroid getCentroid()
+    {
+        return this.centroid;
+    }
+
+    /**
+     * @param centroid set centroid
+     */
+    public void setCentroid(final Centroid centroid)
+    {
+        Throw.whenNull(centroid, "centroid");
+        this.centroid = centroid;
+    }
+
+    /**
+     * @return roadLinkGateIn
+     */
+    public RoadLink getRoadLinkGateIn()
+    {
+        return this.roadLinkGateIn;
+    }
+
+    /**
+     * @param roadLinkGateIn set roadLinkGateIn
+     */
+    public void setRoadLinkGateIn(final RoadLink roadLinkGateIn)
+    {
+        Throw.whenNull(roadLinkGateIn, "roadLinkGateIn");
+        this.roadLinkGateIn = roadLinkGateIn;
+    }
+
+    /**
+     * @return roadLinkGateOut
+     */
+    public RoadLink getRoadLinkGateOut()
+    {
+        return this.roadLinkGateOut;
+    }
+
+    /**
+     * @param roadLinkGateOut set roadLinkGateOut
+     */
+    public void setRoadLinkGateOut(final RoadLink roadLinkGateOut)
+    {
+        Throw.whenNull(roadLinkGateOut, "roadLinkGateOut");
+        this.roadLinkGateOut = roadLinkGateOut;
+    }
+
+    /**
+     * @return terminalDestinations
+     */
+    public Map<String, Double> getTerminalDestinations()
+    {
+        return this.terminalDestinations;
+    }
+
+    /**
+     * @param terminalDestinations set terminalDestinations
+     */
+    public void setTerminalDestinations(final Map<String, Double> terminalDestinations)
+    {
+        this.terminalDestinations = terminalDestinations;
+        makeCumulativeProbabilities(this.destinationProbabilities, this.terminalDestinations);
+    }
+
+    /**
+     * @return terminalOrigins
+     */
+    public Map<String, Double> getTerminalOrigins()
+    {
+        return this.terminalOrigins;
+    }
+
+    /**
+     * @param terminalOrigins set terminalOrigins
+     */
+    public void setTerminalOrigins(final Map<String, Double> terminalOrigins)
+    {
+        this.terminalOrigins = terminalOrigins;
+        makeCumulativeProbabilities(this.originProbabilities, this.terminalOrigins);
     }
 
 }
