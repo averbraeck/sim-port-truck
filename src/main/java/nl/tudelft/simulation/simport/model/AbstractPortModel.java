@@ -255,6 +255,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     true, "%d", 2.0));
             truckMap.add(new InputParameterDouble("CombiSafetyMarginHours", "Safety margin between two trips when combi trip",
                     "[0,24]", 2.0, 0.0, 24.0, true, true, "%d", 3.0));
+            truckMap.add(new InputParameterString("FarCentroids", "Centroids for farther destinations", "(comma separated)",
+                    "", 4.0));
             root.add(truckMap);
 
             InputParameterMap planningMap = new InputParameterMap("planning", "Planning", "Planning parameters", 8.0);
