@@ -351,4 +351,20 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
         makeCumulativeProbabilities(this.originProbabilities, this.terminalOrigins);
     }
 
+    /**
+     * @return destinationProbabilities
+     */
+    public NavigableMap<Double, Centroid> getDestinationProbabilities()
+    {
+        return this.destinationProbabilities;
+    }
+
+    /**
+     * @return originProbabilities
+     */
+    public NavigableMap<Double, Centroid> getOriginProbabilities()
+    {
+        return this.originProbabilities;
+    }
+
 }
