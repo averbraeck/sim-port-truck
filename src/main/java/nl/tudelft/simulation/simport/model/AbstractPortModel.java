@@ -356,17 +356,17 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         this.streamInformation.addStream("default", new MersenneTwister(getInputParameterLong("generic.Seed")));
         this.u01 = new DistUniform(this.randomStream, 0.0, 1.0);
 
-        buildTerminals();
-        buildVesselGenerators();
-        buildFreightForwarders();
-        buildTruckingFirms();
-
         this.roadNetwork = new RoadNetwork(this);
         this.roadNetwork.readNodes(ResourceResolver.resolve(getInputParameterString("generic.NodesFile")).asUrl());
         this.roadNetwork.readCentroids(ResourceResolver.resolve(getInputParameterString("generic.CentroidsFile")).asUrl());
         this.roadNetwork.readSections(ResourceResolver.resolve(getInputParameterString("generic.SectionFile")).asUrl());
         this.roadNetwork.readTurns(ResourceResolver.resolve(getInputParameterString("generic.TurningFile")).asUrl());
         this.roadNetwork.readOd(ResourceResolver.resolve(getInputParameterString("generic.ODFile")).asPath());
+
+        buildTerminals();
+        buildVesselGenerators();
+        buildFreightForwarders();
+        buildTruckingFirms();
 
         new OutputWriter(this, getInputParameterString("generic.OutputPath"));
     }
@@ -402,6 +402,13 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                 ModalSplit msExport = new ModalSplit(truckFraction / sum, bargeFraction / sum, railFraction / sum);
                 terminal.setModalSplitImport(msImport);
                 terminal.setModalSplitExport(msExport);
+                Centroid centroid = this.roadNetwork.getCentroidMap().get(tp.getProperty("centroid").strip());
+                terminal.setCentroid(centroid);
+                RoadLink roadLinkGateIn = this.roadNetwork.getRoadLinkMap().get(tp.getProperty("gateRoadLinkIn").strip());
+                terminal.setRoadLinkGateIn(roadLinkGateIn);
+                RoadLink roadLinkGateOut = this.roadNetwork.getRoadLinkMap().get(tp.getProperty("gateRoadLinkOut").strip());
+                terminal.setRoadLinkGateOut(roadLinkGateOut);
+                terminal.setTerminalOD();
                 addTerminal(terminal);
 
                 // gate
@@ -577,6 +584,12 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     public Map<Integer, Vessel> getVesselMap()
     {
         return this.vesselMap;
+    }
+
+    @Override
+    public RoadNetwork getRoadNetwork()
+    {
+        return this.roadNetwork;
     }
 
 }

@@ -11,6 +11,7 @@ import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.freightforwarder.FreightForwarder;
+import nl.tudelft.simulation.simport.network.RoadNetwork;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.vessel.Vessel;
 
@@ -126,4 +127,9 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
      */
     Map<Integer, Vessel> getVesselMap();
 
+    /**
+     * Return the RoadNetwork object.
+     * @return the road network
+     */
+    RoadNetwork getRoadNetwork();
 }
