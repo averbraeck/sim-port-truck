@@ -14,12 +14,15 @@ import java.util.Optional;
 
 import org.djunits.unit.SpeedUnit;
 import org.djunits.value.vdouble.scalar.Speed;
+import org.djutils.exceptions.Throw;
+import org.djutils.logger.CategoryLogger;
 
 import nl.tudelft.simulation.dsol.animation.gis.FeatureInterface;
 import nl.tudelft.simulation.dsol.animation.gis.LayerInterface;
 import nl.tudelft.simulation.dsol.animation.gis.esri.ShapeFileReader;
 import nl.tudelft.simulation.dsol.animation.gis.map.Feature;
 import nl.tudelft.simulation.dsol.animation.gis.map.Layer;
+import nl.tudelft.simulation.dsol.logger.Cat;
 import nl.tudelft.simulation.dsol.simulators.AnimatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.simport.animation.CentroidAnimation;
@@ -29,6 +32,7 @@ import nl.tudelft.simulation.simport.animation.TurnAnimation;
 import nl.tudelft.simulation.simport.gis.CoordinateTransformRdNewToWgs84;
 import nl.tudelft.simulation.simport.gis.DbfReader;
 import nl.tudelft.simulation.simport.model.PortModel;
+import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 
 /**
@@ -45,25 +49,28 @@ public class RoadNetwork
     private final PortModel model;
 
     /** The nodes. */
-    private List<Node> nodeList = new ArrayList();
+    private final List<Node> nodeList = new ArrayList<>();
 
     /** the road nodes. */
-    private Map<RoadNode, RoadNode> roadNodeMap = new HashMap<>();
+    private final Map<RoadNode, RoadNode> roadNodeMap = new HashMap<>();
 
     /** the links. */
-    private List<RoadLink> roadLinkList = new ArrayList<>();
+    private final Map<String, RoadLink> roadLinkMap = new HashMap<>();
 
     /** the turns. */
-    private List<RoadTurn> turnList = new ArrayList<>();
+    private final List<RoadTurn> turnList = new ArrayList<>();
 
     /** The centroids. */
-    private List<Centroid> centroidList = new ArrayList<>();
+    private final Map<String, Centroid> centroidMap = new HashMap<>();
 
     /** The loop detectors. */
-    private List<Detector> detectorList = new ArrayList<>();
+    private final List<Detector> detectorList = new ArrayList<>();
 
     /** The centroid aread. */
-    private List<CentroidArea> centroidAreaList = new ArrayList<>();
+    private final List<CentroidArea> centroidAreaList = new ArrayList<>();
+
+    /** The O/D matrix. */
+    private OdMatrix odMatrix;
 
     /**
      *
@@ -149,7 +156,7 @@ public class RoadNetwork
                 link.setName(rec[nameCol].strip());
                 link.setMaxSpeed(new Speed(Double.parseDouble(rec[speedCol].strip()), SpeedUnit.KM_PER_HOUR));
                 link.setNrLanes(Integer.parseInt(rec[nrLanesCol].strip()));
-                this.roadLinkList.add(link);
+                this.roadLinkMap.put(link.getId(), link);
                 if (animate)
                     new LinkAnimation(link, simulator);
             }
@@ -236,7 +243,7 @@ public class RoadNetwork
                 centroid.setName(rec[nameCol].strip());
                 centroid.setEid(rec[eidCol].strip());
                 centroid.setType(rec[typeCol].strip());
-                this.centroidList.add(centroid);
+                this.centroidMap.put(centroid.getEid(), centroid);
                 if (animate)
                     new CentroidAnimation(centroid, simulator);
             }
@@ -251,8 +258,8 @@ public class RoadNetwork
     {
         try
         {
-            var od = OdMatrix.fromCsv(csvPath, ',', StandardCharsets.UTF_8, false, true, true);
-
+            this.odMatrix = OdMatrix.fromCsv(csvPath, ',', StandardCharsets.UTF_8, false, true, true);
+            CategoryLogger.always().info("OD matrix read. In total {} rows and columns", this.odMatrix.getValues().length);
         }
         catch (Exception e)
         {
@@ -390,6 +397,72 @@ public class RoadNetwork
     public static Optional<Point2D> getLastPoint(final Path2D path)
     {
         return getFirstAndLastPoints(path).map(arr -> arr[1]);
+    }
+
+    ///////////////////////////////////////////// GETTERS AND SETTERS //////////////////////////////////////////////
+
+    /**
+     * @return nodeList
+     */
+    public List<Node> getNodeList()
+    {
+        return this.nodeList;
+    }
+
+    /**
+     * @return roadNodeMap
+     */
+    public Map<RoadNode, RoadNode> getRoadNodeMap()
+    {
+        return this.roadNodeMap;
+    }
+
+    /**
+     * @return roadLinkMap
+     */
+    public Map<String, RoadLink> getRoadLinkMap()
+    {
+        return this.roadLinkMap;
+    }
+
+    /**
+     * @return turnList
+     */
+    public List<RoadTurn> getTurnList()
+    {
+        return this.turnList;
+    }
+
+    /**
+     * @return centroidMap
+     */
+    public Map<String, Centroid> getCentroidMap()
+    {
+        return this.centroidMap;
+    }
+
+    /**
+     * @return detectorList
+     */
+    public List<Detector> getDetectorList()
+    {
+        return this.detectorList;
+    }
+
+    /**
+     * @return centroidAreaList
+     */
+    public List<CentroidArea> getCentroidAreaList()
+    {
+        return this.centroidAreaList;
+    }
+
+    /**
+     * @return odMatrix
+     */
+    public OdMatrix getOdMatrix()
+    {
+        return this.odMatrix;
     }
 
 }

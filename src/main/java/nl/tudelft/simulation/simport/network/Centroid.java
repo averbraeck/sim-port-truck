@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.network;
 
+import java.util.Objects;
+
 import org.djunits.value.vdouble.scalar.Area;
 import org.djutils.base.Identifiable;
 import org.djutils.draw.bounds.Bounds;
@@ -124,4 +126,32 @@ public class Centroid implements Locatable, Identifiable
     {
         return new Bounds2d(0.02, 0.02);
     }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.eid, this.id, this.name, this.type, this.x, this.y);
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Centroid other = (Centroid) obj;
+        return Objects.equals(this.eid, other.eid) && Objects.equals(this.id, other.id) && Objects.equals(this.name, other.name)
+                && Objects.equals(this.type, other.type) && Double.doubleToLongBits(this.x) == Double.doubleToLongBits(other.x)
+                && Double.doubleToLongBits(this.y) == Double.doubleToLongBits(other.y);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Centroid [" + this.eid + "]";
+    }
+
 }

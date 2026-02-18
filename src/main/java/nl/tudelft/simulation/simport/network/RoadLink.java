@@ -1,5 +1,7 @@
 package nl.tudelft.simulation.simport.network;
 
+import java.util.Objects;
+
 import org.djunits.unit.SpeedUnit;
 import org.djunits.value.vdouble.scalar.Speed;
 import org.djutils.base.Identifiable;
@@ -145,6 +147,32 @@ public class RoadLink implements Locatable, Identifiable
     public Bounds<?, ?> getRelativeBounds()
     {
         return new Bounds2d(0.0, Math.abs(this.dx), 0.0, Math.abs(this.dy));
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.id, this.nodeFrom, this.nodeTo, this.nrLanes);
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RoadLink other = (RoadLink) obj;
+        return Objects.equals(this.id, other.id) && Objects.equals(this.nodeFrom, other.nodeFrom)
+                && Objects.equals(this.nodeTo, other.nodeTo) && this.nrLanes == other.nrLanes;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RoadLink [id=" + this.id + ", name=" + this.name + "]";
     }
 
 }
