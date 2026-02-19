@@ -9,7 +9,7 @@ import java.awt.image.ImageObserver;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.djutils.draw.bounds.Bounds;
@@ -38,7 +38,7 @@ public class GisHelper
 {
     public static void drawMarkers(final GisMapInterface map, final PortModel model, final URL csvCentroidUrl)
     {
-        Map<String, String> shapeFileMap = new HashMap<>();
+        Map<String, String> shapeFileMap = new LinkedHashMap<>();
         try
         {
             NamedCsvReader csvCentroid = NamedCsvReader.builder().build(Paths.get(csvCentroidUrl.toURI()));

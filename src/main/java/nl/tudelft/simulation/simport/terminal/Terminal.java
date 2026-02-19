@@ -9,7 +9,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.djunits.value.vdouble.scalar.Duration;
-import org.djutils.exceptions.Throw;
 
 import nl.tudelft.simulation.dsol.simulators.AnimatorInterface;
 import nl.tudelft.simulation.simport.Location;
@@ -17,7 +16,6 @@ import nl.tudelft.simulation.simport.animation.TerminalAnimation;
 import nl.tudelft.simulation.simport.container.Booking;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
-import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 import nl.tudelft.simulation.simport.vessel.Vessel;
 import nl.tudelft.simulation.simport.vessel.VesselGenerator;
 

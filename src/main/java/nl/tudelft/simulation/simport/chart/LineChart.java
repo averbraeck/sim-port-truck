@@ -1,7 +1,5 @@
 package nl.tudelft.simulation.simport.chart;
 
-import java.rmi.RemoteException;
-
 import org.djutils.event.Event;
 import org.djutils.event.EventProducer;
 import org.djutils.event.EventType;

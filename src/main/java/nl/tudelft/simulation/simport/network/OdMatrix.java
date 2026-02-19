@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -90,7 +89,7 @@ public class OdMatrix
         }
 
         // Build destination index map
-        Map<String, Integer> colIndex = new HashMap<>(nCols * 2);
+        Map<String, Integer> colIndex = new LinkedHashMap<>(nCols * 2);
         for (int c = 0; c < nCols; c++)
         {
             String label = colLabels.get(c);
@@ -102,7 +101,7 @@ public class OdMatrix
 
         // ---- Read remaining rows into dynamic buffers (no pre-count needed) ----
         List<String> rowLabels = new ArrayList<>(1024);
-        Map<String, Integer> rowIndex = new HashMap<>(2048);
+        Map<String, Integer> rowIndex = new LinkedHashMap<>(2048);
         List<double[]> rowsValues = new ArrayList<>(1024);
 
         while (it.hasNext())

@@ -93,7 +93,7 @@ public interface Yard extends Identifiable
     default void pickupContainer(final Truck truck, final Container container)
     {
         if (!truck.isEmpty())
-            CategoryLogger.with(Cat.DSOL).warn("Truck {} is not empty: it carries container {}", truck, truck.getContainer());
+            CategoryLogger.with(Cat.DSOL).warn("Truck {} is not empty: it carries container {}", truck, truck.getContainer1());
         if (!getContainerMap().containsKey(container.getNr()))
             CategoryLogger.with(Cat.DSOL).warn("Container {} not found on yard of facility {}", container,
                     getContainerFacility());
@@ -107,12 +107,13 @@ public interface Yard extends Identifiable
      * @param truck the truck
      * @param container the container to drop off
      */
-    default void dropoffContainer(final Truck truck)
+    default void dropoffContainers(final Truck truck)
     {
         if (truck.isEmpty())
             CategoryLogger.with(Cat.DSOL).warn("Truck {} is empty: it does not carry a container", truck);
-        Container container = truck.unloadContainer();
-        addContainer(container, TransportMode.TRUCK);
+        Container[] containers = truck.unloadContainers();
+        for (var container : containers)
+            addContainer(container, TransportMode.TRUCK);
         getContainerFacility().getStatistics().incTruckVisitDelivery(); // TODO: when to update dual?
     }
 

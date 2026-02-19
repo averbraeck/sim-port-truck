@@ -3,7 +3,7 @@ package nl.tudelft.simulation.simport.road;
 import java.awt.geom.Point2D;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.djutils.io.ResourceResolver;
@@ -25,7 +25,7 @@ public class GraphFromGISObjects
 {
     public GraphFromGISObjects(final GisMapInterface map, final PortModel model, final URL csvCentroidUrl)
     {
-        Map<String, String> shapeFileMap = new HashMap<>();
+        Map<String, String> shapeFileMap = new LinkedHashMap<>();
         try
         {
             NamedCsvReader csvCentroid = NamedCsvReader.builder().build(Paths.get(csvCentroidUrl.toURI()));
