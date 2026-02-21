@@ -2,6 +2,7 @@ package nl.tudelft.simulation.simport.terminal;
 
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import org.djunits.unit.DurationUnit;
@@ -365,6 +366,27 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     public NavigableMap<Double, Centroid> getOriginProbabilities()
     {
         return this.originProbabilities;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.id, this.lat, this.lon, this.name);
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        AbstractContainerFacility other = (AbstractContainerFacility) obj;
+        return Objects.equals(this.id, other.id) && Double.doubleToLongBits(this.lat) == Double.doubleToLongBits(other.lat)
+                && Double.doubleToLongBits(this.lon) == Double.doubleToLongBits(other.lon)
+                && Objects.equals(this.name, other.name);
     }
 
 }
