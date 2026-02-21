@@ -2,7 +2,6 @@ package nl.tudelft.simulation.simport.network;
 
 import java.util.Objects;
 
-import org.djunits.value.vdouble.scalar.Area;
 import org.djutils.base.Identifiable;
 import org.djutils.draw.bounds.Bounds;
 import org.djutils.draw.bounds.Bounds2d;

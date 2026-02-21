@@ -7,10 +7,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.djunits.unit.SpeedUnit;
 import org.djunits.value.vdouble.scalar.Speed;
@@ -22,7 +24,6 @@ import nl.tudelft.simulation.dsol.animation.gis.LayerInterface;
 import nl.tudelft.simulation.dsol.animation.gis.esri.ShapeFileReader;
 import nl.tudelft.simulation.dsol.animation.gis.map.Feature;
 import nl.tudelft.simulation.dsol.animation.gis.map.Layer;
-import nl.tudelft.simulation.dsol.logger.Cat;
 import nl.tudelft.simulation.dsol.simulators.AnimatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.simport.animation.CentroidAnimation;
@@ -32,7 +33,6 @@ import nl.tudelft.simulation.simport.animation.TurnAnimation;
 import nl.tudelft.simulation.simport.gis.CoordinateTransformRdNewToWgs84;
 import nl.tudelft.simulation.simport.gis.DbfReader;
 import nl.tudelft.simulation.simport.model.PortModel;
-import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 
 /**
@@ -52,16 +52,16 @@ public class RoadNetwork
     private final List<Node> nodeList = new ArrayList<>();
 
     /** the road nodes. */
-    private final Map<RoadNode, RoadNode> roadNodeMap = new HashMap<>();
+    private final Map<RoadNode, RoadNode> roadNodeMap = new LinkedHashMap<>();
 
     /** the links. */
-    private final Map<String, RoadLink> roadLinkMap = new HashMap<>();
+    private final Map<String, RoadLink> roadLinkMap = new LinkedHashMap<>();
 
     /** the turns. */
     private final List<RoadTurn> turnList = new ArrayList<>();
 
     /** The centroids. */
-    private final Map<String, Centroid> centroidMap = new HashMap<>();
+    private final Map<String, Centroid> centroidMap = new LinkedHashMap<>();
 
     /** The loop detectors. */
     private final List<Detector> detectorList = new ArrayList<>();
@@ -71,6 +71,9 @@ public class RoadNetwork
 
     /** The O/D matrix. */
     private OdMatrix odMatrix;
+
+    /** The centroids that are considered to be vertices into or from farther destinations. */
+    private final Set<Centroid> farCentroids = new LinkedHashSet<>();
 
     /**
      *
@@ -267,20 +270,14 @@ public class RoadNetwork
         }
     }
 
-    /**
-     * @return model
-     */
-    public PortModel getModel()
+    public void setFarCentroids(final String fc)
     {
-        return this.model;
-    }
-
-    /**
-     * @return simulator
-     */
-    public ClockDevsSimulatorInterface getSimulator()
-    {
-        return getModel().getSimulator();
+        for (String cs : fc.split(","))
+        {
+            Centroid c = getCentroid(cs.strip());
+            Throw.whenNull(c, "Faraway centroid %s not found", cs);
+            this.farCentroids.add(c);
+        }
     }
 
     ///////////////////////////////////////// HELPER METHODS ////////////////////////////////////
@@ -402,6 +399,22 @@ public class RoadNetwork
     ///////////////////////////////////////////// GETTERS AND SETTERS //////////////////////////////////////////////
 
     /**
+     * @return model
+     */
+    public PortModel getModel()
+    {
+        return this.model;
+    }
+
+    /**
+     * @return simulator
+     */
+    public ClockDevsSimulatorInterface getSimulator()
+    {
+        return getModel().getSimulator();
+    }
+
+    /**
      * @return nodeList
      */
     public List<Node> getNodeList()
@@ -442,6 +455,15 @@ public class RoadNetwork
     }
 
     /**
+     * Return the centroid belonging to the id, or null when it was not found
+     * @return the centroid belonging to the id, or null when it was not found
+     */
+    public Centroid getCentroid(final String id)
+    {
+        return this.centroidMap.get(id);
+    }
+
+    /**
      * @return detectorList
      */
     public List<Detector> getDetectorList()
@@ -463,6 +485,14 @@ public class RoadNetwork
     public OdMatrix getOdMatrix()
     {
         return this.odMatrix;
+    }
+
+    /**
+     * @return farCentroids
+     */
+    public Set<Centroid> getFarCentroids()
+    {
+        return this.farCentroids;
     }
 
 }
