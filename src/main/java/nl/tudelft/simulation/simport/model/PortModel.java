@@ -1,6 +1,7 @@
 package nl.tudelft.simulation.simport.model;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.event.EventProducer;
@@ -11,6 +12,7 @@ import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.distributions.DistUniform;
 import nl.tudelft.simulation.jstats.streams.StreamInterface;
 import nl.tudelft.simulation.simport.freightforwarder.FreightForwarder;
+import nl.tudelft.simulation.simport.network.Centroid;
 import nl.tudelft.simulation.simport.network.RoadNetwork;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.vessel.Vessel;
@@ -132,4 +134,23 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
      * @return the road network
      */
     RoadNetwork getRoadNetwork();
+
+    /**
+     * Return the target fraction for the number of single-terminal combination trips as part of the total number of trips.
+     * @return the target fraction for the number of single-terminal combination trips as part of the total number of trips
+     */
+    double getTargetCombinedOneTerminalFraction();
+
+    /**
+     * Return the target fraction for the number of two-terminal combination trips as part of the total number of trips.
+     * @return the target fraction for the number of two-terminal combination trips as part of the total number of trips
+     */
+    double getTargetCombinedTwoTerminalFraction();
+
+    /**
+     * Return the centroids of the terminals.
+     * @return the centroids of the terminals
+     */
+    Set<Centroid> getTerminalCentroids();
+
 }

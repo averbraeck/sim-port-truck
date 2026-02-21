@@ -5,10 +5,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -74,6 +75,9 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     /** The terminals. */
     private final Map<String, Terminal> terminalMap = new LinkedHashMap<>();
 
+    /** The centroids of the terminals. */
+    private final Set<Centroid> terminalCentroids = new HashSet<>();
+
     /** the vessel counter. */
     private final AtomicInteger uniqueVesselNumber = new AtomicInteger(1000);
 
@@ -90,7 +94,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     private RoadNetwork roadNetwork;
 
     /** The vessels. */
-    private Map<Integer, Vessel> vesselMap = new HashMap<>();
+    private Map<Integer, Vessel> vesselMap = new LinkedHashMap<>();
 
     /**
      * Create a port model.
@@ -364,6 +368,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         this.roadNetwork.readSections(ResourceResolver.resolve(getInputParameterString("generic.SectionFile")).asUrl());
         this.roadNetwork.readTurns(ResourceResolver.resolve(getInputParameterString("generic.TurningFile")).asUrl());
         this.roadNetwork.readOd(ResourceResolver.resolve(getInputParameterString("generic.ODFile")).asPath());
+        this.roadNetwork.setFarCentroids(getInputParameterString("generic.FarCentroids"));
 
         buildTerminals();
         buildVesselGenerators();
@@ -404,8 +409,9 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                 ModalSplit msExport = new ModalSplit(truckFraction / sum, bargeFraction / sum, railFraction / sum);
                 terminal.setModalSplitImport(msImport);
                 terminal.setModalSplitExport(msExport);
-                Centroid centroid = this.roadNetwork.getCentroidMap().get(tp.getProperty("centroid").strip());
+                Centroid centroid = this.roadNetwork.getCentroid(tp.getProperty("centroid").strip());
                 terminal.setCentroid(centroid);
+                this.terminalCentroids.add(centroid);
                 RoadLink roadLinkGateIn = this.roadNetwork.getRoadLinkMap().get(tp.getProperty("gateRoadLinkIn").strip());
                 terminal.setRoadLinkGateIn(roadLinkGateIn);
                 RoadLink roadLinkGateOut = this.roadNetwork.getRoadLinkMap().get(tp.getProperty("gateRoadLinkOut").strip());
@@ -592,6 +598,12 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     public RoadNetwork getRoadNetwork()
     {
         return this.roadNetwork;
+    }
+
+    @Override
+    public Set<Centroid> getTerminalCentroids()
+    {
+        return this.terminalCentroids;
     }
 
 }
