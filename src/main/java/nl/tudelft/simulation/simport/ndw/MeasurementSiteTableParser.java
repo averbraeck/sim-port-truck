@@ -4,7 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -31,7 +31,7 @@ public class MeasurementSiteTableParser
     public static Map<String, SiteMetadata> parse(final File xmlOrZipGz) throws Exception
     {
         System.out.println("\nReading config");
-        Map<String, SiteMetadata> map = new HashMap<>();
+        Map<String, SiteMetadata> map = new LinkedHashMap<>();
         // XMLInputFactory factory = XMLInputFactory.newInstance();
         XMLInputFactory factory = new com.fasterxml.aalto.stax.InputFactoryImpl();
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
@@ -73,7 +73,7 @@ public class MeasurementSiteTableParser
         double lat = Double.NaN, lon = Double.NaN;
         int lanes = 0;
         Double hm = null;
-        Map<Integer, SiteMetadata.VehicleLengthBand> idxMap = new HashMap<>();
+        Map<Integer, SiteMetadata.VehicleLengthBand> idxMap = new LinkedHashMap<>();
         Integer currentIndex = null;
         String currentValueType = null;
         Double tmpMin = null, tmpMax = null;
@@ -92,7 +92,7 @@ public class MeasurementSiteTableParser
                         if (siteId != null)
                         {
                             out.put(siteId, new SiteMetadata(siteId, roadName, direction, lat, lon, lanes, locationName, hm,
-                                    new HashMap<>(idxMap)));
+                                    new LinkedHashMap<>(idxMap)));
                             idxMap.clear();
                             roadName = direction = locationName = null;
                             lat = lon = Double.NaN;
@@ -220,7 +220,7 @@ public class MeasurementSiteTableParser
                         if (siteId != null)
                         {
                             out.put(siteId, new SiteMetadata(siteId, roadName, direction, lat, lon, lanes, locationName, hm,
-                                    new HashMap<>(idxMap)));
+                                    new LinkedHashMap<>(idxMap)));
                             idxMap.clear();
                             siteId = null;
                             roadName = direction = locationName = null;
@@ -235,7 +235,7 @@ public class MeasurementSiteTableParser
         if (siteId != null)
         {
             out.put(siteId,
-                    new SiteMetadata(siteId, roadName, direction, lat, lon, lanes, locationName, hm, new HashMap<>(idxMap)));
+                    new SiteMetadata(siteId, roadName, direction, lat, lon, lanes, locationName, hm, new LinkedHashMap<>(idxMap)));
         }
     }
 
