@@ -1,6 +1,6 @@
 package nl.tudelft.simulation.simport.freightforwarder;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.djunits.unit.DurationUnit;
@@ -18,7 +18,7 @@ import nl.tudelft.simulation.simport.TransportMode;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.terminal.Terminal;
-import nl.tudelft.simulation.simport.truck.Truck;
+import nl.tudelft.simulation.simport.truck.TransportOrder;
 import nl.tudelft.simulation.simport.truck.TruckingCompany;
 import nl.tudelft.simulation.simport.vessel.Vessel;
 
@@ -45,28 +45,25 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     private final ClockDevsSimulatorInterface simulator;
 
     /** The import lead time distributions for truck per terminal. */
-    private Map<Terminal, Map<String, DistContinuousDuration>> importLeadTimeTruckDist = new HashMap<>();
+    private Map<Terminal, Map<String, DistContinuousDuration>> importLeadTimeTruckDist = new LinkedHashMap<>();
 
     /** The import lead time distributions for barge per terminal. */
-    private Map<Terminal, Map<String, DistContinuousDuration>> importLeadTimeBargeDist = new HashMap<>();
+    private Map<Terminal, Map<String, DistContinuousDuration>> importLeadTimeBargeDist = new LinkedHashMap<>();
 
     /** The import lead time distributions for rail per terminal. */
-    private Map<Terminal, Map<String, DistContinuousDuration>> importLeadTimeRailDist = new HashMap<>();
+    private Map<Terminal, Map<String, DistContinuousDuration>> importLeadTimeRailDist = new LinkedHashMap<>();
 
     /** The export lead time distributions for truck per terminal. */
-    private Map<Terminal, Map<String, DistContinuousDuration>> exportLeadTimeTruckDist = new HashMap<>();
+    private Map<Terminal, Map<String, DistContinuousDuration>> exportLeadTimeTruckDist = new LinkedHashMap<>();
 
     /** The export lead time distributions for barge per terminal. */
-    private Map<Terminal, Map<String, DistContinuousDuration>> exportLeadTimeBargeDist = new HashMap<>();
+    private Map<Terminal, Map<String, DistContinuousDuration>> exportLeadTimeBargeDist = new LinkedHashMap<>();
 
     /** The export lead time distributions for rail per terminal. */
-    private Map<Terminal, Map<String, DistContinuousDuration>> exportLeadTimeRailDist = new HashMap<>();
+    private Map<Terminal, Map<String, DistContinuousDuration>> exportLeadTimeRailDist = new LinkedHashMap<>();
 
-    /** TEMPORARY: TRUCKING COMPANY. */
+    /** For now, a single trucking company. */
     private TruckingCompany truckingCompany;
-
-    /** TEMPORARY: TRUCK COUNTER. */
-    private int truckCounter = 0;
 
     /**
      * Instantiate a new Freight Forwarder.
@@ -100,15 +97,15 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
         switch (transportMode)
         {
             case TRUCK -> {
-                this.importLeadTimeTruckDist.putIfAbsent(terminal, new HashMap<>());
+                this.importLeadTimeTruckDist.putIfAbsent(terminal, new LinkedHashMap<>());
                 this.importLeadTimeTruckDist.get(terminal).put(containerType(reefer, empty), leadTimeDist);
             }
             case RAIL -> {
-                this.importLeadTimeRailDist.putIfAbsent(terminal, new HashMap<>());
+                this.importLeadTimeRailDist.putIfAbsent(terminal, new LinkedHashMap<>());
                 this.importLeadTimeRailDist.get(terminal).put(containerType(reefer, empty), leadTimeDist);
             }
             case BARGE -> {
-                this.importLeadTimeBargeDist.putIfAbsent(terminal, new HashMap<>());
+                this.importLeadTimeBargeDist.putIfAbsent(terminal, new LinkedHashMap<>());
                 this.importLeadTimeBargeDist.get(terminal).put(containerType(reefer, empty), leadTimeDist);
             }
         }
@@ -128,15 +125,15 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
         switch (transportMode)
         {
             case TRUCK -> {
-                this.exportLeadTimeTruckDist.putIfAbsent(terminal, new HashMap<>());
+                this.exportLeadTimeTruckDist.putIfAbsent(terminal, new LinkedHashMap<>());
                 this.exportLeadTimeTruckDist.get(terminal).put(containerType(reefer, empty), leadTimeDist);
             }
             case RAIL -> {
-                this.exportLeadTimeRailDist.putIfAbsent(terminal, new HashMap<>());
+                this.exportLeadTimeRailDist.putIfAbsent(terminal, new LinkedHashMap<>());
                 this.exportLeadTimeRailDist.get(terminal).put(containerType(reefer, empty), leadTimeDist);
             }
             case BARGE -> {
-                this.exportLeadTimeBargeDist.putIfAbsent(terminal, new HashMap<>());
+                this.exportLeadTimeBargeDist.putIfAbsent(terminal, new LinkedHashMap<>());
                 this.exportLeadTimeBargeDist.get(terminal).put(containerType(reefer, empty), leadTimeDist);
             }
         }
@@ -145,76 +142,57 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
     ///////////////////////////////////////////////// TRUCK /////////////////////////////////////////////////
 
     /**
-     * Plan the export (TO terminal) of a container by truck. TODO: day of week, time of day, trucking company
+     * Plan the export (TO terminal) of a container by truck.
      * @param terminal the terminal the container has to be brought to
      * @param vessel the outgoing vessel on which the container is booked
      * @param container the container that has to be transported
      */
     public void planExportContainerTruck(final Terminal terminal, final Vessel vessel, final Container container)
     {
+        // select centroid.
+        var loadCentroid =
+                terminal.getOriginProbabilities().ceilingEntry(getModel().getDefaultStream().nextDouble()).getValue();
+
+        // select trucking company, for now the 'collective' company
+        var truckingCompany = this.truckingCompany;
+
+        // determine target day + window for transport
         Duration leadTime =
                 this.exportLeadTimeTruckDist.get(terminal).get(containerType(container.isReefer(), container.isEmpty())).draw();
-        this.simulator.scheduleEventAbs(new ClockTime(vessel.getEta().minus(leadTime)),
-                () -> truckDepartureToTerminal(terminal, vessel, container));
+        ClockTime targetTime = new ClockTime(vessel.getEta().minus(leadTime));
+        Duration marginBefore = new Duration(3.0, DurationUnit.DAY);
+        Duration marginAfter = new Duration(1.0, DurationUnit.DAY);
+
+        // hand over to TruckingCompany
+        truckingCompany.bookTrip(new TransportOrder(vessel, container, loadCentroid, null, terminal.getCentroid(), terminal,
+                targetTime, marginBefore, marginAfter));
     }
 
     /**
-     * Departure of truck (TO terminal) to transport a container. TODO: this will be done by the trucking company
-     * @param terminal the terminal the container has to be brought to
-     * @param vessel the outgoing vessel on which the container is booked
-     * @param container the container that has to be transported
-     */
-    protected void truckDepartureToTerminal(final Terminal terminal, final Vessel vessel, final Container container)
-    {
-        Truck truck = this.truckingCompany.getFleet().get(this.truckCounter++ % 5000);
-        truck.loadContainer(container);
-        this.simulator.scheduleEventRel(new Duration(2.0, DurationUnit.HOUR),
-                () -> unloadContainerTerminal(terminal, truck, container));
-    }
-
-    protected void unloadContainerTerminal(final Terminal terminal, final Truck truck, final Container container)
-    {
-        getModel().fireEvent(new Event(PortModel.TRUCK_EVENT, truck));
-        terminal.getYard().dropoffContainer(truck);
-    }
-
-    /**
-     * Plan the import (FROM terminal) of a container by truck. TODO: day of week, time of day, trucking company
+     * Plan the import (FROM terminal) of a container by truck.
      * @param terminal the terminal the container has to be collected from
      * @param vessel the incoming vessel on which the container was booked
      * @param container the container that has to be transported
      */
     public void planImportContainerTruck(final Terminal terminal, final Vessel vessel, final Container container)
     {
+        // select centroid.
+        var unloadCentroid =
+                terminal.getDestinationProbabilities().ceilingEntry(getModel().getDefaultStream().nextDouble()).getValue();
+
+        // select trucking company, for now the 'collective' company
+        var truckingCompany = this.truckingCompany;
+
+        // determine target day + window for transport
         Duration leadTime =
                 this.importLeadTimeTruckDist.get(terminal).get(containerType(container.isReefer(), container.isEmpty())).draw();
-        this.simulator.scheduleEventAbs(new ClockTime(vessel.getEta().plus(leadTime)),
-                () -> truckDepartureFromTerminal(terminal, vessel, container));
-    }
+        ClockTime targetTime = new ClockTime(vessel.getEta().plus(leadTime));
+        Duration marginBefore = new Duration(1.0, DurationUnit.DAY);
+        Duration marginAfter = new Duration(4.0, DurationUnit.DAY);
 
-    /**
-     * Departure of truck (FROM terminal) to transport a container. TODO: this will be done by the trucking company
-     * @param terminal the terminal the container has to be brought to
-     * @param vessel the outgoing vessel on which the container is booked
-     * @param container the container that has to be transported
-     */
-    protected void truckDepartureFromTerminal(final Terminal terminal, final Vessel vessel, final Container container)
-    {
-        Truck truck = this.truckingCompany.getFleet().get(this.truckCounter++ % 5000);
-        terminal.getYard().pickupContainer(truck, container);
-        this.simulator.scheduleEventRel(new Duration(2.0, DurationUnit.HOUR), () -> unloadContainerHinterland(truck));
-    }
-
-    /**
-     * Dropoff a container in the hinterland. TODO: this will become part of the truck model
-     * @param truck the truck that has driven to the hinterland
-     */
-    protected void unloadContainerHinterland(final Truck truck)
-    {
-        getModel().fireEvent(new Event(PortModel.TRUCK_EVENT, truck));
-        var container = truck.unloadContainer();
-        container.addLocation(Location.HINTERLAND);
-        getModel().fireEvent(new Event(PortModel.CONTAINER_EVENT, container));
+        // hand over to TruckingCompany
+        truckingCompany.bookTrip(new TransportOrder(vessel, container, terminal.getCentroid(), terminal, unloadCentroid, null,
+                targetTime, marginBefore, marginAfter));
     }
 
     ///////////////////////////////////////////////// BARGE /////////////////////////////////////////////////
