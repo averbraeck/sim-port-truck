@@ -1,10 +1,11 @@
-package nl.tudelft.simulation.simport.terminal;
+package nl.tudelft.simulation.simport.terminal.slot;
 
 import java.util.Objects;
 
 import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
+import nl.tudelft.simulation.simport.terminal.Terminal;
 
 /**
  * Slot is a reservation in the terminal system.

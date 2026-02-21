@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
-import nl.tudelft.simulation.simport.terminal.Slot;
+import nl.tudelft.simulation.simport.terminal.slot.Slot;
 
 /**
  * SlotBooking is an appointment for a slot at a terminal.
