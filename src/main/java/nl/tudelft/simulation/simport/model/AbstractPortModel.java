@@ -259,8 +259,8 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
                     true, "%d", 2.0));
             truckMap.add(new InputParameterDouble("CombiSafetyMarginHours", "Safety margin between two trips when combi trip",
                     "[0,24]", 2.0, 0.0, 24.0, true, true, "%d", 3.0));
-            truckMap.add(new InputParameterString("FarCentroids", "Centroids for farther destinations", "(comma separated)",
-                    "", 4.0));
+            truckMap.add(new InputParameterString("FarCentroids", "Centroids for farther destinations", "(comma separated)", "",
+                    4.0));
             root.add(truckMap);
 
             InputParameterMap planningMap = new InputParameterMap("planning", "Planning", "Planning parameters", 8.0);
@@ -368,7 +368,7 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
         this.roadNetwork.readSections(ResourceResolver.resolve(getInputParameterString("generic.SectionFile")).asUrl());
         this.roadNetwork.readTurns(ResourceResolver.resolve(getInputParameterString("generic.TurningFile")).asUrl());
         this.roadNetwork.readOd(ResourceResolver.resolve(getInputParameterString("generic.ODFile")).asPath());
-        this.roadNetwork.setFarCentroids(getInputParameterString("generic.FarCentroids"));
+        this.roadNetwork.setFarCentroids(getInputParameterString("truck.FarCentroids"));
 
         buildTerminals();
         buildVesselGenerators();
@@ -604,6 +604,18 @@ public abstract class AbstractPortModel extends AbstractDsolModel<Duration, Cloc
     public Set<Centroid> getTerminalCentroids()
     {
         return this.terminalCentroids;
+    }
+
+    @Override
+    public double getTargetCombinedOneTerminalFraction()
+    {
+        return 0.2; // TODO
+    }
+
+    @Override
+    public double getTargetCombinedTwoTerminalFraction()
+    {
+        return 0.2; // TODO
     }
 
 }
