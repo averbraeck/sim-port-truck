@@ -40,10 +40,16 @@ public interface Gate extends Identifiable
     int getCurrentLanesOut();
 
     /** @return the current handling time when entering the terminal or depot (can be drawn from a distribution). */
-    Duration getCurrentHandlingTimeIn();
+    Duration drawCurrentGateTimeIn();
 
     /** @return the current handling time when leaving the terminal or depot (can be drawn from a distribution). */
-    Duration getCurrentHandlingTimeOut();
+    Duration drawCurrentGateTimeOut();
+
+    /** @return an average gate-in time. */
+    Duration getAvgGateTimeIn();
+
+    /** @return an average gate-out time. */
+    Duration getAvgGateTimeOut();
 
     /** @return the queue of trucks that want to enter. */
     List<Truck> getTruckQueueIn();

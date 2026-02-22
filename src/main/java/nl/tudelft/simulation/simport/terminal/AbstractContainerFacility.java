@@ -14,9 +14,12 @@ import org.djutils.event.LocalEventProducer;
 import org.djutils.exceptions.Throw;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
+import nl.tudelft.simulation.simport.appointment.Appointment;
 import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.network.Centroid;
 import nl.tudelft.simulation.simport.network.RoadLink;
+import nl.tudelft.simulation.simport.terminal.slot.SlotManagementSystem;
+import nl.tudelft.simulation.simport.truck.TransportOrder;
 import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 
 /**
@@ -79,6 +82,9 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
 
     /** The cumulative probabilities for origin centroids. */
     private NavigableMap<Double, Centroid> originProbabilities = new TreeMap<>();
+
+    /** The slot management system (can be null if none). */
+    private SlotManagementSystem slotManagementSystem;
 
     /**
      * Create a new container facility for the port model.
@@ -165,6 +171,20 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
             probabilities.put(cumulative / sum, centroidMap.get(centroidName));
         }
     }
+
+    public Appointment bookAppointment(final TransportOrder transportOrder)
+    {
+        if (this.slotManagementSystem != null)
+        {
+            return this.slotManagementSystem.bookSlot(transportOrder);
+        }
+        else
+        {
+            return new Appointment(transportOrder.targetTime());
+        }
+    }
+
+    /////////////////////////////////////// GETTERS AND SETTERS ///////////////////////////////////////
 
     @Override
     public String getId()
@@ -366,6 +386,22 @@ public abstract class AbstractContainerFacility extends LocalEventProducer imple
     public NavigableMap<Double, Centroid> getOriginProbabilities()
     {
         return this.originProbabilities;
+    }
+
+    /**
+     * @return slotManagementSystem
+     */
+    public SlotManagementSystem getSlotManagementSystem()
+    {
+        return this.slotManagementSystem;
+    }
+
+    /**
+     * @param slotManagementSystem set slotManagementSystem
+     */
+    public void setSlotManagementSystem(final SlotManagementSystem slotManagementSystem)
+    {
+        this.slotManagementSystem = slotManagementSystem;
     }
 
     @Override

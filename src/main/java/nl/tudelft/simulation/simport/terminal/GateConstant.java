@@ -36,6 +36,12 @@ public class GateConstant implements Gate
     /** the fixed handling time distribution for leaving the terminal. */
     private DistContinuousDuration timeOutDist;
 
+    /** the average gate-in time. */
+    private Duration avgGateTimeIn;
+
+    /** the average gate-out time. */
+    private Duration avgGateTimeOut;
+
     /** the truck queue for entering the terminal. */
     private List<Truck> truckQueueIn;
 
@@ -99,7 +105,7 @@ public class GateConstant implements Gate
     }
 
     @Override
-    public Duration getCurrentHandlingTimeIn()
+    public Duration drawCurrentGateTimeIn()
     {
         return this.timeInDist.draw();
     }
@@ -114,9 +120,39 @@ public class GateConstant implements Gate
     }
 
     @Override
-    public Duration getCurrentHandlingTimeOut()
+    public Duration drawCurrentGateTimeOut()
     {
         return this.timeOutDist.draw();
+    }
+
+    @Override
+    public Duration getAvgGateTimeIn()
+    {
+        if (this.avgGateTimeIn == null)
+        {
+            double durationSi = 0.0;
+            for (int i = 0; i < 1000; i++)
+            {
+                durationSi += drawCurrentGateTimeIn().si;
+            }
+            this.avgGateTimeIn = Duration.ofSI(durationSi / 1000.0);
+        }
+        return this.avgGateTimeIn;
+    }
+
+    @Override
+    public Duration getAvgGateTimeOut()
+    {
+        if (this.avgGateTimeOut == null)
+        {
+            double durationSi = 0.0;
+            for (int i = 0; i < 1000; i++)
+            {
+                durationSi += drawCurrentGateTimeOut().si;
+            }
+            this.avgGateTimeOut = Duration.ofSI(durationSi / 1000.0);
+        }
+        return this.avgGateTimeOut;
     }
 
     @Override
