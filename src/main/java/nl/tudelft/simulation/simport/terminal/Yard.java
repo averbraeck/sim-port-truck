@@ -38,6 +38,16 @@ public interface Yard extends Identifiable
     /** @return a handling time for a dual handling. */
     Duration drawHandlingTimeDual();
 
+    /** @return an average handling time for a truck dropping off an export container. */
+    Duration getAvgHandlingTimeExport();
+
+    /** @return an average handling time for a truck picking up an import container. */
+    Duration getAvgHandlingTimeImport();
+
+    /** @return an avereage handling time for a dual handling. */
+    Duration getAvgHandlingTimeDual();
+
+
     /** @return the containers in the yard, as a map from container number to container. */
     Map<Integer, Container> getContainerMap();
 

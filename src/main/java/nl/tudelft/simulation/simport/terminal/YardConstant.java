@@ -38,6 +38,15 @@ public class YardConstant implements Yard
     /** handling time distribution for dual visit. */
     private DistContinuousDuration handlingTimeDualDist;
 
+    /** average handling time distribution for export. */
+    private Duration avgHandlingTimeExport;
+
+    /** average handling time distribution for import. */
+    private Duration avgHandlingTimeImport;
+
+    /** average handling time distribution for dual visit. */
+    private Duration avgHandlingTimeDual;
+
     /** Map with containers in the yard (Container number -> Container). */
     private final Map<Integer, Container> containerMap = new LinkedHashMap<>();
 
@@ -111,6 +120,51 @@ public class YardConstant implements Yard
     public Duration drawHandlingTimeDual()
     {
         return this.handlingTimeDualDist.draw();
+    }
+
+    @Override
+    public Duration getAvgHandlingTimeExport()
+    {
+        if (this.avgHandlingTimeExport == null)
+        {
+            double durationSi = 0.0;
+            for (int i = 0; i < 1000; i++)
+            {
+                durationSi += drawHandlingTimeExport().si;
+            }
+            this.avgHandlingTimeExport = Duration.ofSI(durationSi / 1000.0);
+        }
+        return this.avgHandlingTimeExport;
+    }
+
+    @Override
+    public Duration getAvgHandlingTimeImport()
+    {
+        if (this.avgHandlingTimeImport == null)
+        {
+            double durationSi = 0.0;
+            for (int i = 0; i < 1000; i++)
+            {
+                durationSi += drawHandlingTimeImport().si;
+            }
+            this.avgHandlingTimeImport = Duration.ofSI(durationSi / 1000.0);
+        }
+        return this.avgHandlingTimeImport;
+    }
+
+    @Override
+    public Duration getAvgHandlingTimeDual()
+    {
+        if (this.avgHandlingTimeDual == null)
+        {
+            double durationSi = 0.0;
+            for (int i = 0; i < 1000; i++)
+            {
+                durationSi += drawHandlingTimeDual().si;
+            }
+            this.avgHandlingTimeDual = Duration.ofSI(durationSi / 1000.0);
+        }
+        return this.avgHandlingTimeDual;
     }
 
     @Override
