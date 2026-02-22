@@ -1,12 +1,18 @@
 package nl.tudelft.simulation.simport.output;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.zip.GZIPOutputStream;
 
 import org.djutils.event.Event;
 import org.djutils.event.EventListener;
+import org.djutils.logger.CategoryLogger;
 
 import nl.tudelft.simulation.dsol.experiment.Replication;
 import nl.tudelft.simulation.simport.TransportMode;
@@ -17,6 +23,9 @@ import nl.tudelft.simulation.simport.terminal.ContainerFacility;
 import nl.tudelft.simulation.simport.terminal.TerminalStatistics;
 import nl.tudelft.simulation.simport.terminal.TerminalStatistics.TerminalData;
 import nl.tudelft.simulation.simport.truck.Truck;
+import nl.tudelft.simulation.simport.truck.activity.RealizedDrivingActivity;
+import nl.tudelft.simulation.simport.truck.activity.RealizedTerminalActivity;
+import nl.tudelft.simulation.simport.truck.activity.RealizedTruckActivity;
 import nl.tudelft.simulation.simport.util.SimPortRuntimeException;
 import nl.tudelft.simulation.simport.vessel.Vessel;
 
@@ -37,7 +46,7 @@ public class OutputWriter implements EventListener
     private PrintWriter vesselWriter;
 
     /** the container writer. */
-    private PrintWriter containerWriter;
+    private BufferedWriter containerWriter;
 
     /** the final container writer. */
     private PrintWriter finalContainerWriter;
@@ -79,7 +88,11 @@ public class OutputWriter implements EventListener
             writeVesselHeader();
             model.addListener(this, PortModel.VESSEL_EVENT);
 
-            this.containerWriter = new PrintWriter(outputPath + "/container.csv");
+            FileOutputStream fos = new FileOutputStream(new File(outputPath + "/container.csv.gz"));
+            BufferedOutputStream bos = new BufferedOutputStream(fos, 128 * 1024);
+            GZIPOutputStream gos = new GZIPOutputStream(bos);
+            OutputStreamWriter osw = new OutputStreamWriter(gos, "UTF-8");
+            this.containerWriter = new BufferedWriter(osw, 128 * 1024);
             writeContainerHeader();
             model.addListener(this, PortModel.CONTAINER_EVENT);
 
@@ -221,20 +234,27 @@ public class OutputWriter implements EventListener
 
     private void writeContainerHeader()
     {
-        this.containerWriter.print("\"container_nr\"");
-        this.containerWriter.print(",\"terminal_in\"");
-        this.containerWriter.print(",\"vessel_in\"");
-        this.containerWriter.print(",\"date_vessel_in\"");
-        this.containerWriter.print(",\"terminal_out\"");
-        this.containerWriter.print(",\"vessel_out\"");
-        this.containerWriter.print(",\"date_vessel_out\"");
-        this.containerWriter.print(",\"container_type\"");
-        this.containerWriter.print(",\"empty_full\"");
-        this.containerWriter.print(",\"location_chain\"");
-        this.containerWriter.print(",\"direction\"");
-        this.containerWriter.print(",\"transport_mode\"");
-        this.containerWriter.println();
-        this.containerWriter.flush();
+        try
+        {
+            this.containerWriter.write("\"container_nr\"");
+            this.containerWriter.write(",\"terminal_in\"");
+            this.containerWriter.write(",\"vessel_in\"");
+            this.containerWriter.write(",\"date_vessel_in\"");
+            this.containerWriter.write(",\"terminal_out\"");
+            this.containerWriter.write(",\"vessel_out\"");
+            this.containerWriter.write(",\"date_vessel_out\"");
+            this.containerWriter.write(",\"container_type\"");
+            this.containerWriter.write(",\"empty_full\"");
+            this.containerWriter.write(",\"location_chain\"");
+            this.containerWriter.write(",\"direction\"");
+            this.containerWriter.write(",\"transport_mode\"");
+            this.containerWriter.write("\n");
+            this.containerWriter.flush();
+        }
+        catch (IOException ioe)
+        {
+            CategoryLogger.always().error("Error writing to containerWriter. Error: " + ioe.getMessage());
+        }
     }
 
     private void writeContainerLine(final Container container)
@@ -243,53 +263,82 @@ public class OutputWriter implements EventListener
         Vessel vesselIn = vesselInNr < 0 ? null : getModel().getVesselMap().get(vesselInNr);
         int vesselOutNr = container.getVesselOutNr();
         Vessel vesselOut = vesselOutNr < 0 ? null : getModel().getVesselMap().get(vesselOutNr);
-        this.containerWriter.print("\"" + container.getId() + "\"");
-        this.containerWriter.print(",\"" + (vesselIn == null ? "" : vesselIn.getTerminal().getId()) + "\"");
-        this.containerWriter.print(",\"" + (vesselIn == null ? "" : vesselIn.getId()) + "\"");
-        this.containerWriter.print(",\"" + (vesselIn == null ? "" : vesselIn.getAta().ymdhm()) + "\"");
-        this.containerWriter.print(",\"" + (vesselOut == null ? "" : vesselOut.getTerminal().getId()) + "\"");
-        this.containerWriter.print(",\"" + (vesselOut == null ? "" : vesselOut.getId()) + "\"");
-        this.containerWriter.print(",\"" + (vesselOut == null ? "" : vesselOut.getAta().ymdhm()) + "\"");
-        this.containerWriter.print("\"" + container.getType() + "\"");
-        this.containerWriter.print("\"" + (container.isEmpty() ? "E" : "F") + "\"");
-        String locations = container.getLocations().toString();
-        this.containerWriter.print(",\"" + locations + "\"");
-        String direction = "domestic";
-        if (vesselIn == null && vesselOut != null)
-            direction = "export";
-        else if (vesselIn != null && vesselOut == null)
-            direction = "import";
-        else if (vesselIn != null && vesselOut != null)
-            direction = "transshipment";
-        this.containerWriter.print(",\"" + direction + "\"");
-        String transportMode = "TRANSSHIP";
-        if (locations.contains("TRUCK"))
-            transportMode = "TRUCK";
-        else if (locations.contains("BARGE"))
-            transportMode = "BARGE";
-        else if (locations.contains("RAIL"))
-            transportMode = "RAIL";
-        this.containerWriter.print(",\"" + transportMode + "\"");
-        this.containerWriter.println();
-        this.containerWriter.flush();
+        try
+        {
+            this.containerWriter.write("\"" + container.getId() + "\"");
+            this.containerWriter.write(",\"" + (vesselIn == null ? "" : vesselIn.getTerminal().getId()) + "\"");
+            this.containerWriter.write(",\"" + (vesselIn == null ? "" : vesselIn.getId()) + "\"");
+            this.containerWriter.write(",\"" + (vesselIn == null ? "" : vesselIn.getAta().ymdhm()) + "\"");
+            this.containerWriter.write(",\"" + (vesselOut == null ? "" : vesselOut.getTerminal().getId()) + "\"");
+            this.containerWriter.write(",\"" + (vesselOut == null ? "" : vesselOut.getId()) + "\"");
+            this.containerWriter.write(",\"" + (vesselOut == null ? "" : vesselOut.getAta().ymdhm()) + "\"");
+            this.containerWriter.write("\"" + container.getType() + "\"");
+            this.containerWriter.write("\"" + (container.isEmpty() ? "E" : "F") + "\"");
+            String locations = container.getLocations().toString();
+            this.containerWriter.write(",\"" + locations + "\"");
+            String direction = "domestic";
+            if (vesselIn == null && vesselOut != null)
+                direction = "export";
+            else if (vesselIn != null && vesselOut == null)
+                direction = "import";
+            else if (vesselIn != null && vesselOut != null)
+                direction = "transshipment";
+            this.containerWriter.write(",\"" + direction + "\"");
+            String transportMode = "TRANSSHIP";
+            if (locations.contains("TRUCK"))
+                transportMode = "TRUCK";
+            else if (locations.contains("BARGE"))
+                transportMode = "BARGE";
+            else if (locations.contains("RAIL"))
+                transportMode = "RAIL";
+            this.containerWriter.write(",\"" + transportMode + "\"");
+            this.containerWriter.write("\n");
+            this.containerWriter.flush();
+        }
+        catch (IOException ioe)
+        {
+            CategoryLogger.always().error("Error writing to containerWriter. Error: " + ioe.getMessage());
+        }
     }
 
     private void writeTruckTripHeader()
     {
         this.truckWriter.print("\"trucking_company\"");
         this.truckWriter.print(",\"truck_nr\"");
-        this.truckWriter.print(",\"container_nr1\"");
-        this.truckWriter.print(",\"container_nr2\"");
-        this.truckWriter.print(",\"date_pickup\"");
-        this.truckWriter.print(",\"centroid_pickup\"");
-        this.truckWriter.print(",\"terminal_pickup\"");
-        this.truckWriter.print(",\"wait_time_gate_pickup\"");
-        this.truckWriter.print(",\"yard_time_pickup\"");
-        this.truckWriter.print(",\"date_delivery\"");
-        this.truckWriter.print(",\"centroid_delivery\"");
-        this.truckWriter.print(",\"terminal_delivery\"");
-        this.truckWriter.print(",\"wait_time_gate_delivery\"");
-        this.truckWriter.print(",\"yard_time_delivery\"");
+        this.truckWriter.print(",\"activity_nr\"");
+        this.truckWriter.print(",\"activity_type\"");
+
+        this.truckWriter.print(",\"driving_leg_type\"");
+        this.truckWriter.print(",\"driving_etd\"");
+        this.truckWriter.print(",\"driving_atd\"");
+        this.truckWriter.print(",\"driving_eta\"");
+        this.truckWriter.print(",\"driving_ata\"");
+        this.truckWriter.print(",\"driving_container_nr1\"");
+        this.truckWriter.print(",\"driving_container_nr2\"");
+        this.truckWriter.print(",\"driving_orig_centroid\"");
+        this.truckWriter.print(",\"driving_dest_centroid\"");
+        this.truckWriter.print(",\"driving_start_link\"");
+        this.truckWriter.print(",\"driving_end_link\"");
+        this.truckWriter.print(",\"driving_distance_km\"");
+        this.truckWriter.print(",\"driving_planned_duration_s\"");
+        this.truckWriter.print(",\"driving_actual_duration_s\"");
+
+        this.truckWriter.print(",\"visit_terminal_id\"");
+        this.truckWriter.print(",\"visit_activity_type\"");
+        this.truckWriter.print(",\"visit_dropoff_container_nr1\"");
+        this.truckWriter.print(",\"visit_dropoff_container_nr2\"");
+        this.truckWriter.print(",\"visit_pickup_container_nr1\"");
+        this.truckWriter.print(",\"visit_pickup_container_nr2\"");
+        this.truckWriter.print(",\"visit_slot_nr\"");
+        this.truckWriter.print(",\"visit_earliest_grace_time\"");
+        this.truckWriter.print(",\"visit_earliest_standard_time\"");
+        this.truckWriter.print(",\"visit_latest_standard_time\"");
+        this.truckWriter.print(",\"visit_latest_grace_time\"");
+        this.truckWriter.print(",\"visit_ata\"");
+        this.truckWriter.print(",\"visit_waittime_gate_in_s\"");
+        this.truckWriter.print(",\"visit_handling_time_s\"");
+        this.truckWriter.print(",\"visit_waittime_gate_out_s\"");
+
         this.truckWriter.println();
         this.truckWriter.flush();
     }
@@ -298,20 +347,23 @@ public class OutputWriter implements EventListener
     {
         this.truckWriter.print("\"" + truck.getTruckingCompany().getId() + "\"");
         this.truckWriter.print(",\"" + truck.getId() + "\"");
-        this.truckWriter.print(",\"" + (truck.getContainer() == null ? "" : truck.getContainer().getId()) + "\"");
-        this.truckWriter.print(",\"" + "" + "\"");
-        this.truckWriter.print(",\"" + (truck.getPickupTime() == null ? "" : truck.getPickupTime().ymdhm()) + "\"");
-        this.truckWriter.print(",\"" + (truck.getLoadCentroid() == null ? "" : truck.getLoadCentroid()) + "\"");
-        this.truckWriter.print(",\"\""); // TODO: terminal_pickup
-        this.truckWriter.print(",\"\""); // TODO: wait_time_gate_pickup
-        this.truckWriter.print(",\"\""); // TODO: yard_time_pickup
-        this.truckWriter.print(",\"" + (truck.getDeliveryTime() == null ? "" : truck.getDeliveryTime().ymdhm()) + "\"");
-        this.truckWriter.print(",\"" + (truck.getUnloadCentroid() == null ? "" : truck.getUnloadCentroid()) + "\"");
-        this.truckWriter.print(",\"\""); // TODO: terminal_delivery
-        this.truckWriter.print(",\"\""); // TODO: wait_time_gate_delivery
-        this.truckWriter.print(",\"\""); // TODO: yard_time_delivery
+        for (RealizedTruckActivity ta : truck.getRealizedActivityList())
+        {
+            if (ta instanceof RealizedDrivingActivity da)
+                writeDrivingLine(da);
+            else
+                writeVisitLine((RealizedTerminalActivity) ta);
+        }
         this.truckWriter.println();
         this.truckWriter.flush();
+    }
+
+    private void writeDrivingLine(final RealizedDrivingActivity da)
+    {
+    }
+
+    private void writeVisitLine(final RealizedTerminalActivity ta)
+    {
     }
 
     private void writeTerminalHeader()
@@ -488,11 +540,18 @@ public class OutputWriter implements EventListener
     protected void closeFiles()
     {
         this.vesselWriter.close();
-        this.containerWriter.close();
         this.truckWriter.close();
         this.terminalWriter.close();
         this.totalTerminalWriter.close();
         this.finalContainerWriter.close();
+        try
+        {
+            this.containerWriter.close();
+        }
+        catch (IOException ioe)
+        {
+            CategoryLogger.always().error("Error closing containerWriter file. Error: " + ioe.getMessage());
+        }
     }
 
     /**
