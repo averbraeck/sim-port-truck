@@ -61,9 +61,6 @@ public class Truck implements Identifiable, Locatable
     /** Planned truck activities (driving and loading/unloading). */
     private List<PlannedTruckActivity> plannedActivityList = new ArrayList<>();
 
-    /** Planned truck activity index. */
-    private int plannedActivityIndex = -1;
-
     /** Realized truck activities (driving and loading/unloading). */
     private List<RealizedTruckActivity> realizedActivityList = new ArrayList<>();
 
@@ -111,7 +108,6 @@ public class Truck implements Identifiable, Locatable
         {
             // TODO: see if there is a delay when starting to drive.
             Duration delay = Duration.ofSI(0.0);
-            this.plannedActivityIndex = 0;
             getSimulator().scheduleEventAbs(new ClockTime(pda.getDepartureTime().plus(delay)), () -> startDrivingFirst(pda));
         }
         else
@@ -132,6 +128,7 @@ public class Truck implements Identifiable, Locatable
         {
             loadContainer(pda.getContainer2());
         }
+        this.currentActivityIndex++;
         startDriving(pda);
     }
 
@@ -268,6 +265,7 @@ public class Truck implements Identifiable, Locatable
                     rta.getTerminal().getYard().pickupContainer(this, rta.getPlannedTerminalActivity().getContainerPickup2());
             }
         }
+        rta.setActualHandlingTime(handlingTime);
         getSimulator().scheduleEventRel(handlingTime, () -> gateOutActivity(rta));
     }
 
