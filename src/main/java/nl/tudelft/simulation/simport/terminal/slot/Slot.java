@@ -3,6 +3,7 @@ package nl.tudelft.simulation.simport.terminal.slot;
 import java.util.Objects;
 
 import org.djunits.value.vdouble.scalar.Duration;
+import org.djutils.base.Identifiable;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.simport.terminal.Terminal;
@@ -15,10 +16,13 @@ import nl.tudelft.simulation.simport.terminal.Terminal;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public class Slot
+public class Slot implements Identifiable
 {
     /** The terminal to which this slot belongs. */
     private final Terminal terminal;
+
+    /** The slot id. */
+    private final String id;
 
     /** The regular slot start time. */
     private final ClockTime regularSlotStart;
@@ -35,19 +39,29 @@ public class Slot
     /**
      * Create a slot for a terminal.
      * @param terminal terminal to which this slot belongs
+     * @param slotType the type of slot (general, incoming full, etc.)
+     * @param slotNr the n-th visit from the available number of visits
+     * @param slotMax the number of available visits in this slot
      * @param regularSlotStart the regular slot start time
      * @param regularSlotDuration the regular slot duration relative to the start time
      * @param graceDurationBeforeStart the grace slot duration before the slot start time
      * @param graceDurationAfterEnd the grace slot duration after the slot end time
      */
-    public Slot(final Terminal terminal, final ClockTime regularSlotStart, final Duration regularSlotDuration,
+    public Slot(final Terminal terminal, final String slotType, final int slotNr, final int slotMax, final ClockTime regularSlotStart, final Duration regularSlotDuration,
             final Duration graceDurationBeforeStart, final Duration graceDurationAfterEnd)
     {
+        this.id = terminal.getId() + "[" + slotType + "]." + slotNr + "/" + slotMax;
         this.terminal = terminal;
         this.regularSlotStart = regularSlotStart;
         this.regularSlotDuration = regularSlotDuration;
         this.graceDurationBeforeStart = graceDurationBeforeStart;
         this.graceDurationAfterEnd = graceDurationAfterEnd;
+    }
+
+    @Override
+    public String getId()
+    {
+        return this.id;
     }
 
     /**
