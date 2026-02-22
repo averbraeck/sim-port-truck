@@ -14,8 +14,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.djunits.unit.LengthUnit;
 import org.djunits.unit.SpeedUnit;
+import org.djunits.value.vdouble.scalar.Duration;
+import org.djunits.value.vdouble.scalar.Length;
 import org.djunits.value.vdouble.scalar.Speed;
+import org.djutils.draw.point.Point;
 import org.djutils.exceptions.Throw;
 import org.djutils.logger.CategoryLogger;
 
@@ -278,6 +282,41 @@ public class RoadNetwork
             Throw.whenNull(c, "Faraway centroid %s not found", cs);
             this.farCentroids.add(c);
         }
+    }
+
+    /** the radius of the earth in meters. ok for northern latitudes */
+    private static final double EARTH_RADIUS_M = 6378137.0;
+
+    /**
+     * @param d angle in degrees
+     * @return radians of degree d
+     */
+    private static double rad(final double d)
+    {
+        return d * Math.PI / 180.0f;
+    }
+
+    public static Length haversine(final double lat1, final double lng1, final double lat2, final double lng2)
+    {
+        double radLat1 = rad(lat1);
+        double radLat2 = rad(lat2);
+        double a = radLat1 - radLat2;
+        double b = rad(lng1) - rad(lng2);
+        double s = 2.0f * Math.asin(Math.sqrt(
+                Math.pow(Math.sin(a / 2.0f), 2) + Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b / 2.0f), 2)));
+        s = s * EARTH_RADIUS_M;
+        return new Length(s, LengthUnit.METER);
+    }
+
+    public static Length haversine(final Point<?> p1, final Point<?> p2)
+    {
+        return haversine(p1.getY(), p1.getX(), p2.getY(), p2.getX());
+    }
+
+    public Duration drivingTime(final Centroid from, final Centroid to, final Speed speed)
+    {
+        Length distance = haversine(from.getLocation(), to.getLocation());
+        return distance.divide(speed);
     }
 
     ///////////////////////////////////////// HELPER METHODS ////////////////////////////////////
