@@ -2,7 +2,9 @@ package nl.tudelft.simulation.simport.truck.activity;
 
 import org.djunits.value.vdouble.scalar.Duration;
 
+import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
 import nl.tudelft.simulation.simport.appointment.Appointment;
+import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.terminal.Terminal;
 import nl.tudelft.simulation.simport.truck.activity.PlannedTerminalActivity.TerminalActivityType;
 
@@ -18,6 +20,9 @@ public class RealizedTerminalActivity extends RealizedTruckActivity
 {
     /** The planned terminal activity. */
     private final PlannedTerminalActivity plannedTerminalActivity;
+
+    /** Actual arrival time at the terminal. */
+    private final ClockTime actualArrivalTime;
 
     /** Waiting time before terminal could be entered. */
     private Duration waitingTimeIn;
@@ -42,6 +47,7 @@ public class RealizedTerminalActivity extends RealizedTruckActivity
     {
         super(plannedTerminalActivity.getTruck());
         this.plannedTerminalActivity = plannedTerminalActivity;
+        this.actualArrivalTime = getTerminal().getSimulator().getSimulatorClockTime();
     }
 
     /**
@@ -138,6 +144,46 @@ public class RealizedTerminalActivity extends RealizedTruckActivity
     public PlannedTerminalActivity getPlannedTerminalActivity()
     {
         return this.plannedTerminalActivity;
+    }
+
+    /**
+     * @return containerPickup1
+     */
+    public Container getContainerPickup1()
+    {
+        return this.plannedTerminalActivity.getContainerPickup1();
+    }
+
+    /**
+     * @return containerPickup2
+     */
+    public Container getContainerPickup2()
+    {
+        return this.plannedTerminalActivity.getContainerPickup2();
+    }
+
+    /**
+     * @return containerDropoff1
+     */
+    public Container getContainerDropoff1()
+    {
+        return this.plannedTerminalActivity.getContainerDropoff1();
+    }
+
+    /**
+     * @return containerDropoff2
+     */
+    public Container getContainerDropoff2()
+    {
+        return this.plannedTerminalActivity.getContainerDropoff2();
+    }
+
+    /**
+     * @return actualArrivalTime
+     */
+    public ClockTime getActualArrivalTime()
+    {
+        return this.actualArrivalTime;
     }
 
 }
