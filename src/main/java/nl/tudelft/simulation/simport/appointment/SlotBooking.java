@@ -76,6 +76,26 @@ public class SlotBooking extends Appointment
         return getRegularDurationAfterTarget().plus(this.slot.getGraceDurationAfterEnd());
     }
 
+    public ClockTime getEarliestGraceTime()
+    {
+        return new ClockTime(getTargetTime().minus(getGraceDurationBeforeTarget()));
+    }
+
+    public ClockTime getEarliestStandardTime()
+    {
+        return new ClockTime(getTargetTime().minus(getRegularDurationBeforeTarget()));
+    }
+
+    public ClockTime getLatestStandardTime()
+    {
+        return new ClockTime(getTargetTime().plus(getRegularDurationAfterTarget()));
+    }
+
+    public ClockTime getLatestGraceTime()
+    {
+        return new ClockTime(getTargetTime().plus(getGraceDurationAfterTarget()));
+    }
+
     @Override
     public int hashCode()
     {
