@@ -10,12 +10,14 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
+import org.djunits.unit.LengthUnit;
 import org.djutils.event.Event;
 import org.djutils.event.EventListener;
 import org.djutils.logger.CategoryLogger;
 
 import nl.tudelft.simulation.dsol.experiment.Replication;
 import nl.tudelft.simulation.simport.TransportMode;
+import nl.tudelft.simulation.simport.appointment.SlotBooking;
 import nl.tudelft.simulation.simport.container.Booking;
 import nl.tudelft.simulation.simport.container.Container;
 import nl.tudelft.simulation.simport.model.PortModel;
@@ -52,7 +54,7 @@ public class OutputWriter implements EventListener
     private PrintWriter finalContainerWriter;
 
     /** the truck writer. */
-    private PrintWriter truckWriter;
+    private BufferedWriter truckWriter;
 
     /** the terminal writer. */
     private PrintWriter terminalWriter;
@@ -88,15 +90,19 @@ public class OutputWriter implements EventListener
             writeVesselHeader();
             model.addListener(this, PortModel.VESSEL_EVENT);
 
-            FileOutputStream fos = new FileOutputStream(new File(outputPath + "/container.csv.gz"));
-            BufferedOutputStream bos = new BufferedOutputStream(fos, 128 * 1024);
-            GZIPOutputStream gos = new GZIPOutputStream(bos);
-            OutputStreamWriter osw = new OutputStreamWriter(gos, "UTF-8");
-            this.containerWriter = new BufferedWriter(osw, 128 * 1024);
+            FileOutputStream cfos = new FileOutputStream(new File(outputPath + "/container.csv.gz"));
+            BufferedOutputStream cbos = new BufferedOutputStream(cfos, 128 * 1024);
+            GZIPOutputStream ggos = new GZIPOutputStream(cbos);
+            OutputStreamWriter gosw = new OutputStreamWriter(ggos, "UTF-8");
+            this.containerWriter = new BufferedWriter(gosw, 128 * 1024);
             writeContainerHeader();
             model.addListener(this, PortModel.CONTAINER_EVENT);
 
-            this.truckWriter = new PrintWriter(outputPath + "/truck.csv");
+            FileOutputStream tfos = new FileOutputStream(new File(outputPath + "/truck.csv.gz"));
+            BufferedOutputStream tbos = new BufferedOutputStream(tfos, 128 * 1024);
+            GZIPOutputStream tgos = new GZIPOutputStream(tbos);
+            OutputStreamWriter tosw = new OutputStreamWriter(tgos, "UTF-8");
+            this.truckWriter = new BufferedWriter(tosw, 128 * 1024);
             writeTruckTripHeader();
             model.addListener(this, PortModel.TRUCK_EVENT);
 
@@ -303,67 +309,140 @@ public class OutputWriter implements EventListener
 
     private void writeTruckTripHeader()
     {
-        this.truckWriter.print("\"trucking_company\"");
-        this.truckWriter.print(",\"truck_nr\"");
-        this.truckWriter.print(",\"activity_nr\"");
-        this.truckWriter.print(",\"activity_type\"");
+        try
+        {
+            this.truckWriter.write("\"trucking_company\"");
+            this.truckWriter.write(",\"truck_nr\"");
+            this.truckWriter.write(",\"activity_nr\"");
+            this.truckWriter.write(",\"activity_type\"");
 
-        this.truckWriter.print(",\"driving_leg_type\"");
-        this.truckWriter.print(",\"driving_etd\"");
-        this.truckWriter.print(",\"driving_atd\"");
-        this.truckWriter.print(",\"driving_eta\"");
-        this.truckWriter.print(",\"driving_ata\"");
-        this.truckWriter.print(",\"driving_container_nr1\"");
-        this.truckWriter.print(",\"driving_container_nr2\"");
-        this.truckWriter.print(",\"driving_orig_centroid\"");
-        this.truckWriter.print(",\"driving_dest_centroid\"");
-        this.truckWriter.print(",\"driving_start_link\"");
-        this.truckWriter.print(",\"driving_end_link\"");
-        this.truckWriter.print(",\"driving_distance_km\"");
-        this.truckWriter.print(",\"driving_planned_duration_s\"");
-        this.truckWriter.print(",\"driving_actual_duration_s\"");
+            this.truckWriter.write(",\"driving_leg_type\"");
+            this.truckWriter.write(",\"driving_etd\"");
+            this.truckWriter.write(",\"driving_atd\"");
+            this.truckWriter.write(",\"driving_eta\"");
+            this.truckWriter.write(",\"driving_ata\"");
+            this.truckWriter.write(",\"driving_container_nr1\"");
+            this.truckWriter.write(",\"driving_container_nr2\"");
+            this.truckWriter.write(",\"driving_orig_centroid\"");
+            this.truckWriter.write(",\"driving_dest_centroid\"");
+            this.truckWriter.write(",\"driving_distance_km\"");
+            this.truckWriter.write(",\"driving_planned_duration_s\"");
+            this.truckWriter.write(",\"driving_actual_duration_s\"");
 
-        this.truckWriter.print(",\"visit_terminal_id\"");
-        this.truckWriter.print(",\"visit_activity_type\"");
-        this.truckWriter.print(",\"visit_dropoff_container_nr1\"");
-        this.truckWriter.print(",\"visit_dropoff_container_nr2\"");
-        this.truckWriter.print(",\"visit_pickup_container_nr1\"");
-        this.truckWriter.print(",\"visit_pickup_container_nr2\"");
-        this.truckWriter.print(",\"visit_slot_nr\"");
-        this.truckWriter.print(",\"visit_earliest_grace_time\"");
-        this.truckWriter.print(",\"visit_earliest_standard_time\"");
-        this.truckWriter.print(",\"visit_latest_standard_time\"");
-        this.truckWriter.print(",\"visit_latest_grace_time\"");
-        this.truckWriter.print(",\"visit_ata\"");
-        this.truckWriter.print(",\"visit_waittime_gate_in_s\"");
-        this.truckWriter.print(",\"visit_handling_time_s\"");
-        this.truckWriter.print(",\"visit_waittime_gate_out_s\"");
+            this.truckWriter.write(",\"visit_terminal_id\"");
+            this.truckWriter.write(",\"visit_activity_type\"");
+            this.truckWriter.write(",\"visit_dropoff_container_nr1\"");
+            this.truckWriter.write(",\"visit_dropoff_container_nr2\"");
+            this.truckWriter.write(",\"visit_pickup_container_nr1\"");
+            this.truckWriter.write(",\"visit_pickup_container_nr2\"");
+            this.truckWriter.write(",\"visit_target_time\"");
+            this.truckWriter.write(",\"visit_slot_nr\"");
+            this.truckWriter.write(",\"visit_earliest_grace_time\"");
+            this.truckWriter.write(",\"visit_earliest_standard_time\"");
+            this.truckWriter.write(",\"visit_latest_standard_time\"");
+            this.truckWriter.write(",\"visit_latest_grace_time\"");
+            this.truckWriter.write(",\"visit_ata\"");
+            this.truckWriter.write(",\"visit_waittime_before_gate\"");
+            this.truckWriter.write(",\"visit_duration_gate_in_s\"");
+            this.truckWriter.write(",\"visit_duration_handling_s\"");
+            this.truckWriter.write(",\"visit_duration_gate_out_s\"");
 
-        this.truckWriter.println();
-        this.truckWriter.flush();
+            this.truckWriter.write("\n");
+            this.truckWriter.flush();
+        }
+        catch (IOException ioe)
+        {
+            CategoryLogger.always().error("Error writing to containerWriter. Error: " + ioe.getMessage());
+        }
     }
 
     private void writeTruckTripLine(final Truck truck)
     {
-        this.truckWriter.print("\"" + truck.getTruckingCompany().getId() + "\"");
-        this.truckWriter.print(",\"" + truck.getId() + "\"");
-        for (RealizedTruckActivity ta : truck.getRealizedActivityList())
+        for (int i = 0; i < truck.getRealizedActivityList().size(); i++)
         {
-            if (ta instanceof RealizedDrivingActivity da)
-                writeDrivingLine(da);
-            else
-                writeVisitLine((RealizedTerminalActivity) ta);
+            try
+            {
+                RealizedTruckActivity ta = truck.getRealizedActivityList().get(i);
+                this.truckWriter.write("\"" + truck.getTruckingCompany().getId() + "\"");
+                this.truckWriter.write(",\"" + truck.getId() + "\"");
+                this.truckWriter.write("," + (i + 1));
+                if (ta instanceof RealizedDrivingActivity da)
+                    writeDrivingLine(da);
+                else
+                    writeVisitLine((RealizedTerminalActivity) ta);
+                this.truckWriter.write("\n");
+                this.truckWriter.flush();
+            }
+            catch (IOException ioe)
+            {
+                CategoryLogger.always().error("Error writing to containerWriter. Error: " + ioe.getMessage());
+            }
         }
-        this.truckWriter.println();
-        this.truckWriter.flush();
     }
 
-    private void writeDrivingLine(final RealizedDrivingActivity da)
+    private void writeDrivingLine(final RealizedDrivingActivity da) throws IOException
     {
+        this.truckWriter.write(",\"DRIVE\"");
+        this.truckWriter.write(",\"" + (da.getContainer1() != null ? "FULL" : "EMPTY") + "\"");
+        this.truckWriter.write(",\"" + da.getPlannedDepartureTime() + "\"");
+        this.truckWriter.write(",\"" + da.getActualDepartureTime() + "\"");
+        this.truckWriter.write(",\"" + da.getPlannedArrivalTime() + "\"");
+        this.truckWriter.write(",\"" + da.getActualArrivalTime() + "\"");
+        if (da.getContainer1() != null)
+            this.truckWriter.write(",\"" + da.getContainer1().getId() + "\"");
+        else
+            this.truckWriter.write(",");
+        if (da.getContainer2() != null)
+            this.truckWriter.write(",\"" + da.getContainer2().getId() + "\"");
+        else
+            this.truckWriter.write(",");
+        this.truckWriter.write(",\"" + da.getOrigCentroid().getEid() + "\"");
+        this.truckWriter.write(",\"" + da.getDestCentroid().getEid() + "\"");
+        this.truckWriter.write(",\"" + da.getDistance().getInUnit(LengthUnit.KILOMETER) + "\"");
+        this.truckWriter.write(",\"" + da.getPlannedArrivalTime().minus(da.getPlannedDepartureTime()) + "\"");
+        this.truckWriter.write(",\"" + da.getActualArrivalTime().minus(da.getActualDepartureTime()) + "\"");
+        this.truckWriter.write(",,,,,,,,,,,,,,,,,");
     }
 
-    private void writeVisitLine(final RealizedTerminalActivity ta)
+    private void writeVisitLine(final RealizedTerminalActivity ta) throws IOException
     {
+        this.truckWriter.write(",\"TERMINAL\"");
+        this.truckWriter.write(",,,,,,,,,,,,");
+        this.truckWriter.write(",\"" + ta.getTerminal().getId() + "\"");
+        this.truckWriter.write(",\"" + ta.getTerminalActivityType().toString() + "\"");
+        if (ta.getContainerDropoff1() != null)
+            this.truckWriter.write(",\"" + ta.getContainerDropoff1().getId() + "\"");
+        else
+            this.truckWriter.write(",");
+        if (ta.getContainerDropoff2() != null)
+            this.truckWriter.write(",\"" + ta.getContainerDropoff2().getId() + "\"");
+        else
+            this.truckWriter.write(",");
+        if (ta.getContainerPickup1() != null)
+            this.truckWriter.write(",\"" + ta.getContainerPickup1().getId() + "\"");
+        else
+            this.truckWriter.write(",");
+        if (ta.getContainerPickup2() != null)
+            this.truckWriter.write(",\"" + ta.getContainerPickup2().getId() + "\"");
+        else
+            this.truckWriter.write(",");
+        this.truckWriter.write(",\"" + ta.getAppointment().getTargetTime() + "\"");
+        if (ta.getAppointment() instanceof SlotBooking sb)
+        {
+            this.truckWriter.write(",\"" + sb.getSlot().getId() + "\"");
+            this.truckWriter.write(",\"" + sb.getEarliestGraceTime() + "\"");
+            this.truckWriter.write(",\"" + sb.getEarliestStandardTime() + "\"");
+            this.truckWriter.write(",\"" + sb.getLatestStandardTime() + "\"");
+            this.truckWriter.write(",\"" + sb.getLatestGraceTime() + "\"");
+        }
+        else
+            this.truckWriter.write(",,,,,");
+
+        this.truckWriter.write(",\"" + ta.getActualArrivalTime() + "\"");
+        this.truckWriter.write(",\"" + ta.getWaitingTimeIn() + "\"");
+        this.truckWriter.write(",\"" + ta.getActualGateTimeIn() + "\"");
+        this.truckWriter.write(",\"" + ta.getActualHandlingTime() + "\"");
+        this.truckWriter.write(",\"" + ta.getActualGateTimeOut() + "\"");
     }
 
     private void writeTerminalHeader()
@@ -540,7 +619,6 @@ public class OutputWriter implements EventListener
     protected void closeFiles()
     {
         this.vesselWriter.close();
-        this.truckWriter.close();
         this.terminalWriter.close();
         this.totalTerminalWriter.close();
         this.finalContainerWriter.close();
@@ -551,6 +629,14 @@ public class OutputWriter implements EventListener
         catch (IOException ioe)
         {
             CategoryLogger.always().error("Error closing containerWriter file. Error: " + ioe.getMessage());
+        }
+        try
+        {
+            this.truckWriter.close();
+        }
+        catch (IOException ioe)
+        {
+            CategoryLogger.always().error("Error closing truckWriter file. Error: " + ioe.getMessage());
         }
     }
 
