@@ -15,6 +15,7 @@ import nl.tudelft.simulation.simport.freightforwarder.FreightForwarder;
 import nl.tudelft.simulation.simport.network.Centroid;
 import nl.tudelft.simulation.simport.network.RoadNetwork;
 import nl.tudelft.simulation.simport.terminal.Terminal;
+import nl.tudelft.simulation.simport.truck.TruckingStatistics;
 import nl.tudelft.simulation.simport.vessel.Vessel;
 
 /**
@@ -39,8 +40,14 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
     /** A daily terminal update event. */
     static EventType DAILY_TERMINAL_EVENT = new EventType("DAILY_TERMINAL_EVENT");
 
+    /** A periodic terminal queue update event. */
+    static EventType TERMINAL_QUEUE_EVENT = new EventType("TERMINAL_QUEUE_EVENT");
+
     /** A final terminal update event with totals. */
     static EventType TOTAL_TERMINAL_EVENT = new EventType("TOTAL_TERMINAL_EVENT");
+
+    /** A final trucking statistics update event with totals. */
+    static EventType TOTAL_TRUCKING_EVENT = new EventType("TOTAL_TRUCKING_EVENT");
 
     /**
      * Return the standard random stream of the model.
@@ -152,5 +159,11 @@ public interface PortModel extends DsolModel<Duration, ClockDevsSimulatorInterfa
      * @return the centroids of the terminals
      */
     Set<Centroid> getTerminalCentroids();
+
+    /**
+     * Return the trucking statistics.
+     * @return the trucking statistics
+     */
+    TruckingStatistics getTruckingStatistics();
 
 }
