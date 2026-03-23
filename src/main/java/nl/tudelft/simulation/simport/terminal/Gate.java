@@ -54,20 +54,11 @@ public interface Gate extends Identifiable
     /** @return the queue of trucks that want to enter. */
     List<Truck> getTruckQueueIn();
 
-    /** @return the queue of trucks that want to leave. */
-    List<Truck> getTruckQueueOut();
-
     /**
      * Add a truck that wants to enter the terminal.
      * @param truck the truck that wants to enter
      */
-    void addTruckIn(Truck truck);
-
-    /**
-     * Add a truck that wants to leave the terminal.
-     * @param truck the truck that wants to leave
-     */
-    void addTruckOut(Truck truck);
+    void addTruckToQueueIn(Truck truck);
 
     /** @return the simulator. */
     ClockDevsSimulatorInterface getSimulator();

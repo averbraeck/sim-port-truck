@@ -1,11 +1,14 @@
 package nl.tudelft.simulation.simport.terminal;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.jstats.distributions.unit.DistContinuousDuration;
+import nl.tudelft.simulation.simport.model.PortModel;
 import nl.tudelft.simulation.simport.truck.Truck;
 
 /**
@@ -43,20 +46,75 @@ public class GateConstant implements Gate
     private Duration avgGateTimeOut;
 
     /** the truck queue for entering the terminal. */
-    private List<Truck> truckQueueIn;
+    private List<Truck> truckQueueIn = new ArrayList<>();
 
-    /** the truck queue for leaving the terminal. */
-    private List<Truck> truckQueueOut;
+    /** the shortest interval between successive gate-in events because of capacity. */
+    private Duration intervalGateIn;
+
+    private int capTotal = 0;
+
+    private int capFull = 0;
+
+    private int capEmpty = 0;
+
+    private int capImport = 0;
+
+    private int capExport = 0;
+
+    private int capImportFull = 0;
+
+    private int capImportEmpty = 0;
+
+    private int capExportFull = 0;
+
+    private int capExportEmpty = 0;
 
     /**
      * Create a gate for a terminal with a constant number of lanes and constant handling times.
      * @param portFacility the terminal or depot
-     * @param id the unique id within the portFacility; will be appended to the terminal id for display.
+     * @param id the unique id within the portFacility; will be appended to the terminal id for display
      */
     public GateConstant(final ContainerFacility portFacility, final String id)
     {
         this.portFacility = portFacility;
         this.id = id;
+
+        // sample gate queue in every 6 minutes
+        getSimulator().scheduleEventNow(() -> sampleGateIn());
+    }
+
+    public void setCapacities(final int capTotal, final int capFull, final int capEmpty, final int capImport,
+            final int capExport, final int capImportFull, final int capImportEmpty, final int capExportFull,
+            final int capExportEmpty)
+    {
+        this.capTotal = capTotal + capFull + capEmpty + capImport + capExport + capImportFull + capImportEmpty + capExportFull
+                + capExportEmpty;
+        this.capFull = capFull;
+        this.capEmpty = capEmpty;
+        this.capImport = capImport;
+        this.capExport = capExport;
+        this.capImportFull = capImportFull;
+        this.capImportEmpty = capImportEmpty;
+        this.capExportFull = capExportFull;
+        this.capExportEmpty = capExportEmpty;
+
+        // check the in-queue periodically
+        this.intervalGateIn = new Duration(60.0 / this.capTotal, DurationUnit.MINUTE);
+        getSimulator().scheduleEventNow(() -> checkGateIn());
+    }
+
+    protected void sampleGateIn()
+    {
+        getContainerFacility().getModel().fireEvent(PortModel.TERMINAL_QUEUE_EVENT,
+                new Object[] {getContainerFacility().getId(), this.truckQueueIn.size()});
+        getSimulator().scheduleEventRel(new Duration(6.0, DurationUnit.MINUTE), () -> sampleGateIn());
+    }
+
+    protected void checkGateIn()
+    {
+        if (this.truckQueueIn.size() > 0)
+            this.truckQueueIn.remove(0).enterGateFromQueue();
+        getSimulator().scheduleEventRel(this.intervalGateIn, () -> checkGateIn());
     }
 
     @Override
@@ -162,27 +220,88 @@ public class GateConstant implements Gate
     }
 
     @Override
-    public List<Truck> getTruckQueueOut()
-    {
-        return this.truckQueueOut;
-    }
-
-    @Override
-    public void addTruckIn(final Truck truck)
+    public void addTruckToQueueIn(final Truck truck)
     {
         this.truckQueueIn.add(truck);
-    }
 
-    @Override
-    public void addTruckOut(final Truck truck)
-    {
-        this.truckQueueOut.add(truck);
     }
 
     @Override
     public ClockDevsSimulatorInterface getSimulator()
     {
         return this.portFacility.getSimulator();
+    }
+
+    /**
+     * @return capTotal
+     */
+    public int getCapTotal()
+    {
+        return this.capTotal;
+    }
+
+    /**
+     * @return capFull
+     */
+    public int getCapFull()
+    {
+        return this.capFull;
+    }
+
+    /**
+     * @return capEmpty
+     */
+    public int getCapEmpty()
+    {
+        return this.capEmpty;
+    }
+
+    /**
+     * @return capImport
+     */
+    public int getCapImport()
+    {
+        return this.capImport;
+    }
+
+    /**
+     * @return capExport
+     */
+    public int getCapExport()
+    {
+        return this.capExport;
+    }
+
+    /**
+     * @return capImportFull
+     */
+    public int getCapImportFull()
+    {
+        return this.capImportFull;
+    }
+
+    /**
+     * @return capImportEmpty
+     */
+    public int getCapImportEmpty()
+    {
+        return this.capImportEmpty;
+    }
+
+    /**
+     * @return capExportFull
+     */
+    public int getCapExportFull()
+    {
+        return this.capExportFull;
+    }
+
+    /**
+     * @return capExportEmpty
+     */
+    public int getCapExportEmpty()
+    {
+        return this.capExportEmpty;
     }
 
     @Override
