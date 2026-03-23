@@ -82,6 +82,8 @@ public class OutputWriter implements EventListener
     public OutputWriter(final PortModel model, final String outputPath)
     {
         this.model = model;
+        if (!this.model.getInputParameterBoolean("output.WriteOutput"))
+            return;
         makeOutputDirectory(outputPath);
 
         try
@@ -90,25 +92,35 @@ public class OutputWriter implements EventListener
             writeVesselHeader();
             model.addListener(this, PortModel.VESSEL_EVENT);
 
-            FileOutputStream cfos = new FileOutputStream(new File(outputPath + "/container.csv.gz"));
-            BufferedOutputStream cbos = new BufferedOutputStream(cfos, 128 * 1024);
-            GZIPOutputStream ggos = new GZIPOutputStream(cbos);
-            OutputStreamWriter gosw = new OutputStreamWriter(ggos, "UTF-8");
-            this.containerWriter = new BufferedWriter(gosw, 128 * 1024);
-            writeContainerHeader();
-            model.addListener(this, PortModel.CONTAINER_EVENT);
+            if (this.model.getInputParameterBoolean("output.WriteContainerFile"))
+            {
+                FileOutputStream cfos = new FileOutputStream(new File(outputPath + "/container.csv.gz"));
+                BufferedOutputStream cbos = new BufferedOutputStream(cfos, 128 * 1024);
+                GZIPOutputStream ggos = new GZIPOutputStream(cbos);
+                OutputStreamWriter gosw = new OutputStreamWriter(ggos, "UTF-8");
+                this.containerWriter = new BufferedWriter(gosw, 128 * 1024);
+                writeContainerHeader();
+                model.addListener(this, PortModel.CONTAINER_EVENT);
+            }
 
-            FileOutputStream tfos = new FileOutputStream(new File(outputPath + "/truck.csv.gz"));
-            BufferedOutputStream tbos = new BufferedOutputStream(tfos, 128 * 1024);
-            GZIPOutputStream tgos = new GZIPOutputStream(tbos);
-            OutputStreamWriter tosw = new OutputStreamWriter(tgos, "UTF-8");
-            this.truckWriter = new BufferedWriter(tosw, 128 * 1024);
-            writeTruckTripHeader();
-            model.addListener(this, PortModel.TRUCK_EVENT);
+            if (this.model.getInputParameterBoolean("output.WriteTruckFile"))
+            {
+                FileOutputStream tfos = new FileOutputStream(new File(outputPath + "/truck.csv.gz"));
+                BufferedOutputStream tbos = new BufferedOutputStream(tfos, 128 * 1024);
+                GZIPOutputStream tgos = new GZIPOutputStream(tbos);
+                OutputStreamWriter tosw = new OutputStreamWriter(tgos, "UTF-8");
+                this.truckWriter = new BufferedWriter(tosw, 128 * 1024);
+                writeTruckTripHeader();
+                model.addListener(this, PortModel.TRUCK_EVENT);
+            }
 
             this.terminalWriter = new PrintWriter(outputPath + "/terminal.csv");
             writeTerminalHeader();
             model.addListener(this, PortModel.DAILY_TERMINAL_EVENT);
+
+            this.terminalQueueWriter = new PrintWriter(outputPath + "/terminal_queue.csv");
+            writeTerminalQueueHeader();
+            model.addListener(this, PortModel.TERMINAL_QUEUE_EVENT);
 
             this.totalTerminalWriter = new PrintWriter(outputPath + "/terminal_total.csv");
             writeTotalTerminalHeader();
@@ -589,6 +601,24 @@ public class OutputWriter implements EventListener
         writer.flush();
     }
 
+    private void writeTerminalQueueHeader()
+    {
+        this.terminalQueueWriter.print("\"time\"");
+        this.terminalQueueWriter.print(",\"terminal_id\"");
+        this.terminalQueueWriter.print(",\"nr_trucks\"");
+        this.terminalQueueWriter.println();
+        this.terminalQueueWriter.flush();
+    }
+
+    private void writeTerminalQueueLine(final String id, final int nrTrucksInQueue)
+    {
+        this.terminalQueueWriter.print("\"" + this.model.getSimulator().getSimulatorClockTime() + "\"");
+        this.terminalQueueWriter.print(",\"" + id + "\"");
+        this.terminalQueueWriter.print("," + nrTrucksInQueue);
+        this.terminalQueueWriter.println();
+        this.terminalQueueWriter.flush();
+    }
+
     private void writeFinalContainerHeader()
     {
         this.finalContainerWriter.print("\"terminal_id\"");
@@ -621,10 +651,12 @@ public class OutputWriter implements EventListener
         this.vesselWriter.close();
         this.terminalWriter.close();
         this.totalTerminalWriter.close();
+        this.terminalQueueWriter.close();
         this.finalContainerWriter.close();
         try
         {
-            this.containerWriter.close();
+            if (this.containerWriter != null)
+                this.containerWriter.close();
         }
         catch (IOException ioe)
         {
@@ -632,7 +664,8 @@ public class OutputWriter implements EventListener
         }
         try
         {
-            this.truckWriter.close();
+            if (this.truckWriter != null)
+                this.truckWriter.close();
         }
         catch (IOException ioe)
         {
@@ -669,6 +702,13 @@ public class OutputWriter implements EventListener
         else if (event.getType().equals(PortModel.DAILY_TERMINAL_EVENT))
         {
             writeTerminalLine((TerminalStatistics) event.getContent());
+        }
+        else if (event.getType().equals(PortModel.TERMINAL_QUEUE_EVENT))
+        {
+            Object[] content = (Object[]) event.getContent();
+            String id = content[0].toString();
+            int nrTrucksInQueue = (int) content[1];
+            writeTerminalQueueLine(id, nrTrucksInQueue);
         }
         else if (event.getType().equals(PortModel.TOTAL_TERMINAL_EVENT))
         {
