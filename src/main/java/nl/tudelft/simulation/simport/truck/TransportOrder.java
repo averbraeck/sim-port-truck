@@ -18,18 +18,43 @@ import nl.tudelft.simulation.simport.vessel.Vessel;
  * </p>
  * @author <a href="https://www.tudelft.nl/averbraeck">Alexander Verbraeck</a>
  */
-public record TransportOrder(int uniqueId, Vessel vessel, Container container, Centroid loadCentroid, Terminal loadTerminal,
-        Centroid unloadCentroid, Terminal unloadTerminal, ClockTime targetTime, Duration marginBefore, Duration marginAfter)
+public class TransportOrder
 {
+    // @formatter:off
+    private final int uniqueId;             public int uniqueId() { return this.uniqueId; }
+    private final Vessel vessel;            public Vessel vessel() { return this.vessel; }
+    private final Container container;      public Container container() { return this.container; }
+    private final Centroid loadCentroid;    public Centroid loadCentroid() { return this.loadCentroid; }
+    private final Terminal loadTerminal;    public Terminal loadTerminal() { return this.loadTerminal; }
+    private final Centroid unloadCentroid;  public Centroid unloadCentroid() { return this.unloadCentroid; }
+    private final Terminal unloadTerminal;  public Terminal unloadTerminal() { return this.unloadTerminal; }
+    private ClockTime targetTime;           public ClockTime targetTime() { return this.targetTime; }
+    private final Duration marginBefore;    public Duration marginBefore() { return this.marginBefore; }
+    private final Duration marginAfter;     public Duration marginAfter() { return this.marginAfter; }
+    // @formatter:on
+
     /** the static uniqueId counter. */
     private static AtomicInteger uniqueIdCounter = new AtomicInteger(0);
 
-    // Convenience constructor
     public TransportOrder(final Vessel vessel, final Container container, final Centroid loadCentroid,
             final Terminal loadTerminal, final Centroid unloadCentroid, final Terminal unloadTerminal,
             final ClockTime targetTime, final Duration marginBefore, final Duration marginAfter)
     {
-        this(uniqueIdCounter.incrementAndGet(), vessel, container, loadCentroid, loadTerminal, unloadCentroid, unloadTerminal,
-                targetTime, marginBefore, marginAfter);
+        this.uniqueId = uniqueIdCounter.incrementAndGet();
+        this.vessel = vessel;
+        this.container = container;
+        this.loadCentroid = loadCentroid;
+        this.loadTerminal = loadTerminal;
+        this.unloadCentroid = unloadCentroid;
+        this.unloadTerminal = unloadTerminal;
+        this.targetTime = targetTime;
+        this.marginBefore = marginBefore;
+        this.marginAfter = marginAfter;
     }
+
+    public void setTargetTime(final ClockTime targetTime)
+    {
+        this.targetTime = targetTime;
+    }
+
 }

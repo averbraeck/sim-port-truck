@@ -206,6 +206,12 @@ public class Truck implements Identifiable, Locatable
         // see if we can get in -- are we within the slot time?
         ClockTime tnow = getSimulator().getSimulatorClockTime();
         Duration delay = Duration.ZERO;
+
+        RealizedTerminalActivity rta = new RealizedTerminalActivity(pta);
+        // rta does setActualArrivalTime(tnow);
+        this.realizedActivityList.add(rta);
+        this.realizedActivityIndex++;
+
         if (pta.getAppointment() instanceof SlotBooking slotBooking)
         {
             Duration early = slotBooking.getTargetTime().minus(slotBooking.getGraceDurationBeforeTarget()).minus(tnow);
@@ -217,20 +223,31 @@ public class Truck implements Identifiable, Locatable
             Duration late = tnow.minus(slotBooking.getTargetTime().plus(slotBooking.getGraceDurationAfterTarget()));
             if (late.gt0())
             {
-                // missed the slot: replan the visit
+                // missed the slot: plan a new slot
                 // TODO: replanning
-                delay = new Duration(1.0, DurationUnit.HOUR);
+                delay = new Duration(2.0, DurationUnit.HOUR);
             }
         }
-        RealizedTerminalActivity rta = new RealizedTerminalActivity(pta);
+
+        // this code is also executed when there are no slots
         rta.setWaitingTimeIn(delay);
-        this.realizedActivityList.add(rta);
-        this.realizedActivityIndex++;
-        getSimulator().scheduleEventRel(delay, () -> gateInActivity(rta));
+        getSimulator().scheduleEventRel(delay, () -> pta.getTerminal().getGate().addTruckToQueueIn(this));
     }
 
     /**
-     * Gate in activity. TODO: Check whether the terminal has capacity.
+     * This method is called by the GATE when it is the truck's turn to enter the terminal facility.
+     */
+    public void enterGateFromQueue()
+    {
+        RealizedTerminalActivity rta = (RealizedTerminalActivity) this.realizedActivityList.get(this.realizedActivityIndex);
+        Duration delay = getSimulator().getSimulatorClockTime().minus(rta.getActualArrivalTime());
+        rta.setWaitingTimeIn(delay);
+        // TODO: delay statistics?
+        gateInActivity(rta);
+    }
+
+    /**
+     * Gate in activity.
      */
     protected void gateInActivity(final RealizedTerminalActivity rta)
     {

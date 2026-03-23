@@ -1,9 +1,12 @@
 package nl.tudelft.simulation.simport.truck;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,6 +16,7 @@ import org.djunits.value.vdouble.scalar.Duration;
 import org.djunits.value.vdouble.scalar.Length;
 import org.djunits.value.vdouble.scalar.Speed;
 import org.djutils.base.Identifiable;
+import org.djutils.exceptions.Throw;
 
 import nl.tudelft.simulation.dsol.simulators.clock.ClockDevsSimulatorInterface;
 import nl.tudelft.simulation.dsol.simulators.clock.ClockTime;
@@ -40,14 +44,20 @@ public class TruckingCompany implements Identifiable
     /** The model. */
     private final PortModel model;
 
-    /** The currently driving truck fleet. */
-    // private final List<Truck> currentFleet = new ArrayList<>();
-
     /** the truck counter. */
     private final AtomicInteger uniqueTruckNr = new AtomicInteger(1000);
 
     /** The unplanned transport orders. */
     private final NavigableSet<TransportOrder> unplannedOrderSet = new TreeSet<>(new TransportOrderComparator());
+
+    /** Fraction Saturday trips of trips planned on Saturday. */
+    private final double fractionSaturday;
+
+    /** Fraction Sunday trips of trips planned on Sunday. */
+    private final double fractionSunday;
+
+    /** Cumulative distribution probabilities for the weights per hour of the day. */
+    private final NavigableMap<Double, Integer> cumulativeHourProbabilities = new TreeMap<>();
 
     /**
      * Instantiate a trucking company.
@@ -60,10 +70,33 @@ public class TruckingCompany implements Identifiable
         this.id = id;
         this.model = model;
         getSimulator().scheduleEventRel(new Duration(24.0, DurationUnit.HOUR), () -> planTrips());
+
+        this.fractionSaturday = model.getInputParameterDouble("truck.FractionSaturday");
+        this.fractionSunday = model.getInputParameterDouble("truck.FractionSunday");
+        setHourWeights();
+    }
+
+    protected void setHourWeights()
+    {
+        String[] stringWeights = this.model.getInputParameterString("truck.HourWeights").split(",");
+        Throw.when(stringWeights.length != 24, IllegalArgumentException.class,
+                "HourWeights parameter does not have 24 entries");
+        double total = 0.0;
+        for (String w : stringWeights)
+        {
+            total += Double.parseDouble(w);
+        }
+        double cumTotal = 0.0;
+        for (int hour = 0; hour < 24; hour++)
+        {
+            cumTotal += Double.parseDouble(stringWeights[hour]);
+            this.cumulativeHourProbabilities.put(cumTotal / total, hour);
+        }
     }
 
     public void bookTrip(final TransportOrder transportOrder)
     {
+        planWeekDistribution(transportOrder); // move to preferred day or hour
         this.unplannedOrderSet.add(transportOrder);
     }
 
@@ -189,6 +222,8 @@ public class TruckingCompany implements Identifiable
         // unloading, so export container.
         if (transportOrder.loadTerminal() == null)
         {
+            this.model.getTruckingStatistics().incExportTrips();
+
             // (1) Drive full towards terminal
             Terminal terminal = transportOrder.unloadTerminal();
             Appointment appointment = transportOrder.unloadTerminal().bookAppointment(transportOrder);
@@ -220,6 +255,8 @@ public class TruckingCompany implements Identifiable
         // loading, so import container.
         else
         {
+            this.model.getTruckingStatistics().incImportTrips();
+
             // (1) Drive empty towards terminal
             Terminal terminal = transportOrder.loadTerminal();
             Appointment appointment = transportOrder.loadTerminal().bookAppointment(transportOrder);
@@ -253,17 +290,87 @@ public class TruckingCompany implements Identifiable
 
     protected void planCombinedTripOneTerminal(final TransportOrder transportOrder1, final TransportOrder transportOrder2)
     {
+        // this.model.getTruckingStatistics().incCombinedTrips1Terminal();
         // Truck truck = generateTruck();
-        // TODO
+
         planSingleTrip(transportOrder1);
         planSingleTrip(transportOrder2);
     }
 
     protected void planCombinedTripTwoTerminals(final TransportOrder transportOrder1, final TransportOrder transportOrder2)
     {
+        // this.model.getTruckingStatistics().incCombinedTrips2Terminals();
         // Truck truck = generateTruck();
+
         planSingleTrip(transportOrder1);
         planSingleTrip(transportOrder2);
+    }
+
+    // constants
+    private static final Duration H24 = new Duration(24.0, DurationUnit.HOUR);
+
+    private static final Duration H48 = new Duration(48.0, DurationUnit.HOUR);
+
+    private static final Duration H72 = new Duration(72.0, DurationUnit.HOUR);
+
+    protected void planWeekDistribution(final TransportOrder transportOrder)
+    {
+        ClockTime targetTime = transportOrder.targetTime();
+        int weekday = targetTime.dayOfWeekInt();
+
+        // 6 = Saturday
+        if (weekday == 6 && this.model.getU01().draw() > this.fractionSaturday)
+        {
+            if (transportOrder.loadTerminal() != null)
+            {
+                // import order, pick up later, preferably to Monday (or Tuesday)
+                if (transportOrder.marginAfter().getInUnit(DurationUnit.HOUR) > 72.0 && this.model.getU01().draw() < 0.33)
+                    targetTime = new ClockTime(targetTime.plus(H72));
+                else if (transportOrder.marginAfter().getInUnit(DurationUnit.HOUR) > 48.0)
+                    targetTime = new ClockTime(targetTime.plus(H48));
+            }
+            else
+            {
+                // export order, bring earlier, preferably to Friday
+                if (transportOrder.marginBefore().getInUnit(DurationUnit.HOUR) > 48.0 && this.model.getU01().draw() < 0.33)
+                    targetTime = new ClockTime(targetTime.minus(H48));
+                else if (transportOrder.marginBefore().getInUnit(DurationUnit.HOUR) > 24.0)
+                    targetTime = new ClockTime(targetTime.minus(H24));
+            }
+        }
+
+        // 7 = Sunday
+        else if (weekday == 7 && this.model.getU01().draw() > this.fractionSunday)
+        {
+            if (transportOrder.loadTerminal() != null)
+            {
+                // import order, shift later, preferably to Monday
+                if (transportOrder.marginAfter().getInUnit(DurationUnit.HOUR) > 48.0 && this.model.getU01().draw() < 0.33)
+                    targetTime = new ClockTime(targetTime.plus(H48));
+                else if (transportOrder.marginAfter().getInUnit(DurationUnit.HOUR) > 24.0)
+                    targetTime = new ClockTime(targetTime.plus(H24));
+            }
+            else
+            {
+                // export order, shift earlier, preferably to Friday
+                if (transportOrder.marginBefore().getInUnit(DurationUnit.HOUR) > 72.0 && this.model.getU01().draw() < 0.33)
+                    targetTime = new ClockTime(targetTime.minus(H72));
+                else if (transportOrder.marginBefore().getInUnit(DurationUnit.HOUR) > 48.0)
+                    targetTime = new ClockTime(targetTime.minus(H48));
+            }
+        }
+
+        weekday = targetTime.dayOfWeekInt();
+
+        // determine hour of the day
+        int hourOfTheDay = this.cumulativeHourProbabilities.ceilingEntry(this.model.getU01().draw()).getValue();
+        var localDate = targetTime.localDateTime().toLocalDate();
+        int minute = (int) Math.floor(59.9 * this.model.getU01().draw());
+        var localDateTime = LocalDateTime.of(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth(),
+                hourOfTheDay, minute);
+        ClockTime newTime = ClockTime.ofLocalDateTime(localDateTime);
+        if (newTime.minus(getSimulator().getSimulatorClockTime()).gt(H24))
+            transportOrder.setTargetTime(newTime);
     }
 
     protected Truck generateTruck()
