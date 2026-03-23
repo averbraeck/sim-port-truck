@@ -3,6 +3,7 @@ package nl.tudelft.simulation.simport.freightforwarder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.checkerframework.checker.signature.qual.ClassGetSimpleName;
 import org.djunits.unit.DurationUnit;
 import org.djunits.value.vdouble.scalar.Duration;
 import org.djutils.base.Identifiable;
@@ -160,7 +161,7 @@ public class FreightForwarder extends LocalEventProducer implements Identifiable
         Duration leadTime =
                 this.exportLeadTimeTruckDist.get(terminal).get(containerType(container.isReefer(), container.isEmpty())).draw();
         ClockTime targetTime = new ClockTime(vessel.getEta().minus(leadTime));
-        Duration marginBefore = new Duration(3.0, DurationUnit.DAY);
+        Duration marginBefore = new Duration(4.0, DurationUnit.DAY);
         Duration marginAfter = new Duration(1.0, DurationUnit.DAY);
 
         // hand over to TruckingCompany
